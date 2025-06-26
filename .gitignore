@@ -177,6 +177,11 @@ Temporary Items
 .gradle
 **/build/
 !src/**/build/
+gradlew.bat
+gradlew
+.gitmessage.txt
+.idea
+gradle
 
 # Ignore Gradle GUI config
 gradle-app.setting
