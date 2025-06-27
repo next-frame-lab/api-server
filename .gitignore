@@ -179,7 +179,6 @@ Temporary Items
 !src/**/build/
 gradlew.bat
 gradlew
-.gitmessage.txt
 .idea
 gradle
 
