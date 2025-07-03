@@ -1,0 +1,39 @@
+package wisoft.nextframe.schedulereservationticketing.repository.stadium;
+
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+
+class StadiumRepositoryTest extends AbstractIntegrationTest {
+
+	@Autowired
+	private StadiumRepository stadiumRepository;
+
+	@Test
+	@DisplayName("성공: 새로운 경기장을 저장하고 ID로 조회하면 성공한다")
+	void saveAndFindById_Success() {
+		// given
+		UUID stadiumId = UUID.randomUUID();
+		Stadium stadium = Stadium.builder().id(stadiumId).name("서울월드컵경기장").address("서울시 마포구 성산동").build();
+
+		// when
+		stadiumRepository.save(stadium);
+		Optional<Stadium> foundStadiumOptional = stadiumRepository.findById(stadiumId);
+
+		// then
+		assertThat(foundStadiumOptional).isPresent();
+
+		Stadium foundStadium = foundStadiumOptional.get();
+		assertThat(foundStadium.getId()).isEqualTo(stadiumId);
+		assertThat(foundStadium.getName()).isEqualTo("서울월드컵경기장");
+		assertThat(foundStadium.getAddress()).isEqualTo("서울시 마포구 성산동");
+	}
+}
