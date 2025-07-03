@@ -1,0 +1,91 @@
+name: Reusable Build and Test
+
+# 이 워크플로우가 다른 워크플로우에 의해 호출될 때 실행되도록 설정합니다.
+on:
+  workflow_call:
+    # 호출하는 워크플로우로부터 전달받을 입력값(input)을 정의합니다.
+    inputs:
+      module-name:
+        required: true
+        type: string
+      module-path:
+        required: true
+        type: string
+    # 호출하는 워크플로우로부터 전달받을 시크릿(secret)을 정의합니다.
+    secrets:
+      APPLICATION_YML:
+        description: 'application.yml 파일 내용'
+        required: true
+      APPLICATION_DEV_YML:
+        description: 'application-dev.yml 파일 내용'
+        required: false
+      APPLICATION_DEV_DB_YML:
+        description: 'application-dev-db.yml 파일 내용'
+        required: false
+      APPLICATION_DEV_MAIL_YML:
+        description: 'application-dev-mail.yml 파일 내용'
+        required: false
+      APPLICATION_TEST_YML:
+        description: 'application-test.yml 파일 내용'
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 레포지토리 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 21 설정 및 Gradle 캐시
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 설정 파일 생성
+        env:
+          SECRET_CONFIG_YML: ${{ secrets.APPLICATION_YML }}
+          SECRET_CONFIG_DEV_YML: ${{ secrets.APPLICATION_DEV_YML }}
+          SECRET_CONFIG_DEV_DB_YML: ${{ secrets.APPLICATION_DEV_DB_YML }}
+          SECRET_CONFIG_DEV_MAIL_YML: ${{ secrets.APPLICATION_DEV_MAIL_YML }}
+          SECRET_CONFIG_TEST_YML: ${{ secrets.APPLICATION_TEST_YML }}
+        run: |
+          mkdir -p ./${{ inputs.module-path }}/src/main/resources
+          # 이제 secrets 대신 안전하게 환경 변수를 사용합니다.
+          echo "$SECRET_CONFIG_YML" > ./${{ inputs.module-path }}/src/main/resources/application.yml
+          
+          if [ -n "$SECRET_CONFIG_DEV_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev.yml
+          fi
+          if [ -n "$SECRET_CONFIG_DEV_DB_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_DB_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev-db.yml
+          fi
+          if [ -n "$SECRET_CONFIG_DEV_MAIL_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_MAIL_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev-mail.yml
+          fi
+          
+          if [ -n "$SECRET_CONFIG_TEST_YML" ]; then
+            mkdir -p ./${{ inputs.module-path }}/src/test/resources
+            echo "$SECRET_CONFIG_TEST_YML" > ./${{ inputs.module-path }}/src/test/resources/application-test.yml
+          fi
+
+      - name: 설정 파일 유효성 검사
+        run: |
+          for file in $(find ./${{ inputs.module-path }} -name "*.yml"); do
+            echo "Validating $file ..."
+            python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
+          done
+
+      - name: 빌드 및 테스트 (${{ inputs.module-name }})
+        run: ./gradlew :${{ inputs.module-path }}:build --stacktrace
+
+      - name: 테스트 리포트 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ inputs.module-name }}
+          path: ${{ inputs.module-path }}/build/reports/tests/test/
