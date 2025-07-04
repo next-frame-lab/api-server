@@ -3,12 +3,13 @@ package wisoft.nextframe.payment;
 import static org.assertj.core.api.Assertions.*;
 import static wisoft.nextframe.payment.TestPaymentFactory.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import wisoft.nextframe.common.Money;
 
 @DisplayName("Payment 도메인 단위 테스트")
 class PaymentTest {
@@ -23,7 +24,7 @@ class PaymentTest {
 	@Test
 	@DisplayName("결제 금액이 0 이하일 경우 예외가 발생한다")
 	void denyPayment_amountNonPositive() {
-		assertThatThrownBy(() -> requestedWithAmount(BigDecimal.valueOf(-10000)))
+		assertThatThrownBy(() -> requestedWithAmount(Money.of( -10000)))
 			.isInstanceOf(RuntimeException.class)
 			.hasMessage("결제 금액은 0보다 커야 합니다.");
 
@@ -32,7 +33,7 @@ class PaymentTest {
 	@Test
 	@DisplayName("결제 금액이 최대값(1천만 원 이상)을 초과하면 예외가 발생한다")
 	void denyPayment_amountExceedsLimit() {
-		assertThatThrownBy(() -> requestedWithAmount(BigDecimal.valueOf(10_000_000)))
+		assertThatThrownBy(() -> requestedWithAmount(Money.of( 10_000_001)))
 			.isInstanceOf(RuntimeException.class)
 			.hasMessage("결제 금액은 최대 1천만 원 미만이어야 합니다.");
 	}
@@ -40,7 +41,7 @@ class PaymentTest {
 	@Test
 	@DisplayName("예매 정보가 null이면 결제 생성 시 예외가 발생한다")
 	void denyPayment_reservationNull() {
-		assertThatThrownBy(() -> Payment.request(BigDecimal.valueOf(10000), null))
+		assertThatThrownBy(() -> requestedWithReservationId(null))
 			.isInstanceOf(RuntimeException.class)
 			.hasMessage("결제를 위해서는 예매 정보가 필요합니다.");
 	}
@@ -76,7 +77,7 @@ class PaymentTest {
 		void confirmPayment_paidStatus() {
 			Payment payment = requested();
 			payment.markAsSucceed();
-			payment.confirmPayment();
+			payment.confirm();
 
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
 		}

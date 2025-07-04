@@ -1,40 +1,59 @@
 package wisoft.nextframe.payment;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
+import lombok.Getter;
+import wisoft.nextframe.common.Money;
+import wisoft.nextframe.payment.refund.Refund;
+import wisoft.nextframe.reservation.ReservationId;
+
+@Getter
 public class Payment {
-	private final UUID reservationId;
-	private BigDecimal amount;
+	private static final Money MAX_AMOUNT = Money.of(10_000_000);
+
+	private final ReservationId reservationId;
+	private final Money amount;
 	private PaymentStatus status;
-	private LocalDateTime requestedAt;
+	private final LocalDateTime requestedAt;
+	private Refund currentRefund;
 
-	private static final BigDecimal MAX_AMOUNT = BigDecimal.valueOf(10_000_000);
-
-	public Payment(BigDecimal amount, LocalDateTime requestedAt, UUID reservationId) {
+	private Payment(Money amount, LocalDateTime requestedAt, ReservationId reservationId) {
 		this.amount = amount;
 		this.reservationId = reservationId;
 		this.status = PaymentStatus.REQUESTED; // 초기 상태는 REQUESTED
 		this.requestedAt = requestedAt;
 	}
 
-	public static Payment request(BigDecimal amount, UUID reservationId, LocalDateTime requestedAt) {
+	public static Payment request(Money amount, ReservationId reservationId, LocalDateTime requestedAt) {
 		if (reservationId == null) {
 			throw new RuntimeException("결제를 위해서는 예매 정보가 필요합니다.");
 		}
-		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+		if (amount == null || !amount.isPositive()) {
 			throw new RuntimeException("결제 금액은 0보다 커야 합니다.");
 		}
-		if (amount.compareTo(MAX_AMOUNT) >= 0) {
+		if (amount.isGreaterThan(MAX_AMOUNT)) {
 			throw new RuntimeException("결제 금액은 최대 1천만 원 미만이어야 합니다.");
 		}
 
 		return new Payment(amount, requestedAt, reservationId);
 	}
 
-	public static Payment request(BigDecimal amount, UUID reservationId) {
-		return request(amount, reservationId, LocalDateTime.now());
+	public Refund refund(LocalDateTime requestAt, LocalDateTime contentStartsAt) {
+		validatePaymentIsPaid();
+		if (this.currentRefund != null) {
+			throw new IllegalStateException("이미 환불된 결제입니다.");
+		}
+		Refund newRefund = Refund.issue(requestAt, contentStartsAt, amount);
+		newRefund.validateRefundable();
+
+		this.currentRefund = newRefund;
+		return currentRefund;
+	}
+
+	private void validatePaymentIsPaid() {
+		if (!isPaid()) {
+			throw new RuntimeException("결제되지 않은 건은 환불할 수 없습니다.");
+		}
 	}
 
 	public void markAsSucceed() {
@@ -48,7 +67,7 @@ public class Payment {
 		this.status = PaymentStatus.SUCCEEDED;
 	}
 
-	public void confirmPayment() {
+	public void confirm() {
 		if (this.status != PaymentStatus.SUCCEEDED) {
 			throw new IllegalStateException("결제가 완료되지 않았습니다.");
 		}
@@ -70,15 +89,4 @@ public class Payment {
 		}
 	}
 
-	public PaymentStatus getStatus() {
-		return status;
-	}
-
-	public UUID getReservationId() {
-		return reservationId;
-	}
-
-	public BigDecimal getAmount() {
-		return amount;
-	}
 }

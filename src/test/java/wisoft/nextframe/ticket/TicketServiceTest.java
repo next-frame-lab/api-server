@@ -46,7 +46,7 @@ public class TicketServiceTest {
 		String qr = ticket.getQrCode();
 
 		// QR은 "QR-<reservationId>-<ticketUUID>" 형식이어야 한다
-		assertThat(qr).startsWith("QR-" + payment.getReservationId() + "-");
+		assertThat(qr).startsWith("QR-" + payment.getReservationId().toString() + "-");
 
 		String[] parts = qr.split("-");
 		// UUID는 하이픈이 포함된 구조이므로, 전체 QR은 11조각 이상이어야 한다

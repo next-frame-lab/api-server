@@ -15,7 +15,7 @@ public class TicketTest {
 	void createTicketWithQrAndIssuedAt() {
 		Payment payment = mock(Payment.class);
 
-		Ticket ticket = Ticket.createFrom(payment);
+		Ticket ticket = Ticket.issueFrom(payment);
 
 		assertThat(ticket.getQrCode()).startsWith("QR-");
 		assertThat(ticket.getIssuedAt()).isNotNull();
