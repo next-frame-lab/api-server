@@ -1,7 +1,9 @@
-package wisoft.nextframe.refund;
+package wisoft.nextframe.payment.refund;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import wisoft.nextframe.common.Money;
 
 public enum RefundPolicyStatus {
 	REFUND_DENY(0.0),
@@ -14,7 +16,7 @@ public enum RefundPolicyStatus {
 		this.ratio = ratio;
 	}
 
-	public BigDecimal calculateRefund(BigDecimal amount) {
+	public Money calculateRefund(Money amount) {
 		return amount.multiply(BigDecimal.valueOf(ratio));
 	}
 
