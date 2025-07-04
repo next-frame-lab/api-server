@@ -46,4 +46,9 @@ public class SeatFixture {
 	public static Set<Seat> lockedSeats() {
 		return lockedSeats("일반", "A", 1, 3);
 	}
+
+	public static Set<Seat> multipleSeats(int count) {
+		return availableSeats("일반", "A", 1, count);
+	}
+
 }
