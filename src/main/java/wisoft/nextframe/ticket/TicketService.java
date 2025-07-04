@@ -12,6 +12,6 @@ public class TicketService {
 			throw new IllegalStateException("결제 완료된 상태가 아닙니다.");
 		}
 
-		return Ticket.createFrom(payment); // QR 생성, 유효성 등 내부 처리
+		return Ticket.issueFrom(payment); // QR 생성, 유효성 등 내부 처리
 	}
 }
