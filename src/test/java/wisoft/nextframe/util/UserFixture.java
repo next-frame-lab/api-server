@@ -13,7 +13,7 @@ public class UserFixture {
 	private UserFixture() {
 	}
 
-	public static User create() {
+	public static User defaultUser() {
 		return create(DEFAULT_NAME, DEFAULT_AGE, DEFAULT_PHONE_NUMBER, DEFAULT_EMAIL, DEFAULT_FACE_ID);
 	}
 

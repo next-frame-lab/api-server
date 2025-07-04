@@ -4,9 +4,6 @@ import java.util.Set;
 
 import lombok.Getter;
 import wisoft.nextframe.performance.Performance;
-import wisoft.nextframe.policy.PerformancePolicy;
-import wisoft.nextframe.policy.ReservationPolicy;
-import wisoft.nextframe.policy.SeatPolicy;
 import wisoft.nextframe.seat.Seat;
 import wisoft.nextframe.stadium.Stadium;
 import wisoft.nextframe.user.User;
@@ -27,9 +24,7 @@ public class Reservation {
 	}
 
 	public static Reservation create(User user, Performance performance, Set<Seat> selectedSeats, Long elapsedTime) {
-		PerformancePolicy.validate(user, performance);
-		SeatPolicy.validate(selectedSeats, performance.getStadium());
-		ReservationPolicy.validate(elapsedTime);
+		ReservationPolicy.validateBeforeReservation(user, performance, selectedSeats, elapsedTime);
 
 		selectedSeats.forEach(Seat::lock);
 
@@ -38,7 +33,7 @@ public class Reservation {
 			user,
 			selectedSeats,
 			ReservationStatus.CREATED
-			);
+		);
 	}
 
 	public void changeStatusTo(TransitionType transition) {

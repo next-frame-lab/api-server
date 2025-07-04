@@ -36,4 +36,8 @@ public class StadiumFixture {
 		Map<String, Integer> sectionPrice) {
 		return new Stadium(name, address, availableSeats, sectionPrice);
 	}
+
+	public static Stadium withSeats(Set<Seat> availableSeats) {
+		return create(DEFAULT_NAME, DEFAULT_ADDRESS, availableSeats, DEFAULT_SECTION_PRICE);
+	}
 }
