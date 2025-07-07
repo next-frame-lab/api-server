@@ -3,6 +3,7 @@ package wisoft.nextframe.common;
 import java.math.BigDecimal;
 
 import lombok.Getter;
+import wisoft.nextframe.common.exception.InvalidAmountException;
 
 @Getter
 public class Money {
@@ -16,11 +17,8 @@ public class Money {
 	public static Money of(long amount) {
 		BigDecimal decimalAmount = BigDecimal.valueOf(amount);
 
-		if (decimalAmount == null) {
-			throw new IllegalArgumentException("금액은 null일 수 없습니다.");
-		}
 		if (decimalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");
+			throw new InvalidAmountException();
 		}
 		return new Money(decimalAmount);
 	}
