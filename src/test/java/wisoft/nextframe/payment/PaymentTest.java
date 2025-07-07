@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.common.Money;
+import wisoft.nextframe.common.exception.InvalidAmountException;
+import wisoft.nextframe.payment.exception.MissingReservationException;
+import wisoft.nextframe.payment.exception.PaymentAlreadySucceededException;
+import wisoft.nextframe.payment.exception.TooLargeAmountException;
 
 @DisplayName("Payment 도메인 단위 테스트")
 class PaymentTest {
@@ -25,7 +29,7 @@ class PaymentTest {
 	@DisplayName("결제 금액이 0 이하일 경우 예외가 발생한다")
 	void denyPayment_amountNonPositive() {
 		assertThatThrownBy(() -> requestedWithAmount(Money.of( -10000)))
-			.isInstanceOf(RuntimeException.class)
+			.isInstanceOf(InvalidAmountException.class)
 			.hasMessage("결제 금액은 0보다 커야 합니다.");
 
 	}
@@ -34,7 +38,7 @@ class PaymentTest {
 	@DisplayName("결제 금액이 최대값(1천만 원 이상)을 초과하면 예외가 발생한다")
 	void denyPayment_amountExceedsLimit() {
 		assertThatThrownBy(() -> requestedWithAmount(Money.of( 10_000_001)))
-			.isInstanceOf(RuntimeException.class)
+			.isInstanceOf(TooLargeAmountException.class)
 			.hasMessage("결제 금액은 최대 1천만 원 미만이어야 합니다.");
 	}
 
@@ -42,7 +46,7 @@ class PaymentTest {
 	@DisplayName("예매 정보가 null이면 결제 생성 시 예외가 발생한다")
 	void denyPayment_reservationNull() {
 		assertThatThrownBy(() -> requestedWithReservationId(null))
-			.isInstanceOf(RuntimeException.class)
+			.isInstanceOf(MissingReservationException.class)
 			.hasMessage("결제를 위해서는 예매 정보가 필요합니다.");
 	}
 
@@ -68,7 +72,7 @@ class PaymentTest {
 			payment.markAsSucceed();
 
 			assertThatThrownBy(payment::markAsSucceed)
-				.isInstanceOf(RuntimeException.class)
+				.isInstanceOf(PaymentAlreadySucceededException.class)
 				.hasMessage("이미 결제 성공 처리된 건입니다.");
 		}
 

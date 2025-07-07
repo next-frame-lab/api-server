@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import lombok.Getter;
 import wisoft.nextframe.common.Money;
+import wisoft.nextframe.payment.refund.exception.InvalidRefundStatusException;
+import wisoft.nextframe.payment.refund.exception.NotRefundableException;
 
 // 상태 결정만 담당, 값 객체
 @Getter
@@ -32,20 +34,20 @@ public class Refund {
 
 	public void validateRefundable() {
 		if (!policyStatus.isRefundable()) {
-			throw new RuntimeException("공연 시작 1시간 전에는 환불할 수 없습니다.");
+			throw new NotRefundableException();
 		}
 	}
 
 	public void approve() {
 		if (this.status != RefundStatus.REQUESTED) {
-			throw new RuntimeException("승인은 REQUESTED 상태에서만 가능합니다.");
+			throw new InvalidRefundStatusException("승인");
 		}
 		this.status = RefundStatus.APPROVED;
 	}
 
 	public void reject() {
 		if (this.status != RefundStatus.REQUESTED) {
-			throw new RuntimeException("거절은 REQUESTED 상태에서만 가능합니다.");
+			throw new InvalidRefundStatusException("거절");
 		}
 		this.status = RefundStatus.REJECTED;
 	}

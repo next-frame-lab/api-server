@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import wisoft.nextframe.common.exception.InvalidAmountException;
+
 class MoneyTest {
 
 	@Test
@@ -20,11 +22,11 @@ class MoneyTest {
 	@DisplayName("0 이하의 금액으로 Money를 생성하면 예외가 발생한다")
 	void createMoneyWithZeroOrNegativeAmountThrowsException() {
 		assertThatThrownBy(() -> Money.of(0L))
-			.isInstanceOf(IllegalArgumentException.class)
+			.isInstanceOf(InvalidAmountException.class)
 			.hasMessageContaining("결제 금액은 0보다 커야 합니다.");
 
 		assertThatThrownBy(() -> Money.of(-100L))
-			.isInstanceOf(IllegalArgumentException.class)
+			.isInstanceOf(InvalidAmountException.class)
 			.hasMessageContaining("결제 금액은 0보다 커야 합니다.");
 	}
 

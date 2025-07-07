@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.Payment;
 import wisoft.nextframe.payment.TestPaymentFactory;
+import wisoft.nextframe.ticket.exception.CannotIssueTicketWithoutPaymentException;
 
 public class TicketServiceTest {
 
@@ -32,8 +33,8 @@ public class TicketServiceTest {
 		when(payment.isPaid()).thenReturn(false); // 조건 위반
 
 		assertThatThrownBy(() -> ticketService.issue(payment))
-			.isInstanceOf(IllegalStateException.class)
-			.hasMessageContaining("결제 완료된 상태가 아닙니다.");
+			.isInstanceOf(CannotIssueTicketWithoutPaymentException.class)
+			.hasMessageContaining("결제 완료된 상태가 아닐 경우, 티켓을 발급할 수 없습니다.");
 	}
 
 	@Test

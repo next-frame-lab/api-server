@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 
 import lombok.Getter;
 import wisoft.nextframe.common.Money;
+import wisoft.nextframe.common.exception.InvalidAmountException;
+import wisoft.nextframe.payment.exception.InvalidPaymentStatusException;
+import wisoft.nextframe.payment.exception.MissingReservationException;
+import wisoft.nextframe.payment.exception.PaymentAlreadySucceededException;
+import wisoft.nextframe.payment.exception.TooLargeAmountException;
 import wisoft.nextframe.payment.refund.Refund;
 import wisoft.nextframe.reservation.ReservationId;
 
@@ -26,50 +31,40 @@ public class Payment {
 
 	public static Payment request(Money amount, ReservationId reservationId, LocalDateTime requestedAt) {
 		if (reservationId == null) {
-			throw new RuntimeException("결제를 위해서는 예매 정보가 필요합니다.");
+			throw new MissingReservationException();
 		}
 		if (amount == null || !amount.isPositive()) {
-			throw new RuntimeException("결제 금액은 0보다 커야 합니다.");
+			throw new InvalidAmountException();
 		}
 		if (amount.isGreaterThan(MAX_AMOUNT)) {
-			throw new RuntimeException("결제 금액은 최대 1천만 원 미만이어야 합니다.");
+			throw new TooLargeAmountException();
 		}
 
 		return new Payment(amount, requestedAt, reservationId);
 	}
 
-	public Refund refund(LocalDateTime requestAt, LocalDateTime contentStartsAt) {
-		validatePaymentIsPaid();
-		if (this.currentRefund != null) {
-			throw new IllegalStateException("이미 환불된 결제입니다.");
-		}
-		Refund newRefund = Refund.issue(requestAt, contentStartsAt, amount);
-		newRefund.validateRefundable();
-
-		this.currentRefund = newRefund;
-		return currentRefund;
+	public boolean hasRefunded() {
+		return this.currentRefund != null;
 	}
 
-	private void validatePaymentIsPaid() {
-		if (!isPaid()) {
-			throw new RuntimeException("결제되지 않은 건은 환불할 수 없습니다.");
-		}
+	public void assignRefund(Refund refund) {
+		this.currentRefund = refund;
 	}
 
 	public void markAsSucceed() {
 		if (this.status == PaymentStatus.SUCCEEDED || this.status == PaymentStatus.PAID) {
-			throw new RuntimeException("이미 결제 성공 처리된 건입니다.");
+			throw new PaymentAlreadySucceededException();
 		}
 
 		if (this.status == PaymentStatus.FAILED) {
-			throw new RuntimeException("결제 요청 상태가 아닙니다. 결제 요청 후에만 성공 처리가 가능합니다.");
+			throw new InvalidPaymentStatusException("결제 성공", status, PaymentStatus.REQUESTED);
 		}
 		this.status = PaymentStatus.SUCCEEDED;
 	}
 
 	public void confirm() {
 		if (this.status != PaymentStatus.SUCCEEDED) {
-			throw new IllegalStateException("결제가 완료되지 않았습니다.");
+			throw new InvalidPaymentStatusException("결제 확정", status, PaymentStatus.SUCCEEDED);
 		}
 		this.status = PaymentStatus.PAID;
 	}
