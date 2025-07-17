@@ -1,11 +1,12 @@
 package wisoft.nextframe.reservation;
 
-import java.util.Objects;
 import java.util.UUID;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode
 public class ReservationId {
 	private final UUID value;
 
@@ -14,24 +15,11 @@ public class ReservationId {
 	}
 
 	public static ReservationId of(UUID value) {
-		if (value == null) {
-			throw new IllegalArgumentException("ReservationId cannot be null");
-		}
 		return new ReservationId(value);
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		ReservationId that = (ReservationId)obj;
-		return Objects.equals(value, that.value);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(value);
+	public static ReservationId generate() {
+		return new ReservationId(UUID.randomUUID());
 	}
 
 	@Override

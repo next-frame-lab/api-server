@@ -6,60 +6,51 @@ import lombok.Getter;
 import wisoft.nextframe.stadium.Stadium;
 import wisoft.nextframe.user.User;
 
-@Getter
 public class Performance {
 
-	private final PerformanceInfo info;
-	private final PerformanceDetail detail;
+	private final PerformanceId id;
+	private final PerformanceProfile profile; // 공연 기본 정보
 	private final Schedule schedule;
+	@Getter
 	private final int basePrice;
+	@Getter
 	private final Stadium stadium;
-	private final ReservationWindow reservationWindow;
+	private final ReservablePeriod reservablePeriod;
 
 	private Performance(
-		PerformanceInfo info,
-		PerformanceDetail detail,
+		PerformanceId id, PerformanceProfile profile,
 		Schedule schedule,
 		int basePrice,
 		Stadium stadium,
-		ReservationWindow reservationWindow
+		ReservablePeriod reservablePeriod
 	) {
-		this.info = info;
-		this.detail = detail;
+		this.id = id;
+		this.profile = profile;
 		this.schedule = schedule;
 		this.basePrice = basePrice;
 		this.stadium = stadium;
-		this.reservationWindow = reservationWindow;
+		this.reservablePeriod = reservablePeriod;
 	}
 
 	public static Performance create(
-		PerformanceInfo info,
-		PerformanceDetail detail,
+		PerformanceProfile profile,
 		Schedule schedule,
 		int basePrice,
 		Stadium stadium,
-		ReservationWindow reservationWindow
+		ReservablePeriod reservablePeriod
 	) {
-		return new Performance(info, detail, schedule, basePrice, stadium, reservationWindow);
+		return new Performance(PerformanceId.generate(), profile, schedule, basePrice, stadium, reservablePeriod);
 	}
 
 	public boolean isReservableBy(User user) {
-		return detail.isReservableBy(user);
+		return profile.isReservableBy(user);
 	}
 
 	public boolean isStarted() {
-		return schedule.hasStarted(LocalDateTime.now().withNano(0));
+		return schedule.hasStarted(LocalDateTime.now());
 	}
 
 	public boolean isReservableNow() {
-		return reservationWindow.isOpen(LocalDateTime.now().withNano(0));
-	}
-
-	public int getBasePrice() {
-		return basePrice;
-	}
-
-	public Stadium getStadium() {
-		return stadium;
+		return reservablePeriod.isOpen(LocalDateTime.now());
 	}
 }

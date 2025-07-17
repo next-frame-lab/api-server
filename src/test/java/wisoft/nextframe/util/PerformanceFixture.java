@@ -4,34 +4,38 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import wisoft.nextframe.performance.Performance;
-import wisoft.nextframe.performance.PerformanceDetail;
 import wisoft.nextframe.performance.PerformanceGenre;
-import wisoft.nextframe.performance.PerformanceInfo;
+import wisoft.nextframe.performance.PerformanceProfile;
 import wisoft.nextframe.performance.PerformanceType;
-import wisoft.nextframe.performance.ReservationWindow;
+import wisoft.nextframe.performance.ReservablePeriod;
 import wisoft.nextframe.performance.Schedule;
 import wisoft.nextframe.stadium.Stadium;
 
 public class PerformanceFixture {
 
-	private static final PerformanceInfo DEFAULT_INFO = new PerformanceInfo(
-		"공연",
-		"명불허전 가수의 공연입니다.",
-		"performance.jpg"
-	);
-	private static final PerformanceDetail DEFAULT_DETAIL = new PerformanceDetail(
-		PerformanceGenre.CLASSIC,
-		PerformanceType.HORROR,
-		false
-	);
+	private static final String DEFAULT_NAME = "공연";
+	private static final String DEFAULT_DESCRIPTION = "명불허전 가수의 공연입니다.";
+	private static final String DEFAULT_IMAGE = "performance.jpg";
+	private static final PerformanceGenre DEFAULT_GENRE = PerformanceGenre.CLASSIC;
+	private static final PerformanceType DEFAULT_TYPE = PerformanceType.HORROR;
+	private static final boolean NOT_ADULT_ONLY = false;
+	private static final boolean ADULT_ONLY = true;
+
 	private static final Schedule DEFAULT_SCHEDULE = new Schedule(
 		LocalDateTime.now().plusWeeks(3),
 		Duration.ofHours(3)
 	);
-	private static final ReservationWindow DEFAULT_RESERVATION_WINDOW = new ReservationWindow(
+
+	private static final ReservablePeriod OPEN_RESERVATION = new ReservablePeriod(
 		LocalDateTime.now().minusHours(1),
 		LocalDateTime.now().plusHours(1)
 	);
+
+	private static final ReservablePeriod CLOSED_RESERVATION = new ReservablePeriod(
+		LocalDateTime.now().minusDays(4),
+		LocalDateTime.now().minusDays(3)
+	);
+
 	private static final int DEFAULT_BASE_PRICE = 130_000;
 	private static final Stadium DEFAULT_STADIUM = StadiumFixture.defaultStadium();
 
@@ -39,72 +43,43 @@ public class PerformanceFixture {
 	}
 
 	public static Performance defaultPerformance() {
-		return create(DEFAULT_INFO, DEFAULT_DETAIL,
-			DEFAULT_SCHEDULE, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			DEFAULT_RESERVATION_WINDOW);
+		return createPerformance(NOT_ADULT_ONLY, DEFAULT_SCHEDULE, OPEN_RESERVATION);
 	}
 
-	public static Performance createWith(int price, Stadium stadium) {
-		return create(DEFAULT_INFO, DEFAULT_DETAIL,
-			DEFAULT_SCHEDULE, price, stadium,
-			DEFAULT_RESERVATION_WINDOW);
+	public static Performance withBasePriceAndStadium(int basePrice, Stadium stadium) {
+		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, basePrice, stadium, OPEN_RESERVATION);
 	}
 
-	public static Performance createWith(LocalDateTime reservationStartTime, LocalDateTime reservationEndTime) {
-		ReservationWindow reservationWindow = new ReservationWindow(
-			reservationStartTime,
-			reservationEndTime
+	public static Performance adultOnlyPerformance() {
+		return createPerformance(ADULT_ONLY, DEFAULT_SCHEDULE, OPEN_RESERVATION);
+	}
+
+	public static Performance alreadyStartedPerformance() {
+		Schedule started = new Schedule(LocalDateTime.now().minusHours(2), Duration.ofHours(3));
+		return createPerformance(NOT_ADULT_ONLY, started, OPEN_RESERVATION);
+	}
+
+	public static Performance reservationClosedPerformance() {
+		return createPerformance(NOT_ADULT_ONLY, DEFAULT_SCHEDULE, CLOSED_RESERVATION);
+	}
+
+	public static Performance reservationOpenPerformance() {
+		return createPerformance(NOT_ADULT_ONLY, DEFAULT_SCHEDULE, OPEN_RESERVATION);
+	}
+
+	private static Performance createPerformance(boolean adultOnly, Schedule schedule, ReservablePeriod period) {
+		return Performance.create(defaultProfile(adultOnly), schedule, DEFAULT_BASE_PRICE, DEFAULT_STADIUM, period);
+	}
+
+	private static PerformanceProfile defaultProfile(boolean adultOnly) {
+		return new PerformanceProfile(
+			DEFAULT_NAME,
+			DEFAULT_DESCRIPTION,
+			DEFAULT_IMAGE,
+			DEFAULT_GENRE,
+			DEFAULT_TYPE,
+			adultOnly
 		);
-		return create(DEFAULT_INFO, DEFAULT_DETAIL,
-			DEFAULT_SCHEDULE, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			reservationWindow);
-	}
-
-	public static Performance adultOnly() {
-		PerformanceDetail detail = new PerformanceDetail(
-			PerformanceGenre.CLASSIC,
-			PerformanceType.HORROR,
-			true
-		);
-		return create(DEFAULT_INFO, detail,
-			DEFAULT_SCHEDULE, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			DEFAULT_RESERVATION_WINDOW);
-	}
-
-	public static Performance started() {
-		Schedule schedule = new Schedule(
-			LocalDateTime.now().minusHours(2),
-			Duration.ofHours(3)
-		);
-		return create(DEFAULT_INFO, DEFAULT_DETAIL, schedule, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			DEFAULT_RESERVATION_WINDOW);
-	}
-
-	public static Performance notYetOpened() {
-		ReservationWindow reservationWindow = new ReservationWindow(
-			LocalDateTime.now().plusHours(1),
-			LocalDateTime.now().plusHours(5)
-		);
-		return create(DEFAULT_INFO, DEFAULT_DETAIL, DEFAULT_SCHEDULE, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			reservationWindow);
-	}
-
-	public static Performance ended() {
-		ReservationWindow reservationWindow = new ReservationWindow(
-			LocalDateTime.now().minusDays(4),
-			LocalDateTime.now().minusDays(3)
-		);
-		return create(DEFAULT_INFO, DEFAULT_DETAIL, DEFAULT_SCHEDULE, DEFAULT_BASE_PRICE, DEFAULT_STADIUM,
-			reservationWindow);
-	}
-
-	private static Performance create(
-		PerformanceInfo info,
-		PerformanceDetail detail,
-		Schedule schedule,
-		int basePrice,
-		Stadium stadium,
-		ReservationWindow reservationWindow) {
-		return Performance.create(info, detail, schedule, basePrice, stadium, reservationWindow);
 	}
 }
+
