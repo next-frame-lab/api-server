@@ -5,51 +5,49 @@ import java.util.Set;
 import lombok.Getter;
 import wisoft.nextframe.performance.Performance;
 import wisoft.nextframe.seat.Seat;
-import wisoft.nextframe.stadium.Stadium;
 import wisoft.nextframe.user.User;
 
 @Getter
 public class Reservation {
 
+	private final ReservationId id;
 	private final Performance performance;
 	private final User user;
 	private final Set<Seat> reservedSeats;
+	private final int totalPrice;
 	private ReservationStatus status;
 
-	private Reservation(Performance performance, User user, Set<Seat> reservedSeats, ReservationStatus status) {
+	private Reservation(
+		ReservationId id,
+		Performance performance,
+		User user,
+		Set<Seat> reservedSeats,
+		int totalPrice,
+		ReservationStatus status
+	) {
+		this.id = id;
 		this.performance = performance;
 		this.user = user;
 		this.reservedSeats = reservedSeats;
+		this.totalPrice = totalPrice;
 		this.status = status;
 	}
 
-	public static Reservation create(User user, Performance performance, Set<Seat> selectedSeats, Long elapsedTime) {
-		ReservationPolicy.validateBeforeReservation(user, performance, selectedSeats, elapsedTime);
-
-		selectedSeats.forEach(Seat::lock);
-
+	public static Reservation create(User user, Performance performance, Set<Seat> selectedSeats, int totalPrice) {
 		return new Reservation(
+			ReservationId.generate(),
 			performance,
 			user,
 			selectedSeats,
-			ReservationStatus.CREATED
-		);
+			totalPrice,
+			ReservationStatus.CREATED);
 	}
 
-	public void changeStatusTo(TransitionType transition) {
-		this.status = this.status.transitionTo(transition);
-
-		if (transition == TransitionType.CANCEL) {
-			this.reservedSeats.forEach(Seat::unlock);
-		}
+	public void cancel() {
+		this.status = this.status.cancel();
 	}
 
-	public int calculateReservationPrice() {
-		final int basePrice = performance.getBasePrice();
-		Stadium stadium = performance.getStadium();
-
-		return reservedSeats.stream()
-			.mapToInt(seat -> basePrice + stadium.getPriceBySection(seat.getSection()))
-			.sum();
+	public void confirm() {
+		this.status = this.status.confirm();
 	}
 }

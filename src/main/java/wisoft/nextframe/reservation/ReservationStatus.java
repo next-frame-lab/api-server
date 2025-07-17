@@ -1,5 +1,9 @@
 package wisoft.nextframe.reservation;
 
+import wisoft.nextframe.reservation.exception.CannotConfirmCanceledReservationException;
+import wisoft.nextframe.reservation.exception.ReservationAlreadyCanceledException;
+import wisoft.nextframe.reservation.exception.ReservationAlreadyConfirmedException;
+
 public enum ReservationStatus {
 
 	CREATED {
@@ -17,7 +21,7 @@ public enum ReservationStatus {
 	CONFIRMED {
 		@Override
 		public ReservationStatus confirm() {
-			throw new IllegalStateException("이미 확정된 예매입니다.");
+			throw new ReservationAlreadyConfirmedException();
 		}
 
 		@Override
@@ -29,23 +33,16 @@ public enum ReservationStatus {
 	CANCELED {
 		@Override
 		public ReservationStatus confirm() {
-			throw new IllegalStateException("취소된 예매는 확정할 수 없습니다.");
+			throw new CannotConfirmCanceledReservationException();
 		}
 
 		@Override
 		public ReservationStatus cancel() {
-			throw new IllegalStateException("이미 취소된 예매입니다.");
+			throw new ReservationAlreadyCanceledException();
 		}
 	};
 
 	public abstract ReservationStatus confirm();
 
 	public abstract ReservationStatus cancel();
-
-	public ReservationStatus transitionTo(TransitionType transition) {
-		return switch (transition) {
-			case CONFIRM -> confirm();
-			case CANCEL -> cancel();
-		};
-	}
 }

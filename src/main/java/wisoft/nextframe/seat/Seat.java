@@ -5,19 +5,21 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = {"section", "row", "column"})
 public class Seat {
 
+	private final SeatId id;
 	private final String section;
-	private final String row;
+	private final int row;
 	private final int column;
 	private boolean isLocked = false;
 
-	private Seat(String section, String row, int column) {
+	private Seat(SeatId id, String section, int row, int column) {
+		this.id = id;
 		this.section = section;
 		this.row = row;
 		this.column = column;
 	}
 
-	public static Seat create(String section, String row, int column) {
-		return new Seat(section, row, column);
+	public static Seat create(String section, int row, int column) {
+		return new Seat(SeatId.generate(), section, row, column);
 	}
 
 	public boolean isLocked() {
