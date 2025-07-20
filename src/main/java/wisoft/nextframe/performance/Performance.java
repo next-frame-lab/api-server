@@ -1,8 +1,11 @@
 package wisoft.nextframe.performance;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import lombok.Getter;
+import wisoft.nextframe.common.Money;
+import wisoft.nextframe.seat.Seat;
 import wisoft.nextframe.stadium.Stadium;
 import wisoft.nextframe.user.User;
 
@@ -12,7 +15,7 @@ public class Performance {
 	private final PerformanceProfile profile; // 공연 기본 정보
 	private final Schedule schedule;
 	@Getter
-	private final int basePrice;
+	private final Money basePrice;
 	@Getter
 	private final Stadium stadium;
 	private final ReservablePeriod reservablePeriod;
@@ -20,7 +23,7 @@ public class Performance {
 	private Performance(
 		PerformanceId id, PerformanceProfile profile,
 		Schedule schedule,
-		int basePrice,
+		Money basePrice,
 		Stadium stadium,
 		ReservablePeriod reservablePeriod
 	) {
@@ -35,7 +38,7 @@ public class Performance {
 	public static Performance create(
 		PerformanceProfile profile,
 		Schedule schedule,
-		int basePrice,
+		Money basePrice,
 		Stadium stadium,
 		ReservablePeriod reservablePeriod
 	) {
@@ -52,5 +55,11 @@ public class Performance {
 
 	public boolean isReservableNow() {
 		return reservablePeriod.isOpen(LocalDateTime.now());
+	}
+
+	public Money calculateTotalPrice(Set<Seat> seats) {
+		return seats.stream()
+			.map(seat -> basePrice.plus(stadium.getPriceBySection(seat.getSection())))
+			.reduce(Money.ZERO, Money::plus);
 	}
 }

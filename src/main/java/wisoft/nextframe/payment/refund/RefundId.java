@@ -3,35 +3,23 @@ package wisoft.nextframe.payment.refund;
 import java.util.Objects;
 import java.util.UUID;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode
+@ToString
 public class RefundId {
 	private final UUID value;
 
 	private RefundId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "RefundId는 null일 수 없습니다.");
 	}
 
 	public static RefundId of(UUID value) {
-		if (value == null) {
-			throw new IllegalArgumentException("RefundId cannot be null");
-		}
 		return new RefundId(value);
 	}
 
 	public static RefundId generate() {
 		return new RefundId(UUID.randomUUID());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		RefundId that = (RefundId)obj;
-		return Objects.equals(value, that.value);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(value);
 	}
 }

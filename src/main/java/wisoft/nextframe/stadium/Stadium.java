@@ -3,6 +3,7 @@ package wisoft.nextframe.stadium;
 import java.util.Map;
 import java.util.Set;
 
+import wisoft.nextframe.common.Money;
 import wisoft.nextframe.seat.Seat;
 
 public class Stadium {
@@ -11,9 +12,9 @@ public class Stadium {
 	private final String name;
 	private final String address;
 	private final Set<Seat> availableSeats;
-	private final Map<String, Integer> sectionPrice;
+	private final Map<String, Money> sectionPrice;
 
-	private Stadium(StadiumId id, String name, String address, Set<Seat> availableSeats, Map<String, Integer> sectionPrice) {
+	private Stadium(StadiumId id, String name, String address, Set<Seat> availableSeats, Map<String, Money> sectionPrice) {
 		this.id = id;
 		this.name = name;
 		this.address = address;
@@ -25,12 +26,12 @@ public class Stadium {
 		return availableSeats.contains(seat);
 	}
 
-	public int getPriceBySection(String section) {
-		return sectionPrice.getOrDefault(section, 0);
+	public Money getPriceBySection(String section) {
+		return sectionPrice.getOrDefault(section, Money.ZERO);
 	}
 
 	public static Stadium create(String name, String address, Set<Seat> availableSeats,
-		Map<String, Integer> sectionPrice) {
+		Map<String, Money> sectionPrice) {
 		return new Stadium(StadiumId.generate(), name, address, availableSeats, sectionPrice);
 	}
 }

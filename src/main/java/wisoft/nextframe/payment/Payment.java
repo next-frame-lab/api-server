@@ -14,7 +14,8 @@ import wisoft.nextframe.reservation.ReservationId;
 
 @Getter
 public class Payment {
-	private static final Money MAX_AMOUNT = Money.of(10_000_000);
+	// private static final Money MAX_AMOUNT = Money.of(BigDecimal.valueOf(1_000_000));
+	private static final Money MAX_AMOUNT = Money.of(100000);
 
 	private final ReservationId reservationId;
 	private final Money amount;

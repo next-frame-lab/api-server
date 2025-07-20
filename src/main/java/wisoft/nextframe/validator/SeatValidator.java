@@ -11,6 +11,8 @@ import wisoft.nextframe.stadium.Stadium;
 
 public class SeatValidator {
 
+	private static final int MAX_SEAT_LIMIT = 4;
+
 	public void validate(Set<Seat> seats, Stadium stadium) {
 		validateSeatsCount(seats);
 		validateNotLocked(seats);
@@ -21,7 +23,7 @@ public class SeatValidator {
 		if (seats.isEmpty()) {
 			throw new NoSeatSelectedException();
 		}
-		if (seats.size() > 5) {
+		if (seats.size() > MAX_SEAT_LIMIT) {
 			throw new TooManySeatsSelectedException();
 		}
 	}

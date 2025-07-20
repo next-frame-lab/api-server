@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.performance.Performance;
+import wisoft.nextframe.reservation.ElapsedTime;
 import wisoft.nextframe.reservation.exception.ReservationTimeLimitExceededException;
 import wisoft.nextframe.seat.Seat;
 import wisoft.nextframe.user.User;
@@ -38,7 +39,7 @@ class ReservationValidatorTest {
 	@Test
 	void validate_elapsedTimeExceeded_throwsException() {
 		// given
-		Long elapsedTime = 601L;
+		ElapsedTime elapsedTime = ElapsedTime.of(601L);
 
 		// when and then
 		assertThatThrownBy(() -> validator.validate(user, performance, seats, elapsedTime))
@@ -49,7 +50,7 @@ class ReservationValidatorTest {
 	@Test
 	void validate_elapsedTimeWithinLimit_passes() {
 		// given
-		Long elapsedTime = 600L;
+		ElapsedTime elapsedTime = ElapsedTime.of(600L);
 
 		// when and then
 		assertThatCode(() -> validator.validate(user, performance, seats, elapsedTime))

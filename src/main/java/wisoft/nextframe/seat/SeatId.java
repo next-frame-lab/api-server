@@ -1,18 +1,20 @@
 package wisoft.nextframe.seat;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
-@Getter
 @EqualsAndHashCode
+@ToString
 public class SeatId {
 
 	private final UUID value;
 
 	private SeatId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "SeatId는 null일 수 없습니다.");
 	}
 
 	public static SeatId of(UUID value) {
@@ -23,8 +25,4 @@ public class SeatId {
 		return new SeatId(UUID.randomUUID());
 	}
 
-	@Override
-	public String toString() {
-		return value.toString();
-	}
 }

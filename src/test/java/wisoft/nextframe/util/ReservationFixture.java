@@ -2,6 +2,7 @@ package wisoft.nextframe.util;
 
 import java.util.Set;
 
+import wisoft.nextframe.common.Money;
 import wisoft.nextframe.performance.Performance;
 import wisoft.nextframe.reservation.Reservation;
 import wisoft.nextframe.seat.Seat;
@@ -9,7 +10,7 @@ import wisoft.nextframe.user.User;
 
 public class ReservationFixture {
 
-	private static final int DEFAULT_TOTAL_PRICE = 300_000;
+	private static final Money DEFAULT_TOTAL_PRICE = Money.of(300_000);
 
 	private ReservationFixture() {
 	}
