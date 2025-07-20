@@ -1,17 +1,18 @@
 package wisoft.nextframe.reservation;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.ToString;
 
-@Getter
 @EqualsAndHashCode
+@ToString
 public class ReservationId {
 	private final UUID value;
 
 	private ReservationId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "ReservationId는 null일 수 없습니다.");
 	}
 
 	public static ReservationId of(UUID value) {
@@ -20,10 +21,5 @@ public class ReservationId {
 
 	public static ReservationId generate() {
 		return new ReservationId(UUID.randomUUID());
-	}
-
-	@Override
-	public String toString() {
-		return value.toString();
 	}
 }

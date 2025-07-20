@@ -1,28 +1,26 @@
 package wisoft.nextframe.ticket;
 
+import java.util.Objects;
 import java.util.UUID;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode
+@ToString
 public class TicketId {
 
 	private final UUID value;
 
 	private TicketId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "TicketId는 null일 수 없습니다.");
 	}
 
 	public static TicketId of(UUID value) {
-		if (value == null) {
-			throw new IllegalArgumentException("TicketId cannot be null");
-		}
 		return new TicketId(value);
 	}
 
 	public static TicketId generate() {
 		return new TicketId(UUID.randomUUID());
-	}
-
-	@Override
-	public String toString() {
-		return value.toString();
 	}
 }

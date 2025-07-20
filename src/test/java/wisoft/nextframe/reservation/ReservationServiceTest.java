@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -22,19 +23,27 @@ import wisoft.nextframe.validator.ReservationValidator;
 class ReservationServiceTest {
 
 	ReservationValidator validator = mock(ReservationValidator.class);
-	TotalPricePolicy pricePolicy = mock(TotalPricePolicy.class);
+	ReservationFactory reservationFactory = new ReservationFactory();
+
+	User user;
+	Performance performance;
+	Set<Seat> seats;
+
+	@BeforeEach
+	void setUp() {
+		user = UserFixture.defaultUser();
+		performance = PerformanceFixture.defaultPerformance();
+		seats = SeatFixture.validInStadium();
+	}
 
 	@DisplayName("예매 성공 시 Reservation이 생성되고 좌석이 잠긴다")
 	@Test
 	void createReservation_success_createsReservationAndLocksSeats() {
 		// given
-		User user = UserFixture.defaultUser();
-		Performance performance = PerformanceFixture.defaultPerformance();
-		Set<Seat> seats = SeatFixture.validInStadium();
-		Long elapsedTime = 100L;
+		ElapsedTime elapsedTime = ElapsedTime.of(100L);
 
 		SeatManager seatManager = new SeatManager();
-		ReservationService service = new ReservationService(validator, seatManager, pricePolicy);
+		ReservationService service = new ReservationService(validator, seatManager, reservationFactory);
 
 		// when
 		Reservation reservation = service.createReservation(user, performance, seats, elapsedTime);
@@ -48,13 +57,10 @@ class ReservationServiceTest {
 	@Test
 	void createReservation_validationFails_doesNotLockSeats() {
 		// given
-		User user = UserFixture.adult();
-		Performance performance = PerformanceFixture.defaultPerformance();
-		Set<Seat> seats = SeatFixture.validInStadium();
-		Long elapsedTime = 601L;
+		ElapsedTime elapsedTime = ElapsedTime.of(601L);
 
 		SeatManager seatManager = mock(SeatManager.class);
-		ReservationService service = new ReservationService(validator, seatManager, pricePolicy);
+		ReservationService service = new ReservationService(validator, seatManager, reservationFactory);
 
 		doThrow(new ReservationTimeLimitExceededException())
 			.when(validator).validate(user, performance, seats, elapsedTime);
@@ -70,14 +76,10 @@ class ReservationServiceTest {
 	@Test
 	void unlockSeats_whenReservationIsCanceled() {
 		// given
-		Set<Seat> seats = Set.of(
-			SeatFixture.locked("A", 1, 1),
-			SeatFixture.locked("A", 1, 2)
-		);
 		Reservation reservation = ReservationFixture.withSeats(seats);
 
 		SeatManager seatManager = new SeatManager();
-		ReservationService service = new ReservationService(validator, seatManager, pricePolicy);
+		ReservationService service = new ReservationService(validator, seatManager, reservationFactory);
 
 		// when
 		service.cancelReservation(reservation);

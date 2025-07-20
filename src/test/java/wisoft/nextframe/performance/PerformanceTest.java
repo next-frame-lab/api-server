@@ -1,4 +1,4 @@
-package wisoft.nextframe.reservation;
+package wisoft.nextframe.performance;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -8,35 +8,33 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.performance.Performance;
+import wisoft.nextframe.common.Money;
 import wisoft.nextframe.seat.Seat;
 import wisoft.nextframe.stadium.Stadium;
 import wisoft.nextframe.util.PerformanceFixture;
 import wisoft.nextframe.util.SeatFixture;
 import wisoft.nextframe.util.StadiumFixture;
 
-class TotalPricePolicyTest {
+class PerformanceTest {
 
-	private final TotalPricePolicy policy = new TotalPricePolicy();
-
-	@DisplayName("공연 기본 가격과 공연장 좌석별 추가 가격을 합산하여 총 결제 금액을 계산한다")
+	@DisplayName("좌석 섹션별 추가 요금과 기본 가격을 합산하여 총 금액을 계산한다")
 	@Test
-	void calculate_totalPrice_withBasePriceAndSectionPrice() {
+	void calculateTotalPrice_returnsCorrectAmount() {
 		// given
-		final Map<String, Integer> sectionPrice = Map.of("A", 20_000, "B", 0);
+		final Map<String, Money> sectionPrice = Map.of("A", Money.of(20_000), "B", Money.of(0));
 		final Stadium stadium = StadiumFixture.createWithSectionPrice(sectionPrice);
-		int basePrice = 130_000;
+		final Money basePrice = Money.of(100_000);
 		final Performance performance = PerformanceFixture.withBasePriceAndStadium(basePrice, stadium);
 
 		final Set<Seat> seats = Set.of(
 			SeatFixture.available("A", 1, 1),
-			SeatFixture.available("B", 2, 1)
+			SeatFixture.available("B", 1, 2)
 		);
 
 		// when
-		final int totalPrice = policy.calculate(performance, seats);
+		final Money totalPrice = performance.calculateTotalPrice(seats);
 
 		// then
-		assertThat(totalPrice).isEqualTo((130_000 + 20_000) + 130_000);
+		assertThat(totalPrice).isEqualTo(Money.of((100_000 + 20_000) + 100_000));
 	}
 }

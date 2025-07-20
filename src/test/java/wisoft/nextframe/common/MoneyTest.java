@@ -19,15 +19,11 @@ class MoneyTest {
 	}
 
 	@Test
-	@DisplayName("0 이하의 금액으로 Money를 생성하면 예외가 발생한다")
+	@DisplayName("음수로 Money를 생성하면 예외가 발생한다")
 	void createMoneyWithZeroOrNegativeAmountThrowsException() {
-		assertThatThrownBy(() -> Money.of(0L))
-			.isInstanceOf(InvalidAmountException.class)
-			.hasMessageContaining("결제 금액은 0보다 커야 합니다.");
-
 		assertThatThrownBy(() -> Money.of(-100L))
 			.isInstanceOf(InvalidAmountException.class)
-			.hasMessageContaining("결제 금액은 0보다 커야 합니다.");
+			.hasMessageContaining("금액은 음수일 수 없습니다.");
 	}
 
 	@Test

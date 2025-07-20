@@ -3,6 +3,7 @@ package wisoft.nextframe.util;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import wisoft.nextframe.common.Money;
 import wisoft.nextframe.performance.Performance;
 import wisoft.nextframe.performance.PerformanceGenre;
 import wisoft.nextframe.performance.PerformanceProfile;
@@ -14,8 +15,8 @@ import wisoft.nextframe.stadium.Stadium;
 public class PerformanceFixture {
 
 	private static final String DEFAULT_NAME = "공연";
-	private static final String DEFAULT_DESCRIPTION = "명불허전 가수의 공연입니다.";
-	private static final String DEFAULT_IMAGE = "performance.jpg";
+	private static final String DEFAULT_DESCRIPTION = "유명한 가수의 공연입니다.";
+	private static final String DEFAULT_IMAGE = "https://example.com/images/performance.jpg";
 	private static final PerformanceGenre DEFAULT_GENRE = PerformanceGenre.CLASSIC;
 	private static final PerformanceType DEFAULT_TYPE = PerformanceType.HORROR;
 	private static final boolean NOT_ADULT_ONLY = false;
@@ -36,7 +37,7 @@ public class PerformanceFixture {
 		LocalDateTime.now().minusDays(3)
 	);
 
-	private static final int DEFAULT_BASE_PRICE = 130_000;
+	private static final Money DEFAULT_BASE_PRICE = Money.of(130_000L);
 	private static final Stadium DEFAULT_STADIUM = StadiumFixture.defaultStadium();
 
 	private PerformanceFixture() {
@@ -46,7 +47,7 @@ public class PerformanceFixture {
 		return createPerformance(NOT_ADULT_ONLY, DEFAULT_SCHEDULE, OPEN_RESERVATION);
 	}
 
-	public static Performance withBasePriceAndStadium(int basePrice, Stadium stadium) {
+	public static Performance withBasePriceAndStadium(Money basePrice, Stadium stadium) {
 		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, basePrice, stadium, OPEN_RESERVATION);
 	}
 

@@ -26,11 +26,11 @@ class PaymentTest {
 	}
 
 	@Test
-	@DisplayName("결제 금액이 0 이하일 경우 예외가 발생한다")
+	@DisplayName("결제 금액이 음수일 경우 예외가 발생한다")
 	void denyPayment_amountNonPositive() {
 		assertThatThrownBy(() -> requestedWithAmount(Money.of( -10000)))
 			.isInstanceOf(InvalidAmountException.class)
-			.hasMessage("결제 금액은 0보다 커야 합니다.");
+			.hasMessage("금액은 음수일 수 없습니다.");
 
 	}
 
@@ -107,5 +107,4 @@ class PaymentTest {
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
 		}
 	}
-
 }

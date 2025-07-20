@@ -1,5 +1,6 @@
 package wisoft.nextframe.stadium;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
@@ -12,7 +13,7 @@ public class StadiumId {
 	private final UUID value;
 
 	private StadiumId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "StadiumId는 null일 수 없습니다.");
 	}
 
 	public static StadiumId of(UUID value) {

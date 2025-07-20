@@ -1,13 +1,19 @@
 package wisoft.nextframe.user;
 
+import java.util.Objects;
 import java.util.UUID;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode
+@ToString
 public class UserId {
 
 	private final UUID value;
 
 	private UserId(UUID value) {
-		this.value = value;
+		this.value = Objects.requireNonNull(value, "UserId는 null일 수 없습니다.");
 	}
 
 	public static UserId of(UUID value) {
@@ -16,10 +22,5 @@ public class UserId {
 
 	public static UserId generate() {
 		return new UserId(UUID.randomUUID());
-	}
-
-	@Override
-	public String toString() {
-		return value.toString();
 	}
 }
