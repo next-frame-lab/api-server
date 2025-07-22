@@ -5,9 +5,11 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.reservation.exception.CannotConfirmCanceledReservationException;
-import wisoft.nextframe.reservation.exception.ReservationAlreadyCanceledException;
-import wisoft.nextframe.reservation.exception.ReservationAlreadyConfirmedException;
+import wisoft.nextframe.domain.reservation.Reservation;
+import wisoft.nextframe.domain.reservation.ReservationStatus;
+import wisoft.nextframe.domain.reservation.exception.CannotConfirmCanceledReservationException;
+import wisoft.nextframe.domain.reservation.exception.ReservationAlreadyCanceledException;
+import wisoft.nextframe.domain.reservation.exception.ReservationAlreadyConfirmedException;
 import wisoft.nextframe.util.ReservationFixture;
 
 class ReservationTest {

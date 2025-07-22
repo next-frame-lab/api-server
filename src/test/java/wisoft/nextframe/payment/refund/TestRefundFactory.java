@@ -5,7 +5,8 @@ import static org.mockito.Mockito.*;
 import java.time.LocalDateTime;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.payment.Payment;
+import wisoft.nextframe.domain.payment.Payment;
+import wisoft.nextframe.domain.payment.refund.Refund;
 
 public class TestRefundFactory {
 

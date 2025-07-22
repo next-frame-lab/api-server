@@ -9,8 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.seat.Seat;
-import wisoft.nextframe.stadium.Stadium;
+import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.stadium.Stadium;
 import wisoft.nextframe.util.PerformanceFixture;
 import wisoft.nextframe.util.SeatFixture;
 import wisoft.nextframe.util.StadiumFixture;

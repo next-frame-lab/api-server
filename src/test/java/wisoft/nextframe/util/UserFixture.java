@@ -2,7 +2,7 @@ package wisoft.nextframe.util;
 
 import java.time.LocalDate;
 
-import wisoft.nextframe.user.User;
+import wisoft.nextframe.domain.user.User;
 
 public class UserFixture {
 

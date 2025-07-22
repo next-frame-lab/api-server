@@ -6,6 +6,10 @@ import static wisoft.nextframe.payment.refund.TestRefundFactory.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import wisoft.nextframe.domain.payment.refund.Refund;
+import wisoft.nextframe.domain.payment.refund.RefundPolicyStatus;
+import wisoft.nextframe.domain.payment.refund.RefundStatus;
+
 public class RefundTest {
 
 	@Test

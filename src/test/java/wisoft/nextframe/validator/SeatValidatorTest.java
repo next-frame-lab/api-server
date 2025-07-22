@@ -7,12 +7,12 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.seat.Seat;
-import wisoft.nextframe.seat.exception.InvalidSeatForStadiumException;
-import wisoft.nextframe.seat.exception.NoSeatSelectedException;
-import wisoft.nextframe.seat.exception.SeatAlreadyLockedException;
-import wisoft.nextframe.seat.exception.TooManySeatsSelectedException;
-import wisoft.nextframe.stadium.Stadium;
+import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.seat.exception.InvalidSeatForStadiumException;
+import wisoft.nextframe.domain.seat.exception.NoSeatSelectedException;
+import wisoft.nextframe.domain.seat.exception.SeatAlreadyLockedException;
+import wisoft.nextframe.domain.seat.exception.TooManySeatsSelectedException;
+import wisoft.nextframe.domain.stadium.Stadium;
 import wisoft.nextframe.util.SeatFixture;
 import wisoft.nextframe.util.StadiumFixture;
 

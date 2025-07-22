@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.reservation.ReservationId;
+import wisoft.nextframe.domain.payment.Payment;
+import wisoft.nextframe.domain.reservation.ReservationId;
 
 public class TestPaymentFactory {
 

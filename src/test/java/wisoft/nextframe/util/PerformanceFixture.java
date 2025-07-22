@@ -4,13 +4,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.performance.Performance;
-import wisoft.nextframe.performance.PerformanceGenre;
-import wisoft.nextframe.performance.PerformanceProfile;
-import wisoft.nextframe.performance.PerformanceType;
-import wisoft.nextframe.performance.ReservablePeriod;
-import wisoft.nextframe.performance.Schedule;
-import wisoft.nextframe.stadium.Stadium;
+import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.performance.PerformanceGenre;
+import wisoft.nextframe.domain.performance.PerformanceProfile;
+import wisoft.nextframe.domain.performance.PerformanceType;
+import wisoft.nextframe.domain.performance.ReservablePeriod;
+import wisoft.nextframe.domain.performance.Schedule;
+import wisoft.nextframe.domain.stadium.Stadium;
 
 public class PerformanceFixture {
 
