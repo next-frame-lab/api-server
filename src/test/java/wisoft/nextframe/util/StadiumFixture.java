@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.Set;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.seat.Seat;
-import wisoft.nextframe.stadium.Stadium;
+import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.stadium.Stadium;
 
 public class StadiumFixture {
 

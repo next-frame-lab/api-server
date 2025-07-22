@@ -1,10 +1,10 @@
 package wisoft.nextframe.validator;
 
-import wisoft.nextframe.performance.Performance;
-import wisoft.nextframe.performance.exception.AdultOnlyPerformanceException;
-import wisoft.nextframe.performance.exception.InvalidReservablePeriodException;
-import wisoft.nextframe.performance.exception.PerformanceAlreadyStartedException;
-import wisoft.nextframe.user.User;
+import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.performance.exception.AdultOnlyPerformanceException;
+import wisoft.nextframe.domain.performance.exception.InvalidReservablePeriodException;
+import wisoft.nextframe.domain.performance.exception.PerformanceAlreadyStartedException;
+import wisoft.nextframe.domain.user.User;
 
 public class PerformanceValidator {
 

@@ -6,7 +6,8 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.payment.Payment;
+import wisoft.nextframe.domain.payment.Payment;
+import wisoft.nextframe.domain.ticket.Ticket;
 
 public class TicketTest {
 

@@ -6,9 +6,11 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.payment.Payment;
+import wisoft.nextframe.domain.payment.Payment;
+import wisoft.nextframe.domain.ticket.Ticket;
+import wisoft.nextframe.domain.ticket.TicketService;
 import wisoft.nextframe.payment.TestPaymentFactory;
-import wisoft.nextframe.ticket.exception.CannotIssueTicketWithoutPaymentException;
+import wisoft.nextframe.domain.ticket.exception.CannotIssueTicketWithoutPaymentException;
 
 public class TicketServiceTest {
 

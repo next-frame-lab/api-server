@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.common.Money;
 import wisoft.nextframe.common.exception.InvalidAmountException;
-import wisoft.nextframe.payment.exception.MissingReservationException;
-import wisoft.nextframe.payment.exception.PaymentAlreadySucceededException;
-import wisoft.nextframe.payment.exception.TooLargeAmountException;
+import wisoft.nextframe.domain.payment.Payment;
+import wisoft.nextframe.domain.payment.PaymentStatus;
+import wisoft.nextframe.domain.payment.exception.MissingReservationException;
+import wisoft.nextframe.domain.payment.exception.PaymentAlreadySucceededException;
+import wisoft.nextframe.domain.payment.exception.TooLargeAmountException;
 
 @DisplayName("Payment 도메인 단위 테스트")
 class PaymentTest {

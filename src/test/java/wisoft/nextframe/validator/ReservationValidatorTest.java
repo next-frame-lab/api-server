@@ -9,11 +9,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.performance.Performance;
-import wisoft.nextframe.reservation.ElapsedTime;
-import wisoft.nextframe.reservation.exception.ReservationTimeLimitExceededException;
-import wisoft.nextframe.seat.Seat;
-import wisoft.nextframe.user.User;
+import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.reservation.ElapsedTime;
+import wisoft.nextframe.domain.reservation.exception.ReservationTimeLimitExceededException;
+import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.user.User;
 import wisoft.nextframe.util.PerformanceFixture;
 import wisoft.nextframe.util.SeatFixture;
 import wisoft.nextframe.util.UserFixture;
