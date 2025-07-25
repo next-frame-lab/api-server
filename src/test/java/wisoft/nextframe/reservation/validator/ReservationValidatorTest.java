@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.reservation.validator;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
@@ -10,9 +10,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.performance.validator.PerformanceValidator;
 import wisoft.nextframe.domain.reservation.ElapsedTime;
+import wisoft.nextframe.domain.reservation.validator.ReservationValidator;
 import wisoft.nextframe.domain.reservation.exception.ReservationTimeLimitExceededException;
 import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.seat.validator.SeatValidator;
 import wisoft.nextframe.domain.user.User;
 import wisoft.nextframe.util.PerformanceFixture;
 import wisoft.nextframe.util.SeatFixture;

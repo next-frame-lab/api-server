@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.domain.seat.validator;
 
 import java.util.Set;
 

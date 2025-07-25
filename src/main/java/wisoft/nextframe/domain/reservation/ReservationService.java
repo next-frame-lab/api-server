@@ -3,10 +3,10 @@ package wisoft.nextframe.domain.reservation;
 import java.util.Set;
 
 import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.reservation.validator.ReservationValidator;
 import wisoft.nextframe.domain.seat.Seat;
 import wisoft.nextframe.domain.seat.SeatManager;
 import wisoft.nextframe.domain.user.User;
-import wisoft.nextframe.validator.ReservationValidator;
 
 public class ReservationService {
 

@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.domain.reservation.validator;
 
 import java.util.Set;
 
@@ -6,7 +6,9 @@ import wisoft.nextframe.domain.performance.Performance;
 import wisoft.nextframe.domain.reservation.ElapsedTime;
 import wisoft.nextframe.domain.reservation.exception.ReservationTimeLimitExceededException;
 import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.seat.validator.SeatValidator;
 import wisoft.nextframe.domain.user.User;
+import wisoft.nextframe.domain.performance.validator.PerformanceValidator;
 
 public class ReservationValidator {
 

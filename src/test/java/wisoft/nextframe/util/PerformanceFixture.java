@@ -2,6 +2,7 @@ package wisoft.nextframe.util;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import wisoft.nextframe.common.Money;
 import wisoft.nextframe.domain.performance.Performance;
@@ -19,6 +20,11 @@ public class PerformanceFixture {
 	private static final String DEFAULT_IMAGE = "https://example.com/images/performance.jpg";
 	private static final PerformanceGenre DEFAULT_GENRE = PerformanceGenre.CLASSIC;
 	private static final PerformanceType DEFAULT_TYPE = PerformanceType.HORROR;
+	private static final Map<String, Money> DEFAULT_SECTION_PRICE = Map.of(
+		"A", Money.of(120_000),
+		"B", Money.of(100_000),
+		"C", Money.of(80_000)
+	);
 	private static final boolean NOT_ADULT_ONLY = false;
 	private static final boolean ADULT_ONLY = true;
 
@@ -37,7 +43,6 @@ public class PerformanceFixture {
 		LocalDateTime.now().minusDays(3)
 	);
 
-	private static final Money DEFAULT_BASE_PRICE = Money.of(130_000L);
 	private static final Stadium DEFAULT_STADIUM = StadiumFixture.defaultStadium();
 
 	private PerformanceFixture() {
@@ -47,8 +52,9 @@ public class PerformanceFixture {
 		return createPerformance(NOT_ADULT_ONLY, DEFAULT_SCHEDULE, OPEN_RESERVATION);
 	}
 
-	public static Performance withBasePriceAndStadium(Money basePrice, Stadium stadium) {
-		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, basePrice, stadium, OPEN_RESERVATION);
+	public static Performance withSectionPrice(Map<String, Money> sectionPrice) {
+		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, DEFAULT_SECTION_PRICE, DEFAULT_STADIUM,
+			OPEN_RESERVATION);
 	}
 
 	public static Performance adultOnlyPerformance() {
@@ -69,7 +75,7 @@ public class PerformanceFixture {
 	}
 
 	private static Performance createPerformance(boolean adultOnly, Schedule schedule, ReservablePeriod period) {
-		return Performance.create(defaultProfile(adultOnly), schedule, DEFAULT_BASE_PRICE, DEFAULT_STADIUM, period);
+		return Performance.create(defaultProfile(adultOnly), schedule, DEFAULT_SECTION_PRICE, DEFAULT_STADIUM, period);
 	}
 
 	private static PerformanceProfile defaultProfile(boolean adultOnly) {
@@ -82,5 +88,5 @@ public class PerformanceFixture {
 			adultOnly
 		);
 	}
-}
 
+}
