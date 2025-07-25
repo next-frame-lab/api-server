@@ -26,19 +26,14 @@ public class StadiumFixture {
 	}
 
 	public static Stadium defaultStadium() {
-		return create(DEFAULT_NAME, DEFAULT_ADDRESS, DEFAULT_AVAILABLE_SEATS, DEFAULT_SECTION_PRICE);
+		return create(DEFAULT_NAME, DEFAULT_ADDRESS, DEFAULT_AVAILABLE_SEATS);
 	}
 
-	public static Stadium createWithSectionPrice(Map<String, Money> sectionPrice) {
-		return create(DEFAULT_NAME, DEFAULT_ADDRESS, DEFAULT_AVAILABLE_SEATS, sectionPrice);
-	}
-
-	private static Stadium create(String name, String address, Set<Seat> availableSeats,
-		Map<String, Money> sectionPrice) {
-		return Stadium.create(name, address, availableSeats, sectionPrice);
+	private static Stadium create(String name, String address, Set<Seat> availableSeats) {
+		return Stadium.create(name, address, availableSeats);
 	}
 
 	public static Stadium createWithSeats(Set<Seat> availableSeats) {
-		return create(DEFAULT_NAME, DEFAULT_ADDRESS, availableSeats, DEFAULT_SECTION_PRICE);
+		return create(DEFAULT_NAME, DEFAULT_ADDRESS, availableSeats);
 	}
 }

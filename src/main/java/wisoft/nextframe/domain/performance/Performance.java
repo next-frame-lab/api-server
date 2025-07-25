@@ -1,10 +1,12 @@
 package wisoft.nextframe.domain.performance;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
 import wisoft.nextframe.common.Money;
+import wisoft.nextframe.domain.performance.exception.SeatSectionNotDefinedException;
 import wisoft.nextframe.domain.seat.Seat;
 import wisoft.nextframe.domain.stadium.Stadium;
 import wisoft.nextframe.domain.user.User;
@@ -12,25 +14,25 @@ import wisoft.nextframe.domain.user.User;
 public class Performance {
 
 	private final PerformanceId id;
-	private final PerformanceProfile profile; // 공연 기본 정보
+	private final PerformanceProfile profile;
 	private final Schedule schedule;
-	@Getter
-	private final Money basePrice;
+	private final Map<String, Money> sectionPrice;
 	@Getter
 	private final Stadium stadium;
 	private final ReservablePeriod reservablePeriod;
 
 	private Performance(
-		PerformanceId id, PerformanceProfile profile,
+		PerformanceId id,
+		PerformanceProfile profile,
 		Schedule schedule,
-		Money basePrice,
+		Map<String, Money> sectionPrice,
 		Stadium stadium,
 		ReservablePeriod reservablePeriod
 	) {
 		this.id = id;
 		this.profile = profile;
 		this.schedule = schedule;
-		this.basePrice = basePrice;
+		this.sectionPrice = sectionPrice;
 		this.stadium = stadium;
 		this.reservablePeriod = reservablePeriod;
 	}
@@ -38,11 +40,11 @@ public class Performance {
 	public static Performance create(
 		PerformanceProfile profile,
 		Schedule schedule,
-		Money basePrice,
+		Map<String, Money> sectionPrice,
 		Stadium stadium,
 		ReservablePeriod reservablePeriod
 	) {
-		return new Performance(PerformanceId.generate(), profile, schedule, basePrice, stadium, reservablePeriod);
+		return new Performance(PerformanceId.generate(), profile, schedule, sectionPrice, stadium, reservablePeriod);
 	}
 
 	public boolean isReservableBy(User user) {
@@ -57,9 +59,17 @@ public class Performance {
 		return reservablePeriod.isOpen(LocalDateTime.now());
 	}
 
+	private Money getPriceBySection(String section) {
+		Money price = sectionPrice.get(section);
+		if (price == null) {
+			throw new SeatSectionNotDefinedException();
+		}
+		return price;
+	}
+
 	public Money calculateTotalPrice(Set<Seat> seats) {
 		return seats.stream()
-			.map(seat -> basePrice.plus(stadium.getPriceBySection(seat.getSection())))
-			.reduce(Money.ZERO, Money::plus);
+			.map(seat -> getPriceBySection(seat.getSection()))
+			.reduce(Money.ZERO, wisoft.nextframe.common.Money::plus);
 	}
 }

@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.domain.performance.validator;
 
 import wisoft.nextframe.domain.performance.Performance;
 import wisoft.nextframe.domain.performance.exception.AdultOnlyPerformanceException;

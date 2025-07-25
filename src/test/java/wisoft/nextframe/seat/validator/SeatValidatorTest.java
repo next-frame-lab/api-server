@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.seat.validator;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.domain.seat.Seat;
+import wisoft.nextframe.domain.seat.validator.SeatValidator;
 import wisoft.nextframe.domain.seat.exception.InvalidSeatForStadiumException;
 import wisoft.nextframe.domain.seat.exception.NoSeatSelectedException;
 import wisoft.nextframe.domain.seat.exception.SeatAlreadyLockedException;

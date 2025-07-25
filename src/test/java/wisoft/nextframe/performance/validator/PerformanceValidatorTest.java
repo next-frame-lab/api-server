@@ -1,4 +1,4 @@
-package wisoft.nextframe.validator;
+package wisoft.nextframe.performance.validator;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.domain.performance.Performance;
+import wisoft.nextframe.domain.performance.validator.PerformanceValidator;
 import wisoft.nextframe.domain.performance.exception.AdultOnlyPerformanceException;
 import wisoft.nextframe.domain.performance.exception.InvalidReservablePeriodException;
 import wisoft.nextframe.domain.performance.exception.PerformanceAlreadyStartedException;

@@ -22,7 +22,7 @@ import wisoft.nextframe.util.PerformanceFixture;
 import wisoft.nextframe.util.ReservationFixture;
 import wisoft.nextframe.util.SeatFixture;
 import wisoft.nextframe.util.UserFixture;
-import wisoft.nextframe.validator.ReservationValidator;
+import wisoft.nextframe.domain.reservation.validator.ReservationValidator;
 
 class ReservationServiceTest {
 
