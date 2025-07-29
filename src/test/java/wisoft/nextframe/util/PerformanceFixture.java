@@ -53,7 +53,7 @@ public class PerformanceFixture {
 	}
 
 	public static Performance withSectionPrice(Map<String, Money> sectionPrice) {
-		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, DEFAULT_SECTION_PRICE, DEFAULT_STADIUM,
+		return Performance.create(defaultProfile(NOT_ADULT_ONLY), DEFAULT_SCHEDULE, sectionPrice, DEFAULT_STADIUM,
 			OPEN_RESERVATION);
 	}
 

@@ -70,6 +70,6 @@ public class Performance {
 	public Money calculateTotalPrice(Set<Seat> seats) {
 		return seats.stream()
 			.map(seat -> getPriceBySection(seat.getSection()))
-			.reduce(Money.ZERO, wisoft.nextframe.common.Money::plus);
+			.reduce(Money.ZERO, Money::plus);
 	}
 }
