@@ -1,4 +1,4 @@
-package wisoft.nextframe.domain.payment.refund;
+package wisoft.nextframe.domain.refund;
 
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package wisoft.nextframe.domain.payment.refund.exception;
+package wisoft.nextframe.domain.refund.exception;
 
 public class NotRefundableException extends RefundException {
 	public NotRefundableException() {

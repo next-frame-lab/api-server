@@ -37,7 +37,7 @@ public class Reservation {
 
 	public static Reservation create(User user, Performance performance, Set<Seat> selectedSeats, Money totalPrice) {
 		return new Reservation(
-			ReservationId.generate(),
+			ReservationId.of(),
 			performance,
 			user,
 			selectedSeats,

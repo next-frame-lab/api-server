@@ -9,20 +9,22 @@ import wisoft.nextframe.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.domain.payment.exception.PaymentAlreadySucceededException;
 import wisoft.nextframe.domain.payment.exception.TooLargeAmountException;
-import wisoft.nextframe.domain.payment.refund.Refund;
+import wisoft.nextframe.domain.refund.Refund;
 import wisoft.nextframe.domain.reservation.ReservationId;
 
 @Getter
 public class Payment {
 	private static final Money MAX_AMOUNT = Money.of(100000);
 
+	private final PaymentId id;
 	private final ReservationId reservationId;
 	private final Money amount;
 	private PaymentStatus status;
 	private final LocalDateTime requestedAt;
 	private Refund currentRefund;
 
-	private Payment(Money amount, LocalDateTime requestedAt, ReservationId reservationId) {
+	private Payment(PaymentId id, Money amount, LocalDateTime requestedAt, ReservationId reservationId) {
+		this.id = id;
 		this.amount = amount;
 		this.reservationId = reservationId;
 		this.status = PaymentStatus.REQUESTED; // 초기 상태는 REQUESTED
@@ -40,7 +42,22 @@ public class Payment {
 			throw new TooLargeAmountException();
 		}
 
-		return new Payment(amount, requestedAt, reservationId);
+		return new Payment(PaymentId.of(), amount, requestedAt, reservationId);
+	}
+
+	public static Payment reconstruct(
+		PaymentId id,
+		ReservationId reservationId,
+		Money amount,
+		LocalDateTime requestedAt,
+		PaymentStatus status,
+		Refund refund
+	) {
+		Payment payment = new Payment(id, amount, requestedAt, reservationId);
+		payment.status = status;  // 상태는 직접 주입
+		payment.currentRefund = refund; // 환불 이력도 복원
+
+		return payment;
 	}
 
 	public boolean hasRefunded() {

@@ -1,4 +1,4 @@
-package wisoft.nextframe.domain.payment.refund.exception;
+package wisoft.nextframe.domain.refund.exception;
 
 public class InvalidRefundStatusException extends RefundException {
 	public InvalidRefundStatusException(String action) {

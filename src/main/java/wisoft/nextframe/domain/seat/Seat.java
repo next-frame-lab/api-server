@@ -22,7 +22,7 @@ public class Seat {
 	}
 
 	public static Seat create(String section, int row, int column) {
-		return new Seat(SeatId.generate(), section, row, column);
+		return new Seat(SeatId.of(), section, row, column);
 	}
 
 	public void lock() {

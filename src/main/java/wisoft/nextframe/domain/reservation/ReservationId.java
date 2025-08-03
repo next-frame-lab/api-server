@@ -4,8 +4,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @EqualsAndHashCode
 @ToString
 public class ReservationId {
@@ -19,7 +21,7 @@ public class ReservationId {
 		return new ReservationId(value);
 	}
 
-	public static ReservationId generate() {
+	public static ReservationId of() {
 		return new ReservationId(UUID.randomUUID());
 	}
 }
