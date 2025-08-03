@@ -1,7 +1,7 @@
-package wisoft.nextframe.domain.payment.refund;
+package wisoft.nextframe.domain.refund;
 
 import static org.assertj.core.api.Assertions.*;
-import static wisoft.nextframe.domain.payment.refund.TestRefundFactory.*;
+import static wisoft.nextframe.domain.refund.TestRefundFactory.*;
 
 import java.math.BigDecimal;
 
@@ -9,8 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.domain.payment.refund.Refund;
-import wisoft.nextframe.domain.payment.refund.RefundPolicyStatus;
 
 public class RefundPolicyStatusTest {
 

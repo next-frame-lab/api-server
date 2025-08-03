@@ -27,10 +27,10 @@ public class PerformanceFixture {
 	);
 	private static final boolean NOT_ADULT_ONLY = false;
 	private static final boolean ADULT_ONLY = true;
+	private static final Duration DEFAULT_RUNNING_TIME = Duration.ofMinutes(120);
 
 	private static final Schedule DEFAULT_SCHEDULE = new Schedule(
-		LocalDateTime.now().plusWeeks(3),
-		Duration.ofHours(3)
+		LocalDateTime.now().plusWeeks(3)
 	);
 
 	private static final ReservablePeriod OPEN_RESERVATION = new ReservablePeriod(
@@ -62,7 +62,7 @@ public class PerformanceFixture {
 	}
 
 	public static Performance alreadyStartedPerformance() {
-		Schedule started = new Schedule(LocalDateTime.now().minusHours(2), Duration.ofHours(3));
+		Schedule started = new Schedule(LocalDateTime.now().minusHours(2));
 		return createPerformance(NOT_ADULT_ONLY, started, OPEN_RESERVATION);
 	}
 
@@ -82,6 +82,7 @@ public class PerformanceFixture {
 		return new PerformanceProfile(
 			DEFAULT_NAME,
 			DEFAULT_DESCRIPTION,
+			DEFAULT_RUNNING_TIME,
 			DEFAULT_IMAGE,
 			DEFAULT_GENRE,
 			DEFAULT_TYPE,
