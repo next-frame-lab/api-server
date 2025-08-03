@@ -21,6 +21,10 @@ public class Ticket {
 		this.issuedAt = issuedAt;
 	}
 
+	public static Ticket reconstruct(TicketId id, ReservationId reservationId, String qrCode, LocalDateTime issuedAt) {
+		return new Ticket(id, reservationId, qrCode, issuedAt);
+	}
+
 	public static Ticket issueFrom(Payment payment) {
 		ReservationId reservationId = payment.getReservationId();
 		TicketId ticketId = TicketId.generate();

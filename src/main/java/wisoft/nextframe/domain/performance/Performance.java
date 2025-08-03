@@ -11,13 +11,13 @@ import wisoft.nextframe.domain.seat.Seat;
 import wisoft.nextframe.domain.stadium.Stadium;
 import wisoft.nextframe.domain.user.User;
 
+@Getter
 public class Performance {
 
 	private final PerformanceId id;
 	private final PerformanceProfile profile;
 	private final Schedule schedule;
 	private final Map<String, Money> sectionPrice;
-	@Getter
 	private final Stadium stadium;
 	private final ReservablePeriod reservablePeriod;
 
@@ -45,6 +45,27 @@ public class Performance {
 		ReservablePeriod reservablePeriod
 	) {
 		return new Performance(PerformanceId.generate(), profile, schedule, sectionPrice, stadium, reservablePeriod);
+	}
+
+	/**
+	 * [도메인 객체 복원용 팩토리 메서드]
+	 *
+	 * 이 메서드는 DB 조회, JPA 매핑, 외부 시스템(JSON, Kafka 등)으로부터 전달받은 데이터를 바탕으로
+	 * 도메인 객체를 복원할 때만 사용해야 합니다.
+	 *
+	 * 도메인 내부의 비즈니스 로직에서는 절대 이 메서드를 직접 사용하지 마세요.
+	 * 새로운 Performance를 생성하려면 {@link #create(PerformanceProfile, Schedule, Money, Stadium, ReservablePeriod)}를 사용하세요.
+	 *
+	 */
+	public static Performance reconstruct(
+		PerformanceId id,
+		PerformanceProfile profile,
+		Schedule schedule,
+		Map<String, Money> sectionPrice,
+		Stadium stadium,
+		ReservablePeriod reservablePeriod
+	) {
+		return new Performance(id, profile, schedule, sectionPrice, stadium, reservablePeriod);
 	}
 
 	public boolean isReservableBy(User user) {
