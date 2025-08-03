@@ -20,7 +20,7 @@ public class SeatId {
 		return new SeatId(value);
 	}
 
-	public static SeatId generate() {
+	public static SeatId of() {
 		return new SeatId(UUID.randomUUID());
 	}
 

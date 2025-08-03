@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import wisoft.nextframe.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.domain.payment.exception.RefundAlreadyExistsException;
-import wisoft.nextframe.domain.payment.refund.Refund;
+import wisoft.nextframe.domain.refund.Refund;
 
 public class PaymentIssuer {
 

@@ -1,11 +1,13 @@
-package wisoft.nextframe.domain.payment.refund;
+package wisoft.nextframe.domain.refund;
 
 import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @EqualsAndHashCode
 @ToString
 public class RefundId {

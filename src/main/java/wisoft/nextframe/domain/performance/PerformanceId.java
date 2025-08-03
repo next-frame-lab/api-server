@@ -4,8 +4,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @EqualsAndHashCode
 @ToString
 public class PerformanceId {
@@ -23,4 +25,5 @@ public class PerformanceId {
 	public static PerformanceId generate() {
 		return new PerformanceId(UUID.randomUUID());
 	}
+
 }
