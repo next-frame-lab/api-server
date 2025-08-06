@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import wisoft.nextframe.domain.payment.exception.PaymentException;
-import wisoft.nextframe.domain.refund.exception.RefundException;
+import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
+import wisoft.nextframe.payment.domain.refund.exception.RefundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
