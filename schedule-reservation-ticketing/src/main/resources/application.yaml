@@ -18,7 +18,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
@@ -28,3 +28,18 @@ spring:
 logging:
   level:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: ${ROOT_LOG_LEVEL}
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+    org.springframework.cloud.gateway: DEBUG
+    org.hibernate.orm.jdbc.bind: trace
+  file:
+    name: ${LOG_PATH_NAME}/${LOG_FILE_NAME}.log
+  pattern:
+    console: '%d %clr([%-5level]) %replace(%caller{1}){"Caller\+\d	 at ",""}%msg%n'
+    file: "%d [%-5level] [%thread] [%c{25}] [%method] %msg%n"
+  logback:
+    rolling policy:
+      file-name-pattern: ${LOG_PATH_NAME}/${LOG_FILE_NAME}.log.%d{yyyy-MM-dd}_%i   # .gz, .zip 등을 넣으면 자동 일자별 로그파일 압축
+      max-file-size: 10MB # 파일당 최대 용량 KB, MB, GB, 10MB를 넘어가면 %i 숫자 증가되면서 롤링
+      max-history: 60
+      total-size-cap: 1GB

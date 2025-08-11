@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Log Directory
+log
+
+# env file
+.env
