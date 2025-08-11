@@ -1,12 +1,10 @@
-package wisoft.nextframe.ticketing;
+package wisoft.nextframe.ticketing.infra;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import wisoft.nextframe.reservation.domain.ReservationId;
 import wisoft.nextframe.ticketing.domain.Ticket;
 import wisoft.nextframe.ticketing.domain.TicketId;
-import wisoft.nextframe.ticketing.infra.TicketEntity;
 
 public class TicketEntityFixture {
 
@@ -31,10 +29,9 @@ public class TicketEntityFixture {
 
 	public static Ticket sampleDomain() {
 		return Ticket.reconstruct(
-			TicketId.of(DEFAULT_TICKET_ID),
-			ReservationId.of(DEFAULT_RESERVATION_ID),
-			DEFAULT_QR,
-			DEFAULT_ISSUED_AT
+			TicketId.of(UUID.randomUUID()),
+			"QR-xxx",
+			LocalDateTime.now()
 		);
 	}
 }
