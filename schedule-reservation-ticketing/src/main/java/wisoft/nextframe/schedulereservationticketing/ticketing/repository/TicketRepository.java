@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import wisoft.nextframe.schedulereservationticketing.ticketing.entity.Ticket;
 
-@Repository
 public interface TicketRepository extends JpaRepository<Ticket, UUID> {
 	Optional<Ticket> findByReservationId(UUID reservationId);
 
