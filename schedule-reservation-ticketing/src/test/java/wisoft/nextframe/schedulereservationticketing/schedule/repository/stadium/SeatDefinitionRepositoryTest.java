@@ -47,8 +47,8 @@ class SeatDefinitionRepositoryTest {
 			.id(seatId)
 			.stadium(savedStadium)
 			.stadiumSection(savedSection)
-			.row(10)
-			.column(15)
+			.rowNo(10)
+			.columnNo(15)
 			.build();
 
 		// when
@@ -60,8 +60,8 @@ class SeatDefinitionRepositoryTest {
 
 		SeatDefinition foundSeat = foundSeatOptional.get();
 		assertThat(foundSeat.getId()).isEqualTo(seatId);
-		assertThat(foundSeat.getRow()).isEqualTo(10);
-		assertThat(foundSeat.getColumn()).isEqualTo(15);
+		assertThat(foundSeat.getRowNo()).isEqualTo(10);
+		assertThat(foundSeat.getColumnNo()).isEqualTo(15);
 		assertThat(foundSeat.getStadium().getId()).isEqualTo(savedStadium.getId());
 		assertThat(foundSeat.getStadiumSection().getId()).isEqualTo(savedSection.getId());
 	}
