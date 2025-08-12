@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.infra.persistence.PaymentEntityFixture;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentEntity;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentMapper;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
+import wisoft.nextframe.payment.infra.payment.PaymentMapper;
 
 public class PaymentMapperTest {
 

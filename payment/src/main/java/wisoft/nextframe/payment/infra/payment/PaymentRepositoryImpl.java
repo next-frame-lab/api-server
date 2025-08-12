@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.persistence.jpa;
+package wisoft.nextframe.payment.infra.payment;
 
 import java.util.Optional;
 

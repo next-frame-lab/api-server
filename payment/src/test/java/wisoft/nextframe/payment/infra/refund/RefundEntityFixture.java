@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import wisoft.nextframe.payment.common.Money;
-import wisoft.nextframe.payment.refund.Refund;
-import wisoft.nextframe.payment.refund.RefundEntity;
-import wisoft.nextframe.payment.refund.RefundId;
-import wisoft.nextframe.payment.refund.RefundPolicyStatus;
-import wisoft.nextframe.payment.refund.RefundStatus;
+import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.domain.refund.RefundEntity;
+import wisoft.nextframe.payment.domain.refund.RefundId;
+import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
+import wisoft.nextframe.payment.domain.refund.RefundStatus;
 
 public class RefundEntityFixture {
 

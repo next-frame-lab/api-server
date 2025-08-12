@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.payment.refund.Refund;
-import wisoft.nextframe.payment.refund.RefundEntity;
-import wisoft.nextframe.payment.refund.RefundMapper;
+import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.domain.refund.RefundEntity;
+import wisoft.nextframe.payment.domain.refund.RefundMapper;
 
 public class RefundMapperTest {
 
