@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -24,16 +26,18 @@ import lombok.NoArgsConstructor;
 public class Ticket {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", columnDefinition = "uuid", updatable = false, nullable = false)
 	private UUID id;
 
 	@Column(name = "reservation_id", nullable = false, columnDefinition = "uuid")
 	private UUID reservationId;
 
-	@Column(name = "seat_id", nullable = false, columnDefinition = "uuid")
+	// TODO: reservationId 기반으로 seatId, scheduleId 조회 후 세팅
+	@Column(name = "seat_id", nullable = true, columnDefinition = "uuid")
 	private UUID seatId;
 
-	@Column(name = "schedule_id", nullable = false, columnDefinition = "uuid")
+	@Column(name = "schedule_id", nullable = true, columnDefinition = "uuid")
 	private UUID scheduleId;
 
 	@Column(name = "issued_at", nullable = false)
@@ -45,11 +49,14 @@ public class Ticket {
 	@Column(name = "qr_code", nullable = false)
 	private String qrCode;
 
+
+	// seatId, scheduleId는 추후 조회 후 세팅
 	public static Ticket issue(UUID reservationId) {
 		Ticket e = new Ticket();
 		e.reservationId = requireNonNull(reservationId);
 		e.qrCode = "QR-" + reservationId + "-" + UUID.randomUUID();
 		e.issuedAt = LocalDateTime.now();
+		e.isUsed = false;
 		return e;
 	}
 }
