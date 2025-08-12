@@ -39,6 +39,7 @@ public class Payment {
 		}
 		if (amount == null || !amount.isPositive()) {
 			throw new InvalidAmountException();
+
 		}
 		if (amount.isGreaterThan(MAX_AMOUNT)) {
 			throw new TooLargeAmountException();

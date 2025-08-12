@@ -1,6 +1,5 @@
 package wisoft.nextframe.payment.infra.payment.persistence;
 
-import static java.lang.String.*;
 import static java.util.UUID.*;
 
 import java.time.LocalDateTime;
@@ -9,6 +8,7 @@ import java.util.UUID;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
+import wisoft.nextframe.payment.domain.payment.PaymentStatus;
 import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
 
@@ -24,7 +24,7 @@ public class PaymentEntityFixture {
 			.id(DEFAULT_PAYMENT_ID)
 			.reservationId(DEFAULT_RESERVATION_ID)
 			.totalAmount(DEFAULT_AMOUNT)
-			.status(valueOf(DEFAULT_STATUS))
+			.status(PaymentStatus.valueOf(DEFAULT_STATUS))
 			.build();
 	}
 
@@ -34,7 +34,7 @@ public class PaymentEntityFixture {
 			ReservationId.of(DEFAULT_RESERVATION_ID),
 			Money.of(DEFAULT_AMOUNT),
 			LocalDateTime.now(),
-			valueOf(DEFAULT_STATUS),
+			PaymentStatus.valueOf(DEFAULT_STATUS),
 			null
 		);
 	}

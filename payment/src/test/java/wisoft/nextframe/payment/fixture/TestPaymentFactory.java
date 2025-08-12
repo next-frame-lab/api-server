@@ -1,11 +1,11 @@
-package wisoft.nextframe.payment.domain.fixture;
+package wisoft.nextframe.payment.fixture;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import wisoft.nextframe.common.Money;
-import wisoft.nextframe.payment.domain.ReservationId;
+import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.payment.Payment;
+import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
 
 public class TestPaymentFactory {
 

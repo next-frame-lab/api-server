@@ -1,7 +1,7 @@
 package wisoft.nextframe.refund;
 
 import static org.assertj.core.api.Assertions.*;
-import static wisoft.nextframe.payment.domain.fixture.TestRefundFactory.*;
+import static wisoft.nextframe.payment.fixture.TestRefundFactory.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
