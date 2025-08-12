@@ -10,7 +10,7 @@ import wisoft.nextframe.common.Money;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentEntity;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 
 public class PaymentEntityFixture {
 

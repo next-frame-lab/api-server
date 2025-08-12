@@ -5,13 +5,12 @@ import static wisoft.nextframe.payment.fixture.TestRefundFactory.*;
 
 import java.math.BigDecimal;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.common.Money;
-import wisoft.nextframe.payment.refund.Refund;
-import wisoft.nextframe.payment.refund.RefundPolicyStatus;
+import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
 
 public class RefundPolicyStatusTest {
 

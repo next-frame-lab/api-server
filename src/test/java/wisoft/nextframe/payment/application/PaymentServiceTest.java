@@ -12,8 +12,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.common.Money;
-import wisoft.nextframe.payment.application.port.output.ExternalPaymentClient;
-import wisoft.nextframe.payment.application.port.output.PaymentRepository;
+import wisoft.nextframe.payment.application.payment.port.output.ExternalPaymentClient;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
 import wisoft.nextframe.payment.domain.fixture.TestPaymentFactory;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;

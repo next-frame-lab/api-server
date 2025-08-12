@@ -15,10 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
 import wisoft.nextframe.payment.persistence.PaymentEntityFixture;
-import wisoft.nextframe.payment.infra.persistence.jpa.JpaPaymentRepository;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentEntity;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentMapper;
-import wisoft.nextframe.payment.infra.persistence.jpa.PaymentRepositoryImpl;
+import wisoft.nextframe.payment.infra.payment.JpaPaymentRepository;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
+import wisoft.nextframe.payment.infra.payment.PaymentMapper;
+import wisoft.nextframe.payment.infra.payment.PaymentRepositoryImpl;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentRepositoryImplTest {
