@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import wisoft.nextframe.schedulereservationticketing.common.exception.InvalidAmountException;
+import wisoft.nextframe.payment.common.exception.InvalidAmountException;
 
 @EqualsAndHashCode
 @ToString
