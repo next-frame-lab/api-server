@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 import wisoft.nextframe.schedulereservationticketing.ticketing.entity.Ticket;
 import wisoft.nextframe.schedulereservationticketing.ticketing.repository.TicketRepository;
 

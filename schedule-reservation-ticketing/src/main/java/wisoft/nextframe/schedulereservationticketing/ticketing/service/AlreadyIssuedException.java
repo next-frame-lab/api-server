@@ -1,6 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.ticketing.service;
 
-import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 public class AlreadyIssuedException extends RuntimeException {
 	public AlreadyIssuedException(ReservationId reservationId) {

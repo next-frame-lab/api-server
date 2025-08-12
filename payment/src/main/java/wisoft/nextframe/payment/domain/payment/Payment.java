@@ -10,7 +10,7 @@ import wisoft.nextframe.payment.domain.payment.exception.MissingReservationExcep
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
 import wisoft.nextframe.payment.domain.payment.exception.TooLargeAmountException;
 import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 @Getter
 public class Payment {
