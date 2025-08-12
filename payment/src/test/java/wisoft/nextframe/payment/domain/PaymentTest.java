@@ -23,7 +23,6 @@ class PaymentTest {
 	@DisplayName("결제 요청 시 상태는 REQUESTED가 된다")
 	void createPayment_requestedStatus() {
 		Payment payment = requested();
-		System.out.println(payment.getStatus());
 		assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REQUESTED);
 	}
 

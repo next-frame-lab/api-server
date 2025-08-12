@@ -26,9 +26,11 @@ public class TicketService {
 	 */
 	@Transactional
 	public Ticket issueByReservation(UUID reservationId) {
+		ReservationId reservationIdObj = ReservationId.of(reservationId);
+
 		ticketRepository.findByReservationId(reservationId)
 			.ifPresent(existing -> {
-				throw new AlreadyIssuedException(ReservationId.of(reservationId));
+				throw new AlreadyIssuedException(reservationIdObj);
 			});
 
 		// TODO: 예약 BC 연동 후 seatId, scheduleId 조회해서 세팅
