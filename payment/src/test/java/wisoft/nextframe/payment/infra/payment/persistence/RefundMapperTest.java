@@ -1,13 +1,15 @@
 package wisoft.nextframe.payment.infra.payment.persistence;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.payment.infra.refund.RefundEntityFixture;
-import wisoft.nextframe.payment.infra.persistence.jpa.RefundEntity;
+import wisoft.nextframe.payment.domain.refund.RefundEntity;
 import wisoft.nextframe.payment.domain.refund.RefundMapper;
+import wisoft.nextframe.payment.infra.refund.RefundEntityFixture;
 
 public class RefundMapperTest {
 

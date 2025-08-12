@@ -1,7 +1,7 @@
 package wisoft.nextframe.payment.domain;
 
 import static org.assertj.core.api.Assertions.*;
-import static wisoft.nextframe.payment.domain.fixture.TestPaymentFactory.*;
+import static wisoft.nextframe.payment.fixture.TestPaymentFactory.*;
 
 import java.time.LocalDateTime;
 
@@ -9,8 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import wisoft.nextframe.common.Money;
-import wisoft.nextframe.common.exception.InvalidAmountException;
+import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentStatus;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
@@ -32,7 +31,7 @@ class PaymentTest {
 	@DisplayName("결제 금액이 음수일 경우 예외가 발생한다")
 	void denyPayment_amountNonPositive() {
 		assertThatThrownBy(() -> requestedWithAmount(Money.of( -10000)))
-			.isInstanceOf(InvalidAmountException.class)
+			.isInstanceOf(wisoft.nextframe.payment.common.exception.InvalidAmountException.class)
 			.hasMessage("금액은 음수일 수 없습니다.");
 
 	}

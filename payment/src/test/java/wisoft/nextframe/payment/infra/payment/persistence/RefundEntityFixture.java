@@ -3,12 +3,12 @@ package wisoft.nextframe.payment.infra.payment.persistence;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import wisoft.nextframe.common.Money;
+import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.domain.refund.RefundEntity;
 import wisoft.nextframe.payment.domain.refund.RefundId;
 import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
 import wisoft.nextframe.payment.domain.refund.RefundStatus;
-import wisoft.nextframe.payment.infra.persistence.jpa.RefundEntity;
 
 public class RefundEntityFixture {
 
