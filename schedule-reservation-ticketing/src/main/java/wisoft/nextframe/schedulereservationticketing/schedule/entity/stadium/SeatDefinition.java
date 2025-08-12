@@ -31,11 +31,11 @@ public class SeatDefinition {
 	@JoinColumn(name = "stadium_id")
 	private Stadium stadium;
 
-	@Column(name = "row", nullable = false)
-	private Integer row;
+	@Column(name = "row_no", nullable = false)
+	private Integer rowNo;
 
-	@Column(name = "\"column\"")
-	private Integer column;
+	@Column(name = "column_no")
+	private Integer columnNo;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "stadium_section_id")

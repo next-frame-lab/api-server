@@ -61,7 +61,7 @@ class SeatStateRepositoryTest {
 				.performanceDatetime(LocalDateTime.now()).build());
 
 		savedSeat = seatDefinitionRepository.save(
-			SeatDefinition.builder().id(UUID.randomUUID()).stadium(stadium).stadiumSection(section).row(1).column(1).build());
+			SeatDefinition.builder().id(UUID.randomUUID()).stadium(stadium).stadiumSection(section).rowNo(1).columnNo(1).build());
 	}
 
 
