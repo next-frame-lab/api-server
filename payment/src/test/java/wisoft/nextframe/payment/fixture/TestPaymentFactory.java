@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.payment.Payment;
-import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 public class TestPaymentFactory {
 

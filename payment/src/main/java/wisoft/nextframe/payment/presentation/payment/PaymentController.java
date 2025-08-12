@@ -20,7 +20,7 @@ import wisoft.nextframe.payment.presentation.payment.dto.PaymentApprovalRequest;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentFailureResponse;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentRequest;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentSuccessResponse;
-import wisoft.nextframe.schedulereservationticketing.reservation.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 @RestController
 @RequestMapping("/api")
