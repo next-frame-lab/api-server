@@ -10,7 +10,7 @@ public class ReservationId {
 	private final UUID value;
 
 	private ReservationId(UUID value) {
-		this.value = Objects.requireNonNull(value, "PaymentId는 null일 수 없습니다.");
+		this.value = Objects.requireNonNull(value, "ReservationId는 null일 수 없습니다.");
 	}
 
 	public static ReservationId of(UUID value) {
