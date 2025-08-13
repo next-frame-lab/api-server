@@ -38,7 +38,6 @@ public class PerformancePricing {
 	@JoinColumn(name = "stadium_section_id", nullable = false)
 	private StadiumSection stadiumSection;
 
-	@Convert(converter = BigDecimalIntegerConverter.class)
 	@Column(name = "price", nullable = false, columnDefinition = "integer")
 	private Integer price;
 }
