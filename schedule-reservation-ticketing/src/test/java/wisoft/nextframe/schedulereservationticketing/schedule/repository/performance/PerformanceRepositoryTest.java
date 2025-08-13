@@ -12,9 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.PerformanceGenre;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.PerformanceType;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 
 @SpringBootTest
 @Transactional
