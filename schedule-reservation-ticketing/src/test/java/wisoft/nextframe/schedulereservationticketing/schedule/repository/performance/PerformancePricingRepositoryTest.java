@@ -1,7 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.schedule.repository.performance;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -14,13 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.PerformancePricing;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.PerformancePricingId;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.stadium.StadiumSectionRepository;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional

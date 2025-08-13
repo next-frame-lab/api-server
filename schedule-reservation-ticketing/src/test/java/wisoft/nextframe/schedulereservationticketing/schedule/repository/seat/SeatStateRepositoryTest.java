@@ -13,18 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.seat.SeatState;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.seat.SeatStateId;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.SeatDefinition;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.performance.PerformanceRepository;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.schedule.ScheduleRepository;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.stadium.SeatDefinitionRepository;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.schedule.repository.stadium.StadiumSectionRepository;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
+import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
+import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatStateId;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional

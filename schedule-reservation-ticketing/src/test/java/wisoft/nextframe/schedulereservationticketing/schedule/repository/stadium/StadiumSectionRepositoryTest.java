@@ -14,8 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional

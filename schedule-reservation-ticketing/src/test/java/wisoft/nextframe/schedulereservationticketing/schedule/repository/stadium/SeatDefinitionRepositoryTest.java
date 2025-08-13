@@ -12,9 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.SeatDefinition;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.schedule.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional
