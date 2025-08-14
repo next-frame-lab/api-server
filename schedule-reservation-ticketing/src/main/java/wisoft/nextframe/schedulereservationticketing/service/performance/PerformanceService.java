@@ -42,8 +42,11 @@ public class PerformanceService {
 		return toPerformanceDetailResponse(performance, schedules, pricings);
 	}
 
-	private PerformanceDetailResponse toPerformanceDetailResponse(Performance performance, List<Schedule> schedules,
-		List<PerformancePricing> pricings) {
+	private PerformanceDetailResponse toPerformanceDetailResponse(
+		Performance performance,
+		List<Schedule> schedules,
+		List<PerformancePricing> pricings
+	) {
 
 		// Stadium 정보 반환
 		final StadiumDto stadiumDto = schedules.stream()
