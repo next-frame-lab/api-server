@@ -23,7 +23,10 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "stadium_sections",
 	uniqueConstraints = {
-		@UniqueConstraint(columnNames = {"stadium_id", "section"})
+		@UniqueConstraint(
+			name = "stadium_sections_stadium_id_section_key",
+			columnNames = {"stadium_id", "section"}
+		)
 	}
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,6 +40,6 @@ public class StadiumSection {
 	@JoinColumn(name = "stadium_id", nullable = false)
 	private Stadium stadium;
 
-	@Column(name = "section", nullable = false)
+	@Column(name = "section", length = 100, nullable = false)
 	private String section;
 }

@@ -48,7 +48,6 @@ class SeatDefinitionRepositoryTest {
 		UUID seatId = UUID.randomUUID();
 		SeatDefinition newSeat = SeatDefinition.builder()
 			.id(seatId)
-			.stadium(savedStadium)
 			.stadiumSection(savedSection)
 			.rowNo(10)
 			.columnNo(15)
@@ -65,7 +64,6 @@ class SeatDefinitionRepositoryTest {
 		assertThat(foundSeat.getId()).isEqualTo(seatId);
 		assertThat(foundSeat.getRowNo()).isEqualTo(10);
 		assertThat(foundSeat.getColumnNo()).isEqualTo(15);
-		assertThat(foundSeat.getStadium().getId()).isEqualTo(savedStadium.getId());
 		assertThat(foundSeat.getStadiumSection().getId()).isEqualTo(savedSection.getId());
 	}
 }

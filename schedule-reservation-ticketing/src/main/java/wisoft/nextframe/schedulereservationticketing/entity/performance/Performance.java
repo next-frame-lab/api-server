@@ -29,7 +29,7 @@ public class Performance {
 	@Column(name = "id", nullable = false)
 	private UUID id;
 
-	@Column(name = "name")
+	@Column(name = "name", nullable = false)
 	private String name;
 
 	@Enumerated(EnumType.STRING)
@@ -40,7 +40,7 @@ public class Performance {
 	@Column(name = "genre")
 	private PerformanceGenre genre;
 
-	@Column(name = "adult_only")
+	@Column(name = "adult_only", nullable = false)
 	private Boolean adultOnly;
 
 	@Convert(converter = DurationMinutesConverter.class)

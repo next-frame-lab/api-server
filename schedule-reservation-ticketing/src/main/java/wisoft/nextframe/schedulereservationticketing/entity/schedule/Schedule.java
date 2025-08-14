@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,15 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 @Builder
 @AllArgsConstructor
 @Entity
-@Table(name = "schedules")
+@Table(
+	name = "schedules",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uq_schedules_performance_stadium_datetime",
+			columnNames = {"performance_id", "stadium_id", "performance_datetime"}
+		)
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Schedule {
 
@@ -38,7 +47,7 @@ public class Schedule {
 	@JoinColumn(name = "stadium_id", nullable = false)
 	private Stadium stadium;
 
-	@Column(name = "performance_datetime")
+	@Column(name = "performance_datetime", nullable = false)
 	private LocalDateTime performanceDatetime;
 
 	@Column(name = "ticket_open_time")

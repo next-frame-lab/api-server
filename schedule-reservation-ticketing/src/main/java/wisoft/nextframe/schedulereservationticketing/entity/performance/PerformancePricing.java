@@ -1,7 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.entity.performance;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -39,5 +37,5 @@ public class PerformancePricing {
 	private StadiumSection stadiumSection;
 
 	@Column(name = "price", nullable = false)
-	private BigDecimal price;
+	private Integer price;
 }
