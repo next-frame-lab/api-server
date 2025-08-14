@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import jakarta.persistence.EntityNotFoundException;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;

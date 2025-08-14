@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.performance;
+package wisoft.nextframe.schedulereservationticketing.dto.performance.response;
 
 import java.util.UUID;
 
@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class StadiumDto {
+public class StadiumResponseDto {
 
 	private final UUID id;
 	private final String name;

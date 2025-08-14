@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.PerformanceScheduleDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.SeatSectionPriceDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.StadiumDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceScheduleResponseDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.response.SeatSectionPriceResponseDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.response.StadiumResponseDto;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -49,11 +49,11 @@ public class PerformanceService {
 	) {
 
 		// Stadium 정보 반환
-		final StadiumDto stadiumDto = schedules.stream()
+		final StadiumResponseDto stadiumResponseDto = schedules.stream()
 			.findFirst()
 			.map(schedule -> {
 				final Stadium stadium = schedule.getStadium();
-				return StadiumDto.builder()
+				return StadiumResponseDto.builder()
 					.id(stadium.getId())
 					.name(stadium.getName())
 					.address(stadium.getAddress())
@@ -61,8 +61,8 @@ public class PerformanceService {
 			}).orElse(null);
 
 		// 스케줄 정보 반환
-		final List<PerformanceScheduleDto> scheduleDtos = schedules.stream()
-			.map(schedule -> PerformanceScheduleDto.builder()
+		final List<PerformanceScheduleResponseDto> scheduleDtos = schedules.stream()
+			.map(schedule -> PerformanceScheduleResponseDto.builder()
 				.id(schedule.getId())
 				.date(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 				.time(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("HH:mm")))
@@ -70,8 +70,8 @@ public class PerformanceService {
 			.toList();
 
 		// 좌석 가격 정보 반환
-		final List<SeatSectionPriceDto> seatSectionPriceDtos = pricings.stream()
-			.map(pricing -> SeatSectionPriceDto.builder()
+		final List<SeatSectionPriceResponseDto> seatSectionPriceResponseDtos = pricings.stream()
+			.map(pricing -> SeatSectionPriceResponseDto.builder()
 				.section(pricing.getStadiumSection().getSection())
 				.price(pricing.getPrice())
 				.build())
@@ -88,9 +88,9 @@ public class PerformanceService {
 			.runningTime((int)performance.getRunningTime().toMinutes())
 			.description(performance.getDescription())
 			.adultOnly(performance.getAdultOnly())
-			.stadium(stadiumDto)
+			.stadium(stadiumResponseDto)
 			.performanceSchedules(scheduleDtos)
-			.seatSectionPrices(seatSectionPriceDtos)
+			.seatSectionPrices(seatSectionPriceResponseDtos)
 			.build();
 	}
 }
