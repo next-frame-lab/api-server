@@ -8,12 +8,13 @@ import lombok.Getter;
 public class ApiResponse<T> {
 	private final String code;
 	private final T data;
+	private final String message;
 
 	public static <T> ApiResponse<T> success(T data) {
-		return ApiResponse.of("SUCCESS", data);
+		return ApiResponse.of("SUCCESS", data, null);
 	}
 
-	public static <T> ApiResponse<T> failed(T data) {
-		return ApiResponse.of("FAILED", data);
+	public static <T> ApiResponse<T> failed(String message) {
+		return ApiResponse.of("FAILED", null, message);
 	}
 }

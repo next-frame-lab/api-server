@@ -1,10 +1,7 @@
 package wisoft.nextframe.payment.presentation.payment;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,55 +9,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.payment.application.payment.PaymentService;
-import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.common.response.ApiResponse;
-import wisoft.nextframe.payment.domain.payment.Payment;
-import wisoft.nextframe.payment.domain.payment.PaymentId;
-import wisoft.nextframe.payment.presentation.payment.dto.PaymentApprovalRequest;
-import wisoft.nextframe.payment.presentation.payment.dto.PaymentFailureResponse;
-import wisoft.nextframe.payment.presentation.payment.dto.PaymentRequest;
-import wisoft.nextframe.payment.presentation.payment.dto.PaymentSuccessResponse;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
+import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
+import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmResponse;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
 	private final PaymentService paymentService;
 
 	/**
-	 * 예약에 대한 결제 요청
+	 * POST /api/v1/payments/confirm
+	 * <p>
+	 * 클라이언트 버전 헤더에 따라 legacy 모드로 응답을 보낼지 결정함
+	 * legacy 클라이언트 : 실패시 data에 메시지 담아서 보냄 (기존 스펙)
+	 * modern 클라이언트 : 실패시 message 필드에 메시지 담아서 보냄
 	 */
-	@PostMapping("/reservations/{id}/payment")
-	public ResponseEntity<ApiResponse<?>> requestPayment(
-		@PathVariable("id") UUID reservationId,
-		@RequestBody PaymentRequest request
-	) {
-		try {
-			Payment payment = paymentService.requestPayment(
-				ReservationId.of(reservationId),
-				Money.of(request.amount()),
-				LocalDateTime.now()
-			);
-			return ResponseEntity.ok(
-				ApiResponse.success(new PaymentSuccessResponse(payment.getId().getValue())));
-			// todo 도메인 계층 예외로 변경 ex. ExternalPaymentException
-		} catch (Exception e) {
-			// todo 외부 결제사 응답 파싱 필요
-			return ResponseEntity.ok(
-				ApiResponse.failed(new PaymentFailureResponse("외부 결제 승인 실패 - 잔액 부족"))
-			);
-		}
-	}
+	@PostMapping("/confirm")
+	public ResponseEntity<ApiResponse<?>> confirm(@RequestBody PaymentConfirmRequest request) {
+		PaymentConfirmResponse resp = paymentService.confirmPayment(request);
 
-	/**
-	 * 외부 결제 시스템에서 결제 성공 후 호출하는 콜백
-	 */
-	@PostMapping("/payment/callback/approve")
-	public ResponseEntity<ApiResponse<?>> approve(@RequestBody PaymentApprovalRequest request) {
-		// 예: 외부 결제사에서 결제 ID를 전달해줄 때
-		paymentService.approvePayment(PaymentId.of(request.paymentId()));
-		return ResponseEntity.ok().build();
+		if (resp.isSuccess()) {
+			return ResponseEntity.ok(ApiResponse.success(resp.data()));
+		}
+		String userMsg = resp.message() == null ? "결제에 실패했습니다." : resp.message();
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(ApiResponse.failed(userMsg));
 	}
 }
