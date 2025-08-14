@@ -1,7 +1,8 @@
 package wisoft.nextframe.schedulereservationticketing.entity.performance;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.typeconverter.BigDecimalIntegerConverter;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 
 @Getter
@@ -38,6 +38,6 @@ public class PerformancePricing {
 	@JoinColumn(name = "stadium_section_id", nullable = false)
 	private StadiumSection stadiumSection;
 
-	@Column(name = "price", nullable = false, columnDefinition = "integer")
-	private Integer price;
+	@Column(name = "price", nullable = false)
+	private BigDecimal price;
 }
