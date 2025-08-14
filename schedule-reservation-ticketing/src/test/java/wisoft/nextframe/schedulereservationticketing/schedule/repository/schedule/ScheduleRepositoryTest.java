@@ -37,7 +37,7 @@ class ScheduleRepositoryTest {
 	@BeforeEach
 	void setUp() {
 		savedPerformance = performanceRepository.save(
-			Performance.builder().id(UUID.randomUUID()).name("캣츠").runningTime(Duration.ofMinutes(140)).build());
+			Performance.builder().id(UUID.randomUUID()).name("캣츠").adultOnly(true).runningTime(Duration.ofMinutes(140)).build());
 
 		savedStadium = stadiumRepository.save(
 			Stadium.builder().id(UUID.randomUUID()).name("세종문화회관").address("서울특별시 종로구 세종대로 175").build());

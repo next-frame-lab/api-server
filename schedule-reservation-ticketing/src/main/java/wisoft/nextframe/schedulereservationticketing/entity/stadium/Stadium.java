@@ -24,9 +24,9 @@ public class Stadium {
 	@Column(name = "id", nullable = false)
 	private UUID id;
 
-	@Column(name = "name")
+	@Column(name = "name", nullable = false, unique = true)
 	private String name;
 
-	@Column(name = "address")
+	@Column(name = "address", nullable = false)
 	private String address;
 }

@@ -49,10 +49,10 @@ class SeatStateRepositoryTest {
 	@BeforeEach
 	void setUp() {
 		Stadium stadium = stadiumRepository.save(
-			Stadium.builder().id(UUID.randomUUID()).name("올림픽공원 체조경기장").build());
+			Stadium.builder().id(UUID.randomUUID()).name("올림픽공원 체조경기장").address("대전광역시").build());
 
 		Performance performance = performanceRepository.save(
-			Performance.builder().id(UUID.randomUUID()).name("아이유 콘서트").build());
+			Performance.builder().id(UUID.randomUUID()).name("아이유 콘서트").adultOnly(true).build());
 
 		StadiumSection section = stadiumSectionRepository.save(
 			StadiumSection.builder().id(UUID.randomUUID()).stadium(stadium).section("A").build());
@@ -62,7 +62,7 @@ class SeatStateRepositoryTest {
 				.performanceDatetime(LocalDateTime.now()).build());
 
 		savedSeat = seatDefinitionRepository.save(
-			SeatDefinition.builder().id(UUID.randomUUID()).stadium(stadium).stadiumSection(section).rowNo(1).columnNo(1).build());
+			SeatDefinition.builder().id(UUID.randomUUID()).stadiumSection(section).rowNo(1).columnNo(1).build());
 	}
 
 

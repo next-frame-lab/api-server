@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @Entity
-@Table(name = "seat_definitions")
+@Table(
+	name = "seat_definitions",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uq_seat_definitions_location",
+			columnNames = {"stadium_section_id", "row_no", "column_no"}
+		)
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SeatDefinition {
 
@@ -27,17 +36,13 @@ public class SeatDefinition {
 	@Column(name = "id", nullable = false)
 	private UUID id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "stadium_id")
-	private Stadium stadium;
-
 	@Column(name = "row_no", nullable = false)
 	private Integer rowNo;
 
-	@Column(name = "column_no")
+	@Column(name = "column_no", nullable = false)
 	private Integer columnNo;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "stadium_section_id")
+	@JoinColumn(name = "stadium_section_id", nullable = false)
 	private StadiumSection stadiumSection;
 }

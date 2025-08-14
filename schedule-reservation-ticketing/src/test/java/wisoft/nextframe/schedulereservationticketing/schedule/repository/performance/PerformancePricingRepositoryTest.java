@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import ch.qos.logback.classic.turbo.TurboFilter;
 import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
@@ -41,13 +42,19 @@ class PerformancePricingRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		Stadium stadium = stadiumRepository.save(Stadium.builder().id(UUID.randomUUID()).name("블루스퀘어").build());
+		Stadium stadium = stadiumRepository.save(
+			Stadium.builder().id(UUID.randomUUID()).name("블루스퀘어").address("대전광역시").build());
 
 		savedSection = stadiumSectionRepository.save(
 			StadiumSection.builder().id(UUID.randomUUID()).stadium(stadium).section("A").build());
 
 		savedPerformance = performanceRepository.save(
-			Performance.builder().id(UUID.randomUUID()).name("레미제라블").runningTime(Duration.ofMinutes(180)).build()
+			Performance.builder()
+				.id(UUID.randomUUID())
+				.name("레미제라블")
+				.adultOnly(true)
+				.runningTime(Duration.ofMinutes(180))
+				.build()
 		);
 	}
 
