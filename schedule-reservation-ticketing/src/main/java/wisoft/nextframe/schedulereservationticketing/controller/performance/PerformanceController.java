@@ -2,6 +2,8 @@ package wisoft.nextframe.schedulereservationticketing.controller.performance;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +22,11 @@ public class PerformanceController {
 	private final PerformanceService performanceService;
 
 	@GetMapping("/{id}")
-	public ApiResponse<PerformanceDetailResponse> getPerformanceDetail(@PathVariable UUID id) {
-		final PerformanceDetailResponse data = performanceService.getPerformanceDetail(id);
+	public ResponseEntity<ApiResponse<?>> getPerformanceDetail(@PathVariable UUID id) {
+		PerformanceDetailResponse data = performanceService.getPerformanceDetail(id);
 
-		return ApiResponse.success(data);
+		ApiResponse<PerformanceDetailResponse> response = ApiResponse.success(data);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
