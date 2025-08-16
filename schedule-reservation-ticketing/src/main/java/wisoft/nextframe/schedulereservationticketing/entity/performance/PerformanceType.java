@@ -5,5 +5,7 @@ public enum PerformanceType {
 	재즈,
 	동요,
 	발레,
-	록
+	록,
+	힙합,
+	국악
 }
