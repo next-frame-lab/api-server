@@ -9,7 +9,7 @@ import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
 import wisoft.nextframe.payment.domain.refund.exception.RefundException;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class PaymentGlobalExceptionHandler {
 
 	@ExceptionHandler(RefundException.class)
 	public ResponseEntity<ErrorResponse> handleRefundException(RefundException ex) {
