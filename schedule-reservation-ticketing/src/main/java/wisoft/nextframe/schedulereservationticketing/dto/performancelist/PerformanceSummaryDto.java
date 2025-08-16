@@ -23,10 +23,17 @@ public class PerformanceSummaryDto {
 	private final Boolean adultOnly;
 
 	// JPQL의 'SELECT NEW' 구문에서 사용할 생성자
-	public PerformanceSummaryDto(UUID id, String name, String imageUrl, PerformanceType type,
-		PerformanceGenre genre, String stadiumName,
-		// 파라미터 타입을 java.util.Date로 변경
-		Date startDate, Date endDate, Boolean adultOnly) {
+	public PerformanceSummaryDto(
+		UUID id,
+		String name,
+		String imageUrl,
+		PerformanceType type,
+		PerformanceGenre genre,
+		String stadiumName,
+		Date startDate,
+		Date endDate,
+		Boolean adultOnly
+	) {
 		this.id = id;
 		this.name = name;
 		this.imageUrl = imageUrl;

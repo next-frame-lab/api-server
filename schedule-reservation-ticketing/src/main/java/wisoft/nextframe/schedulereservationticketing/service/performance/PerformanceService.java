@@ -4,6 +4,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,9 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.response.Pe
 import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceScheduleResponseDto;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.response.SeatSectionPriceResponseDto;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.response.StadiumResponseDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PaginationDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceSummaryDto;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -40,6 +45,17 @@ public class PerformanceService {
 		final List<PerformancePricing> pricings = performancePricingRepository.findByPerformanceId(performanceId);
 
 		return toPerformanceDetailResponse(performance, schedules, pricings);
+	}
+
+	public PerformanceListResponse getReservablePerformances(Pageable pageable) {
+		// 1. DTO로 구성된 Page 객체 조회
+		final Page<PerformanceSummaryDto> performancePage = performanceRepository.findReservablePerformances(pageable);
+
+		// 2. Page 객체를 사용하여 최종 응답 DTO를 조립
+		return PerformanceListResponse.builder()
+			.performances(performancePage.getContent())
+			.pagination(PaginationDto.from(performancePage))
+			.build();
 	}
 
 	private PerformanceDetailResponse toPerformanceDetailResponse(
