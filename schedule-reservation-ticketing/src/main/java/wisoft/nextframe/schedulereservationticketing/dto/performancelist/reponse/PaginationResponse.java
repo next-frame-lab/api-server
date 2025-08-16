@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.performancelist;
+package wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse;
 
 import org.springframework.data.domain.Page;
 
@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PaginationDto {
+public class PaginationResponse {
 
 	private final int page;
 	private final int size;
@@ -16,8 +16,8 @@ public class PaginationDto {
 	private final boolean hasNext;
 	private final boolean hasPrevious;
 
-	public static <T> PaginationDto from(Page<T> page) {
-		return PaginationDto.builder()
+	public static <T> PaginationResponse from(Page<T> page) {
+		return PaginationResponse.builder()
 			.page(page.getNumber())
 			.size(page.getSize())
 			.totalItems(page.getTotalElements())

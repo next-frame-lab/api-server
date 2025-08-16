@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
 @RestController

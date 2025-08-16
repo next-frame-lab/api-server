@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.schedule.repository.performance;
+package wisoft.nextframe.schedulereservationticketing.repository.performance;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -18,13 +18,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceSummaryDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 
@@ -52,9 +51,9 @@ class PerformanceRepositoryTest {
 	@DisplayName("성공: 새로운 공연을 저장하고 ID로 조회하면 성공한다.")
 	void saveAndFindById_Success() {
 		// given
-		UUID performanceId = UUID.randomUUID();
-		Duration runningTime = Duration.ofMinutes(150);
-		Performance newPerformance = Performance.builder()
+		final UUID performanceId = UUID.randomUUID();
+		final Duration runningTime = Duration.ofMinutes(150);
+		final Performance newPerformance = Performance.builder()
 			.id(performanceId)
 			.name("오페라의 유령")
 			.type(PerformanceType.클래식)
@@ -67,12 +66,12 @@ class PerformanceRepositoryTest {
 
 		// when
 		performanceRepository.save(newPerformance);
-		Optional<Performance> foundPerformanceOptional = performanceRepository.findById(performanceId);
+		final Optional<Performance> foundPerformanceOptional = performanceRepository.findById(performanceId);
 
 		// then
 		assertThat(foundPerformanceOptional).isPresent();
 
-		Performance foundPerformance = foundPerformanceOptional.get();
+		final Performance foundPerformance = foundPerformanceOptional.get();
 		assertThat(foundPerformance.getId()).isEqualTo(performanceId);
 		assertThat(foundPerformance.getName()).isEqualTo("오페라의 유령");
 		assertThat(foundPerformance.getType()).isEqualTo(PerformanceType.클래식);
@@ -93,12 +92,12 @@ class PerformanceRepositoryTest {
 		scheduleRepository.save(createSchedule(reservablePerf, stadium, now.minusDays(10), now.plusDays(10), LocalDate.of(2025, 9, 30).atStartOfDay()));
 
 		// when
-		final Page<PerformanceSummaryDto> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// then
 		assertThat(resultPage.getTotalElements()).isEqualTo(1);
 
-		final PerformanceSummaryDto summaryDto = resultPage.getContent().getFirst();
+		final PerformanceResponse summaryDto = resultPage.getContent().getFirst();
 		assertThat(summaryDto.getName()).isEqualTo("햄릿");
 		assertThat(summaryDto.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
 		assertThat(summaryDto.getEndDate()).isEqualTo(LocalDate.of(2025, 9, 30));
@@ -113,7 +112,7 @@ class PerformanceRepositoryTest {
 		scheduleRepository.save(createSchedule(notYetOpenPerf, stadium, now.plusDays(1), now.plusDays(20), LocalDate.of(2025, 10, 1).atStartOfDay()));
 
 		// When
-		final Page<PerformanceSummaryDto> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
 		assertThat(resultPage.getTotalElements()).isZero();
@@ -129,7 +128,7 @@ class PerformanceRepositoryTest {
 		scheduleRepository.save(createSchedule(closedPerf, stadium, now.minusDays(20), now.minusDays(1), LocalDate.of(2025, 10, 1).atStartOfDay()));
 
 		// When
-		final Page<PerformanceSummaryDto> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
 		assertThat(resultPage.getTotalElements()).isZero();

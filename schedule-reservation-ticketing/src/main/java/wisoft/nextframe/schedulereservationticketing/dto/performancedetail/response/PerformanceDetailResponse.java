@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.performance.response;
+package wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +19,7 @@ public class PerformanceDetailResponse {
 	private final Integer runningTime;
 	private final String description;
 	private final Boolean adultOnly;
-	private final StadiumResponseDto stadium;
-	private final List<PerformanceScheduleResponseDto> performanceSchedules;
-	private final List<SeatSectionPriceResponseDto> seatSectionPrices;
+	private final StadiumResponse stadium;
+	private final List<PerformanceScheduleResponse> performanceSchedules;
+	private final List<SeatSectionPriceResponse> seatSectionPrices;
 }

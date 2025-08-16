@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.schedule.repository.schedule;
+package wisoft.nextframe.schedulereservationticketing.repository.schedule;
 
 import static org.assertj.core.api.Assertions.*;
 
