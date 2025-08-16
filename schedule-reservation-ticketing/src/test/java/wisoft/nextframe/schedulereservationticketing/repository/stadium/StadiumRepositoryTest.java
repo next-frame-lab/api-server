@@ -22,15 +22,11 @@ class StadiumRepositoryTest {
 	private StadiumRepository stadiumRepository;
 
 	@Test
-	@DisplayName("새로운 경기장을 저장하고 ID로 조회하면 성공한다.")
-	void saveAndFindById_test() {
+	@DisplayName("성공: 새로운 경기장을 저장하고 ID로 조회하면 성공한다")
+	void saveAndFindById_Success() {
 		// given
 		UUID stadiumId = UUID.randomUUID();
-		Stadium newStadium = Stadium.builder()
-			.id(stadiumId)
-			.name("서울월드컵경기장")
-			.address("서울시 마포구 성산동")
-			.build();
+		Stadium newStadium = Stadium.builder().id(stadiumId).name("서울월드컵경기장").address("서울시 마포구 성산동").build();
 
 		// when
 		stadiumRepository.save(newStadium);

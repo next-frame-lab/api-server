@@ -2,7 +2,6 @@ package wisoft.nextframe.schedulereservationticketing.repository.seat;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
@@ -22,7 +24,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
@@ -43,23 +44,21 @@ class SeatStateRepositoryTest {
 	private StadiumSectionRepository stadiumSectionRepository;
 	@Autowired
 	private StadiumRepository stadiumRepository;
+
 	private Schedule savedSchedule;
 	private SeatDefinition savedSeat;
 
 	@BeforeEach
 	void setUp() {
-		Stadium stadium = stadiumRepository.save(
-			Stadium.builder().id(UUID.randomUUID()).name("올림픽공원 체조경기장").address("대전광역시").build());
+		Stadium stadium = stadiumRepository.save(new StadiumBuilder().build());
 
-		Performance performance = performanceRepository.save(
-			Performance.builder().id(UUID.randomUUID()).name("아이유 콘서트").adultOnly(true).build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().build());
 
 		StadiumSection section = stadiumSectionRepository.save(
 			StadiumSection.builder().id(UUID.randomUUID()).stadium(stadium).section("A").build());
 
 		savedSchedule = scheduleRepository.save(
-			Schedule.builder().id(UUID.randomUUID()).stadium(stadium).performance(performance)
-				.performanceDatetime(LocalDateTime.now()).build());
+			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
 
 		savedSeat = seatDefinitionRepository.save(
 			SeatDefinition.builder().id(UUID.randomUUID()).stadiumSection(section).rowNo(1).columnNo(1).build());
@@ -67,8 +66,8 @@ class SeatStateRepositoryTest {
 
 
 	@Test
-	@DisplayName("새로운 좌석 상태를 저장하고 복합키로 조회하면 성공한다.")
-	void saveAndFindById_test() {
+	@DisplayName("성공: 새로운 좌석 상태를 저장하고 복합키로 조회하면 성공한다")
+	void saveAndFindById_Success() {
 		// given
 		SeatStateId seatStateId = SeatStateId.builder()
 			.scheduleId(savedSchedule.getId())

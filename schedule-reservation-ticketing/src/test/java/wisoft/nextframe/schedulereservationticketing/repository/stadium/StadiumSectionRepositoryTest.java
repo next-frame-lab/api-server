@@ -14,10 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional
@@ -33,13 +32,13 @@ class StadiumSectionRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		final Stadium stadium = Stadium.builder().id(UUID.randomUUID()).name("잠실 야구장").address("서울 송파구 올림픽로 25").build();
+		final Stadium stadium = new StadiumBuilder().build();
 		savedStadium = stadiumRepository.save(stadium);
 	}
 
 	@Test
-	@DisplayName("새로운 경기장 구역을 저장하고 ID로 조회하면 성공한다.")
-	void saveAndFindById_test() {
+	@DisplayName("성공: 새로운 경기장 구역을 저장하고 ID로 조회하면 성공한다.")
+	void saveAndFindById_Success() {
 		// given
 		final UUID sectionId = UUID.randomUUID();
 		final StadiumSection newSection = StadiumSection.builder()
@@ -62,8 +61,8 @@ class StadiumSectionRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("동일한 경기장에 중복된 구역 이름을 저장하면 예외가 발생한다.")
-	void uniqueConstraint_violation_test() {
+	@DisplayName("실패: 동일한 경기장에 중복된 구역 이름을 저장하면 예외가 발생한다.")
+	void uniqueConstraint_violation_Fail() {
 		// given
 		StadiumSection section1 = StadiumSection.builder()
 			.id(UUID.randomUUID())
