@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceScheduleResponseDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.SeatSectionPriceResponseDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.StadiumResponseDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PaginationDto;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceSummaryDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceScheduleResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.StadiumResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PaginationResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -49,12 +49,12 @@ public class PerformanceService {
 
 	public PerformanceListResponse getReservablePerformances(Pageable pageable) {
 		// 1. DTO로 구성된 Page 객체 조회
-		final Page<PerformanceSummaryDto> performancePage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceResponse> performancePage = performanceRepository.findReservablePerformances(pageable);
 
 		// 2. Page 객체를 사용하여 최종 응답 DTO를 조립
 		return PerformanceListResponse.builder()
 			.performances(performancePage.getContent())
-			.pagination(PaginationDto.from(performancePage))
+			.pagination(PaginationResponse.from(performancePage))
 			.build();
 	}
 
@@ -65,11 +65,11 @@ public class PerformanceService {
 	) {
 
 		// Stadium 정보 반환
-		final StadiumResponseDto stadiumResponseDto = schedules.stream()
+		final StadiumResponse stadiumResponse = schedules.stream()
 			.findFirst()
 			.map(schedule -> {
 				final Stadium stadium = schedule.getStadium();
-				return StadiumResponseDto.builder()
+				return StadiumResponse.builder()
 					.id(stadium.getId())
 					.name(stadium.getName())
 					.address(stadium.getAddress())
@@ -77,8 +77,8 @@ public class PerformanceService {
 			}).orElse(null);
 
 		// 스케줄 정보 반환
-		final List<PerformanceScheduleResponseDto> scheduleDtos = schedules.stream()
-			.map(schedule -> PerformanceScheduleResponseDto.builder()
+		final List<PerformanceScheduleResponse> scheduleDtos = schedules.stream()
+			.map(schedule -> PerformanceScheduleResponse.builder()
 				.id(schedule.getId())
 				.date(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 				.time(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("HH:mm")))
@@ -86,8 +86,8 @@ public class PerformanceService {
 			.toList();
 
 		// 좌석 가격 정보 반환
-		final List<SeatSectionPriceResponseDto> seatSectionPriceResponseDtos = pricings.stream()
-			.map(pricing -> SeatSectionPriceResponseDto.builder()
+		final List<SeatSectionPriceResponse> seatSectionPriceResponses = pricings.stream()
+			.map(pricing -> SeatSectionPriceResponse.builder()
 				.section(pricing.getStadiumSection().getSection())
 				.price(pricing.getPrice())
 				.build())
@@ -104,9 +104,9 @@ public class PerformanceService {
 			.runningTime((int)performance.getRunningTime().toMinutes())
 			.description(performance.getDescription())
 			.adultOnly(performance.getAdultOnly())
-			.stadium(stadiumResponseDto)
+			.stadium(stadiumResponse)
 			.performanceSchedules(scheduleDtos)
-			.seatSectionPrices(seatSectionPriceResponseDtos)
+			.seatSectionPrices(seatSectionPriceResponses)
 			.build();
 	}
 }

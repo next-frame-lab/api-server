@@ -1,7 +1,6 @@
-package wisoft.nextframe.schedulereservationticketing.dto.performancelist;
+package wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
@@ -10,7 +9,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 
 @Getter
-public class PerformanceSummaryDto {
+public class PerformanceResponse {
 
 	private final UUID id;
 	private final String name;
@@ -22,8 +21,7 @@ public class PerformanceSummaryDto {
 	private final LocalDate endDate;
 	private final Boolean adultOnly;
 
-	// JPQL의 'SELECT NEW' 구문에서 사용할 생성자
-	public PerformanceSummaryDto(
+	public PerformanceResponse(
 		UUID id,
 		String name,
 		String imageUrl,

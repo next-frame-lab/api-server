@@ -22,9 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityNotFoundException;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceSummaryDto;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
@@ -89,9 +89,9 @@ class PerformanceServiceTest {
 	@DisplayName("예매 가능한 공연 목록 조회 성공 테스트")
 	void getReservablePerformances_Success() {
 		// given
-		final List<PerformanceSummaryDto> summaryList = List.of(createPerformanceSummaryDto());
+		final List<PerformanceResponse> summaryList = List.of(createPerformanceSummaryDto());
 		final PageRequest pageable = PageRequest.of(0, 10);
-		final PageImpl<PerformanceSummaryDto> mockPage = new PageImpl<>(summaryList, pageable, 1);
+		final PageImpl<PerformanceResponse> mockPage = new PageImpl<>(summaryList, pageable, 1);
 		given(performanceRepository.findReservablePerformances(any(Pageable.class))).willReturn(mockPage);
 
 		// when
@@ -108,11 +108,11 @@ class PerformanceServiceTest {
 		assertThat(response.getPagination().getPage()).isZero();
 	}
 
-	private PerformanceSummaryDto createPerformanceSummaryDto() {
+	private PerformanceResponse createPerformanceSummaryDto() {
 		Date startDate = Date.valueOf(LocalDate.of(2025, 8, 1));
 		Date endDate = Date.valueOf(LocalDate.of(2025, 8, 31));
 
-		return new PerformanceSummaryDto(
+		return new PerformanceResponse(
 			UUID.randomUUID(),
 			"햄릿",
 			"http://example.com/image.jpg",
