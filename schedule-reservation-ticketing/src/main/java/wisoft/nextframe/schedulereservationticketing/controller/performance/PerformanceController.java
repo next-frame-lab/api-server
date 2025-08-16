@@ -2,6 +2,8 @@ package wisoft.nextframe.schedulereservationticketing.controller.performance;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
 @RestController
@@ -23,9 +26,18 @@ public class PerformanceController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<?>> getPerformanceDetail(@PathVariable UUID id) {
-		PerformanceDetailResponse data = performanceService.getPerformanceDetail(id);
+		final PerformanceDetailResponse data = performanceService.getPerformanceDetail(id);
 
-		ApiResponse<PerformanceDetailResponse> response = ApiResponse.success(data);
+		final ApiResponse<PerformanceDetailResponse> response = ApiResponse.success(data);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<?>> getPerformances(@PageableDefault(size = 32) Pageable pageable) {
+		final PerformanceListResponse data = performanceService.getReservablePerformances(pageable);
+
+		final ApiResponse<PerformanceListResponse> response = ApiResponse.success(data);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
