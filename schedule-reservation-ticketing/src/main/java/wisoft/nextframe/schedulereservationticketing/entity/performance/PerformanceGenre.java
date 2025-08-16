@@ -4,5 +4,7 @@ public enum PerformanceGenre {
 	콘서트,
 	뮤지컬,
 	어린이극,
-	무용
+	무용,
+	연극,
+	오페라
 }
