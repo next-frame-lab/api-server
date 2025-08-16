@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.payment.application.payment.PaymentService;
 import wisoft.nextframe.payment.common.response.ApiResponse;
-import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentNotFoundException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedException;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
@@ -34,28 +33,14 @@ public class PaymentController {
 	public ResponseEntity<ApiResponse<?>> confirm(@RequestBody PaymentConfirmRequest request) {
 		try {
 			// 서비스는 엔티티(혹은 비즈니스 결과)만 반환
-			Payment payment = paymentService.confirmPayment(request);
+			paymentService.confirmPayment(request);
 
-			// 이미 승인된 결제라면 성공 응답
-			if (payment.isSucceeded()) {
-				PaymentConfirmedData approvedData = new PaymentConfirmedData(
-					request.orderId(),
-					request.amount()
-				);
-				return ResponseEntity.ok(ApiResponse.success(
-					new PaymentConfirmedData(approvedData.reservationId(), approvedData.totalAmount())
-				));
-			}
-			// 기타 특별한 성공 케이스가 있다면 분기 가능
-
-			// 일반 성공 응답
-			PaymentConfirmedData approvedData = new PaymentConfirmedData(
+			PaymentConfirmedData confirmedData = new PaymentConfirmedData(
 				request.orderId(),
 				request.amount()
 			);
-			return ResponseEntity.ok(ApiResponse.success(
-				new PaymentConfirmedData(approvedData.reservationId(), approvedData.totalAmount())
-			));
+
+			return ResponseEntity.ok(ApiResponse.success(confirmedData));
 
 		} catch (PaymentNotFoundException e) {
 			return ResponseEntity.badRequest().body(
