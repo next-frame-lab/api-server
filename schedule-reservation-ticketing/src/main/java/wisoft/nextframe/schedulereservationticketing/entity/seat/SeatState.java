@@ -38,5 +38,5 @@ public class SeatState {
 	private SeatDefinition seat;
 
 	@Column(name = "is_locked", nullable = false)
-	private Boolean isLocked = false;
+	private Boolean isLocked;
 }

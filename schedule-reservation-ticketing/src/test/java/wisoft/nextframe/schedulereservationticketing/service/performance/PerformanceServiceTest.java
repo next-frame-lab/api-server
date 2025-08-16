@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.sql.Date;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,17 +20,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityNotFoundException;
+import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.PerformancePricingBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
@@ -50,13 +48,14 @@ class PerformanceServiceTest {
 	private PerformancePricingRepository performancePricingRepository;
 
 	@Test
-	@DisplayName("공연 상세 조회 성공 테스트")
+	@DisplayName("성공: 공연 상세 조회 성공 테스트")
 	void getPerformanceDetail_Success() {
 		// given
 		final UUID performanceId = UUID.randomUUID();
-		final Performance performance = createPerformance(performanceId, "오페라의 유령");
-		final List<Schedule> schedules = List.of(createSchedule(performance));
-		final List<PerformancePricing> pricings = List.of(createPricing(performance));
+		final Performance performance = new PerformanceBuilder().withId(performanceId).withName("오페라의 유령").build();
+		final List<Schedule> schedules = List.of(new ScheduleBuilder().withPerformance(performance).build());
+		final List<PerformancePricing> pricings = List.of(
+			new PerformancePricingBuilder().withPerformance(performance).build());
 
 		given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
 		given(scheduleRepository.findByPerformanceId(performanceId)).willReturn(schedules);
@@ -67,6 +66,7 @@ class PerformanceServiceTest {
 
 		// then
 		assertThat(response).isNotNull();
+		assertThat(response.getId()).isEqualTo(performanceId);
 		assertThat(response.getName()).isEqualTo("오페라의 유령");
 		assertThat(response.getPerformanceSchedules()).hasSize(1);
 		assertThat(response.getSeatSectionPrices()).hasSize(1);
@@ -74,7 +74,7 @@ class PerformanceServiceTest {
 	}
 
 	@Test
-	@DisplayName("공연 상세 조회 실패 테스트 - 존재하지 않는 공연 ID")
+	@DisplayName("실패: 공연 상세 조회 실패 테스트 - 존재하지 않는 공연 ID")
 	void getPerformanceDetail_Fail_NotFound() {
 		// given
 		UUID nonExistentId = UUID.randomUUID();
@@ -86,11 +86,11 @@ class PerformanceServiceTest {
 	}
 
 	@Test
-	@DisplayName("예매 가능한 공연 목록 조회 성공 테스트")
+	@DisplayName("성공: 예매 가능한 공연 목록 조회 성공 테스트")
 	void getReservablePerformances_Success() {
 		// given
 		final List<PerformanceResponse> summaryList = List.of(createPerformanceSummaryDto());
-		final PageRequest pageable = PageRequest.of(0, 10);
+		final PageRequest pageable = PageRequest.of(0, 32);
 		final PageImpl<PerformanceResponse> mockPage = new PageImpl<>(summaryList, pageable, 1);
 		given(performanceRepository.findReservablePerformances(any(Pageable.class))).willReturn(mockPage);
 
@@ -123,49 +123,5 @@ class PerformanceServiceTest {
 			endDate,   // Date 타입으로 전달
 			false
 		);
-	}
-
-	private Performance createPerformance(UUID id, String name) {
-		return Performance.builder()
-			.id(id)
-			.name(name)
-			.type(PerformanceType.클래식)
-			.genre(PerformanceGenre.뮤지컬)
-			.adultOnly(true)
-			.runningTime(Duration.ofMinutes(150))
-			.imageUrl("http://example.com/image.jpg")
-			.description("전설적인 뮤지컬")
-			.build();
-	}
-
-	private Schedule createSchedule(Performance performance) {
-		Stadium stadium = Stadium.builder()
-			.id(UUID.randomUUID())
-			.name("부산문화회관")
-			.address("부산광역시 남구")
-			.build();
-
-		return Schedule.builder()
-			.id(UUID.randomUUID())
-			.performance(performance)
-			.stadium(stadium)
-			.performanceDatetime(LocalDateTime.of(2025, 9, 10, 19, 0))
-			.build();
-	}
-
-	private PerformancePricing createPricing(Performance performance) {
-		StadiumSection section = StadiumSection.builder()
-			.id(UUID.randomUUID())
-			.section("A")
-			.build();
-
-		PerformancePricingId id = new PerformancePricingId(performance.getId(), section.getId());
-
-		return PerformancePricing.builder()
-			.id(id)
-			.performance(performance)
-			.stadiumSection(section)
-			.price(150000)
-			.build();
 	}
 }

@@ -2,7 +2,6 @@ package wisoft.nextframe.schedulereservationticketing.repository.performance;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,15 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ch.qos.logback.classic.turbo.TurboFilter;
 import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
@@ -42,25 +41,14 @@ class PerformancePricingRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		Stadium stadium = stadiumRepository.save(
-			Stadium.builder().id(UUID.randomUUID()).name("블루스퀘어").address("대전광역시").build());
+		savedSection = stadiumSectionRepository.save(new StadiumSectionBuilder().build());
 
-		savedSection = stadiumSectionRepository.save(
-			StadiumSection.builder().id(UUID.randomUUID()).stadium(stadium).section("A").build());
-
-		savedPerformance = performanceRepository.save(
-			Performance.builder()
-				.id(UUID.randomUUID())
-				.name("레미제라블")
-				.adultOnly(true)
-				.runningTime(Duration.ofMinutes(180))
-				.build()
-		);
+		savedPerformance = performanceRepository.save(new PerformanceBuilder().build());
 	}
 
 	@Test
-	@DisplayName("새로운 공연 가격을 저장하고 복합키로 조회하면 성공한다.")
-	void saveAndFindById_test() {
+	@DisplayName("성공: 새로운 공연 가격을 저장하고 복합키로 조회하면 성공한다")
+	void saveAndFindById_Success() {
 		// given
 		PerformancePricingId pricingId = PerformancePricingId.builder()
 			.performanceId(savedPerformance.getId())

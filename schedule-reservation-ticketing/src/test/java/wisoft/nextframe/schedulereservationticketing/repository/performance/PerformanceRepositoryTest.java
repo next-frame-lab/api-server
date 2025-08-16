@@ -18,11 +18,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
-import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
@@ -43,17 +45,17 @@ class PerformanceRepositoryTest {
 
 	@BeforeEach
 	void setUp() {
-		stadium = stadiumRepository.save(Stadium.builder().id(UUID.randomUUID()).name("대전예술의전당").address("대전 서구").build());
-		pageable = PageRequest.of(0, 10);
+		stadium = stadiumRepository.save(new StadiumBuilder().build());
+		pageable = PageRequest.of(0, 32);
 	}
 
 	@Test
 	@DisplayName("성공: 새로운 공연을 저장하고 ID로 조회하면 성공한다.")
 	void saveAndFindById_Success() {
 		// given
-		final UUID performanceId = UUID.randomUUID();
-		final Duration runningTime = Duration.ofMinutes(150);
-		final Performance newPerformance = Performance.builder()
+		UUID performanceId = UUID.randomUUID();
+		Duration runningTime = Duration.ofMinutes(150);
+		Performance newPerformance = Performance.builder()
 			.id(performanceId)
 			.name("오페라의 유령")
 			.type(PerformanceType.클래식)
@@ -85,11 +87,27 @@ class PerformanceRepositoryTest {
 	@Test
 	@DisplayName("성공: 예매 가능한 공연을 정확히 조회한다")
 	void findReservablePerformances_Success() {
-		// given: 예매 가능한 공연 데이터 1개 저장
+		// given
 		final LocalDateTime now = LocalDateTime.now();
-		final Performance reservablePerf = performanceRepository.save(createPerformance("햄릿"));
-		scheduleRepository.save(createSchedule(reservablePerf, stadium, now.minusDays(10), now.plusDays(10), LocalDate.of(2025, 9, 1).atStartOfDay()));
-		scheduleRepository.save(createSchedule(reservablePerf, stadium, now.minusDays(10), now.plusDays(10), LocalDate.of(2025, 9, 30).atStartOfDay()));
+		// 예매 가능한 공연 데이터 1개 저장
+		final Performance reservablePerf = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
+		// 공연과 관련된 일정 데이터 2개 저장
+		scheduleRepository.save(new ScheduleBuilder()
+			.withPerformance(reservablePerf)
+			.withStadium(stadium)
+			.withPerformanceDatetime(LocalDate.of(2025, 9, 1).atStartOfDay())
+			.withTicketOpenTime(now.minusDays(10))
+			.withTicketCloseTime(now.plusDays(10))
+			.build()
+		);
+		scheduleRepository.save(new ScheduleBuilder()
+			.withPerformance(reservablePerf)
+			.withStadium(stadium)
+			.withPerformanceDatetime(LocalDate.of(2025, 9, 30).atStartOfDay())
+			.withTicketOpenTime(now.minusDays(10))
+			.withTicketCloseTime(now.plusDays(10))
+			.build()
+		);
 
 		// when
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
@@ -106,10 +124,17 @@ class PerformanceRepositoryTest {
 	@Test
 	@DisplayName("실패: 예매 시작 전인 공연은 조회되지 않는다")
 	void findReservablePerformances_Fail_WhenNotYetOpen() {
-		// given: 아직 예매가 시작되지 않은 공연 데이터 1개 저장
+		// given
 		final LocalDateTime now = LocalDateTime.now();
-		final Performance notYetOpenPerf = performanceRepository.save(createPerformance("캣츠"));
-		scheduleRepository.save(createSchedule(notYetOpenPerf, stadium, now.plusDays(1), now.plusDays(20), LocalDate.of(2025, 10, 1).atStartOfDay()));
+		// 아직 예매가 시작되지 않은 공연 데이터 저장
+		final Performance notYetOpenPerf = performanceRepository.save(new PerformanceBuilder().withName("캣츠").build());
+		// 공연과 관련된 일정 데이터 1개 저장
+		scheduleRepository.save(new ScheduleBuilder()
+			.withPerformance(notYetOpenPerf)
+			.withStadium(stadium)
+			.withTicketOpenTime(now.plusDays(1)) // 예매 시작이 미래
+			.withTicketCloseTime(now.plusDays(20))
+			.build());
 
 		// When
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
@@ -122,10 +147,17 @@ class PerformanceRepositoryTest {
 	@Test
 	@DisplayName("실패: 이미 예매가 마감된 공연은 조회되지 않는다")
 	void findReservablePerformances_Fail_WhenClosed() {
-		// given: 이미 예매가 마감된 공연 데이터 1개 저장
+		// given
 		final LocalDateTime now = LocalDateTime.now();
-		final Performance closedPerf = performanceRepository.save(createPerformance("오페라의 유령"));
-		scheduleRepository.save(createSchedule(closedPerf, stadium, now.minusDays(20), now.minusDays(1), LocalDate.of(2025, 10, 1).atStartOfDay()));
+		// 이미 예매가 마감된 공연 데이터 1개 저장
+		final Performance closedPerf = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
+		// 공연과 관련된 일정 데이터 1개 저장
+		scheduleRepository.save(new ScheduleBuilder()
+			.withPerformance(closedPerf)
+			.withStadium(stadium)
+			.withTicketOpenTime(now.minusDays(20))
+			.withTicketCloseTime(now.minusDays(1)) // 예매 마감이 과거
+			.build());
 
 		// When
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
@@ -133,28 +165,5 @@ class PerformanceRepositoryTest {
 		// Then
 		assertThat(resultPage.getTotalElements()).isZero();
 		assertThat(resultPage.getContent()).isEmpty();
-	}
-
-	// Performance 테스트 데이터 생성을 위한 헬퍼 메소드
-	private Performance createPerformance(String name) {
-		return Performance.builder()
-			.id(UUID.randomUUID())
-			.name(name)
-			.type(PerformanceType.동요)
-			.genre(PerformanceGenre.뮤지컬)
-			.adultOnly(false)
-			.build();
-	}
-
-	// Schedule 테스트 데이터 생성을 위한 헬퍼 메소드
-	private Schedule createSchedule(Performance performance, Stadium stadium, LocalDateTime open, LocalDateTime close, LocalDateTime perfDate) {
-		return Schedule.builder()
-			.id(UUID.randomUUID())
-			.performance(performance)
-			.stadium(stadium)
-			.ticketOpenTime(open)
-			.ticketCloseTime(close)
-			.performanceDatetime(perfDate)
-			.build();
 	}
 }

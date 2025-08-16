@@ -12,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
 @Transactional
@@ -29,21 +28,19 @@ class SeatDefinitionRepositoryTest {
 	private StadiumRepository stadiumRepository;
 	@Autowired
 	private StadiumSectionRepository stadiumSectionRepository;
-	private Stadium savedStadium;
+
 	private StadiumSection savedSection;
 
 	@BeforeEach
 	void setUp() {
-		Stadium stadium = Stadium.builder().id(UUID.randomUUID()).name("수원KT위즈파크").address("경기도 수원시 장안구").build();
-		savedStadium = stadiumRepository.save(stadium);
+		Stadium savedStadium = stadiumRepository.save(new StadiumBuilder().build());
 
-		StadiumSection section = StadiumSection.builder().id(UUID.randomUUID()).stadium(savedStadium).section("A").build();
-		savedSection = stadiumSectionRepository.save(section);
+		savedSection = stadiumSectionRepository.save(new StadiumSectionBuilder().witStadium(savedStadium).build());
 	}
 
 	@Test
-	@DisplayName("새로운 좌석 정의를 저장하고 ID로 조회하면 성공한다.")
-	void saveAndFindById_test() {
+	@DisplayName("성공: 새로운 좌석 정의를 저장하고 ID로 조회하면 성공한다")
+	void saveAndFindById_Success() {
 		// given
 		UUID seatId = UUID.randomUUID();
 		SeatDefinition newSeat = SeatDefinition.builder()
