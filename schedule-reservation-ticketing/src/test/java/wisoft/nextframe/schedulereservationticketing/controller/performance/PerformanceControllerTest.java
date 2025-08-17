@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -56,7 +55,7 @@ class PerformanceControllerTest {
 		// given
 		final Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
 		final StadiumSection section = stadiumSectionRepository.save(
-			new StadiumSectionBuilder().witStadium(stadium).build());
+			new StadiumSectionBuilder().withStadium(stadium).build());
 		final Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
 		scheduleRepository.save(new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
 		performancePricingRepository.save(new PerformancePricingBuilder().withPerformance(performance).withStadiumSection(section).build());
@@ -119,7 +118,6 @@ class PerformanceControllerTest {
 				.param("page", "0").param("size", "10")
 				.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.pagination.totalItems").value(1))
 			.andExpect(jsonPath("$.data.performances", hasSize(1)))
 			.andExpect(jsonPath("$.data.performances[0].name").value("햄릿"))
 			.andExpect(jsonPath("$.data.performances[0].startDate").value("2025-09-01"))

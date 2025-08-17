@@ -35,7 +35,7 @@ class SeatDefinitionRepositoryTest {
 	void setUp() {
 		Stadium savedStadium = stadiumRepository.save(new StadiumBuilder().build());
 
-		savedSection = stadiumSectionRepository.save(new StadiumSectionBuilder().witStadium(savedStadium).build());
+		savedSection = stadiumSectionRepository.save(new StadiumSectionBuilder().withStadium(savedStadium).build());
 	}
 
 	@Test

@@ -11,7 +11,7 @@ public class StadiumSectionBuilder {
 	private Stadium stadium = new StadiumBuilder().build();
 	private String sectionName = "A";
 
-	public StadiumSectionBuilder witStadium(Stadium stadium) {
+	public StadiumSectionBuilder withStadium(Stadium stadium) {
 		this.stadium = stadium;
 		return this;
 	}

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 
 public interface PerformanceRepository extends JpaRepository<Performance, UUID> {
@@ -23,7 +23,7 @@ public interface PerformanceRepository extends JpaRepository<Performance, UUID> 
 	 * @return PerformanceSummaryDto의 페이지 객체
 	 */
 	@Query(value = """
-		    SELECT new wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse(
+		    SELECT new wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse(
 		        p.id,
 		        p.name,
 		        p.imageUrl,
