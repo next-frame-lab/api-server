@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse;
+package wisoft.nextframe.schedulereservationticketing.dto.performancelist.response;
 
 import java.time.LocalDate;
 import java.util.Date;

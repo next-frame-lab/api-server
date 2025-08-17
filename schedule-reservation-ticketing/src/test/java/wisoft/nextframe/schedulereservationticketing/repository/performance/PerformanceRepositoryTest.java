@@ -21,7 +21,7 @@ import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;

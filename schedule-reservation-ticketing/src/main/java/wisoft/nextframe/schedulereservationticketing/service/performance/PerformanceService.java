@@ -15,9 +15,9 @@ import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.respo
 import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceScheduleResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.StadiumResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PaginationResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.reponse.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PaginationResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
