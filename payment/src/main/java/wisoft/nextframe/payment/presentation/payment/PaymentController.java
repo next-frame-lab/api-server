@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.PaymentService;
 import wisoft.nextframe.payment.common.response.ApiResponse;
 import wisoft.nextframe.payment.domain.payment.PaymentNotFoundException;
@@ -15,6 +16,7 @@ import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedExcepti
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmedData;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
@@ -54,7 +56,7 @@ public class PaymentController {
 			);
 		} catch (Exception e) {
 			// 예외 로그 남기고 일반 메시지 반환
-			e.printStackTrace();
+			log.error("결제 승인 에러", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(ApiResponse.failed("결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."));
 		}
