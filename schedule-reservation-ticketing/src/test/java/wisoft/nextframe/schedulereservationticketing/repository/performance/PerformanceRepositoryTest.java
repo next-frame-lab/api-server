@@ -58,8 +58,8 @@ class PerformanceRepositoryTest {
 		Performance newPerformance = Performance.builder()
 			.id(performanceId)
 			.name("오페라의 유령")
-			.type(PerformanceType.클래식)
-			.genre(PerformanceGenre.뮤지컬)
+			.type(PerformanceType.CLASSIC)
+			.genre(PerformanceGenre.MUSICAL)
 			.adultOnly(false)
 			.runningTime(runningTime)
 			.imageUrl("http://example.com/phantom_of_the_opera.jpg")
@@ -76,8 +76,8 @@ class PerformanceRepositoryTest {
 		final Performance foundPerformance = foundPerformanceOptional.get();
 		assertThat(foundPerformance.getId()).isEqualTo(performanceId);
 		assertThat(foundPerformance.getName()).isEqualTo("오페라의 유령");
-		assertThat(foundPerformance.getType()).isEqualTo(PerformanceType.클래식);
-		assertThat(foundPerformance.getGenre()).isEqualTo(PerformanceGenre.뮤지컬);
+		assertThat(foundPerformance.getType()).isEqualTo(PerformanceType.CLASSIC);
+		assertThat(foundPerformance.getGenre()).isEqualTo(PerformanceGenre.MUSICAL);
 		assertThat(foundPerformance.getAdultOnly()).isFalse();
 		assertThat(foundPerformance.getRunningTime()).isEqualTo(runningTime);
 		assertThat(foundPerformance.getImageUrl()).isEqualTo("http://example.com/phantom_of_the_opera.jpg");
