@@ -11,4 +11,12 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 public interface PerformancePricingRepository extends JpaRepository<PerformancePricing, PerformancePricingId> {
 
 	List<PerformancePricing> findByPerformanceId(UUID performanceId);
+
+	/**
+	 * 특정 공연과 여러 섹션 ID에 해당하는 가격 정보를 모두 조회합니다.
+	 * @param performanceId 공연 ID
+	 * @param sectionIds 스타디움 섹션 ID 목록
+	 * @return 가격 정보 목록
+	 */
+	List<PerformancePricing> findById_PerformanceIdAndId_StadiumSectionIdIn(UUID performanceId, List<UUID> sectionIds);
 }
