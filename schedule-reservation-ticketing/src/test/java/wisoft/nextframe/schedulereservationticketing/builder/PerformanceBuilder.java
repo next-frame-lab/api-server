@@ -11,8 +11,8 @@ public class PerformanceBuilder {
 
 	private UUID id = UUID.randomUUID();
 	private String name = "테스트 공연";
-	private PerformanceType type = PerformanceType.재즈;
-	private PerformanceGenre genre = PerformanceGenre.연극;
+	private PerformanceType type = PerformanceType.JAZZ;
+	private PerformanceGenre genre = PerformanceGenre.PLAY;
 	private Boolean adultOnly = false;
 	private Duration runningTime = Duration.ofMinutes(120);
 	private String imageUrl = "http://example.com/image.jpg";

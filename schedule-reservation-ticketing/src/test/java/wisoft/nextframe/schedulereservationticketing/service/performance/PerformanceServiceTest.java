@@ -116,8 +116,8 @@ class PerformanceServiceTest {
 			UUID.randomUUID(),
 			"햄릿",
 			"http://example.com/image.jpg",
-			PerformanceType.록,
-			PerformanceGenre.콘서트,
+			PerformanceType.ROCK,
+			PerformanceGenre.CONCERT,
 			"서울예술의전당",
 			startDate, // Date 타입으로 전달
 			endDate,   // Date 타입으로 전달
