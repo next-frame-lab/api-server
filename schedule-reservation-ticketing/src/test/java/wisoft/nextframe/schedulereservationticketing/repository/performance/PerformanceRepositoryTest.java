@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -89,8 +90,14 @@ class PerformanceRepositoryTest {
 	void findReservablePerformances_Success() {
 		// given
 		final LocalDateTime now = LocalDateTime.now();
-		// 예매 가능한 공연 데이터 1개 저장
-		final Performance reservablePerf = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
+
+		// 예매 가능한 공연 데이터 1개 저장(테스트만을 위한 고유한 공연 생성)
+		final String uniqueName = "햄릿" + UUID.randomUUID();
+		final Performance reservablePerf = performanceRepository.save(
+			new PerformanceBuilder()
+				.withName(uniqueName)
+				.build());
+
 		// 공연과 관련된 일정 데이터 2개 저장
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(reservablePerf)
@@ -113,12 +120,17 @@ class PerformanceRepositoryTest {
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// then
-		assertThat(resultPage.getTotalElements()).isEqualTo(1);
+		assertThat(resultPage.getContent()).isNotEmpty();
 
-		final PerformanceResponse summaryDto = resultPage.getContent().getFirst();
-		assertThat(summaryDto.getName()).isEqualTo("햄릿");
-		assertThat(summaryDto.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
-		assertThat(summaryDto.getEndDate()).isEqualTo(LocalDate.of(2025, 9, 30));
+		final List<PerformanceResponse> foundedPerformancList = resultPage.getContent().stream()
+			.filter(dto -> dto.getId().equals(reservablePerf.getId()))
+			.toList();
+		assertThat(foundedPerformancList).hasSize(1);
+
+		final PerformanceResponse performanceDto = foundedPerformancList.getFirst();
+		assertThat(performanceDto.getName()).isEqualTo(uniqueName);
+		assertThat(performanceDto.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
+		assertThat(performanceDto.getEndDate()).isEqualTo(LocalDate.of(2025, 9, 30));
 	}
 
 	@Test
@@ -126,8 +138,10 @@ class PerformanceRepositoryTest {
 	void findReservablePerformances_Fail_WhenNotYetOpen() {
 		// given
 		final LocalDateTime now = LocalDateTime.now();
-		// 아직 예매가 시작되지 않은 공연 데이터 저장
-		final Performance notYetOpenPerf = performanceRepository.save(new PerformanceBuilder().withName("캣츠").build());
+		// 아직 예매가 시작되지 않은 공연 데이터 저장(테스트만을 위한 고유한 공연 생성)
+		final Performance notYetOpenPerf = performanceRepository.save(
+			new PerformanceBuilder().withName("캣츠" + UUID.randomUUID()).build());
+
 		// 공연과 관련된 일정 데이터 1개 저장
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(notYetOpenPerf)
@@ -140,8 +154,10 @@ class PerformanceRepositoryTest {
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
-		assertThat(resultPage.getTotalElements()).isZero();
-		assertThat(resultPage.getContent()).isEmpty();
+		final boolean found = resultPage.getContent().stream()
+			.anyMatch(dto -> dto.getId().equals(notYetOpenPerf.getId()));
+
+		assertThat(found).isFalse();
 	}
 
 	@Test
@@ -149,8 +165,9 @@ class PerformanceRepositoryTest {
 	void findReservablePerformances_Fail_WhenClosed() {
 		// given
 		final LocalDateTime now = LocalDateTime.now();
-		// 이미 예매가 마감된 공연 데이터 1개 저장
-		final Performance closedPerf = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
+		// 이미 예매가 마감된 공연 데이터 1개 저장(테스트만을 위한 고유한 공연 생성)
+		final Performance closedPerf = performanceRepository.save(
+			new PerformanceBuilder().withName("오페라의 유령" + UUID.randomUUID()).build());
 		// 공연과 관련된 일정 데이터 1개 저장
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(closedPerf)
@@ -163,7 +180,9 @@ class PerformanceRepositoryTest {
 		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
-		assertThat(resultPage.getTotalElements()).isZero();
-		assertThat(resultPage.getContent()).isEmpty();
+		final boolean found = resultPage.getContent().stream()
+			.anyMatch(dto -> dto.getId().equals(closedPerf.getId()));
+
+		assertThat(found).isFalse();
 	}
 }
