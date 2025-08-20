@@ -3,7 +3,6 @@ package wisoft.nextframe.schedulereservationticketing.repository.performance;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
@@ -33,8 +30,6 @@ class PerformancePricingRepositoryTest {
 	private PerformanceRepository performanceRepository;
 	@Autowired
 	private StadiumSectionRepository stadiumSectionRepository;
-	@Autowired
-	private StadiumRepository stadiumRepository;
 
 	private Performance savedPerformance;
 	private StadiumSection savedSection;

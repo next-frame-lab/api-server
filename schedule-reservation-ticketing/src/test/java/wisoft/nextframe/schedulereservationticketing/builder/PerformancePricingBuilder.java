@@ -21,11 +21,6 @@ public class PerformancePricingBuilder {
 		return this;
 	}
 
-	public PerformancePricingBuilder withPrice(Integer price) {
-		this.price = price;
-		return this;
-	}
-
 	public PerformancePricing build() {
 		PerformancePricingId id = new PerformancePricingId(performance.getId(), stadiumSection.getId());
 
