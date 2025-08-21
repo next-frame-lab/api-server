@@ -6,7 +6,7 @@ import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.common.mapper.EntityMapper;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
+import wisoft.nextframe.payment.domain.ReservationId;
 
 @Component
 public class PaymentMapper implements EntityMapper<Payment, PaymentEntity> {
