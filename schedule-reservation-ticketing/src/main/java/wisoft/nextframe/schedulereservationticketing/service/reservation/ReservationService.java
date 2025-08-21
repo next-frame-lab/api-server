@@ -8,19 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
-import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.PerformanceInfo;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.SeatInfo;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
-import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeat;
-import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeatId;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatNotDefinedException;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.TotalPriceMismatchException;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationSeatRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
@@ -37,65 +33,39 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final PriceCalculator priceCalculator;
 	private final ReservationFactory reservationFactory;
+	private final ReservationMapper reservationMapper;
 
 	@Transactional
 	public ReservationResponse reserveSeat(ReservationRequest request) {
-		// 1. 엔티티 조회 및 검증
-		final User user = userRepository.findById(request.getUserId()).orElseThrow(EntityNotFoundException::new);
+		// 1. 엔티티를 조회 및 검증합니다.
+		final User user = userRepository.findById(request.getUserId())
+			.orElseThrow(EntityNotFoundException::new);
 		final Schedule schedule = scheduleRepository.findById(request.getScheduleId())
 			.orElseThrow(EntityNotFoundException::new);
-		final Performance performance = schedule.getPerformance();
 		final List<SeatDefinition> seats = seatDefinitionRepository.findWithStadiumSectionByIdIn(request.getSeatIds());
 		if (seats.size() != request.getSeatIds().size()) {
-			throw new ReservationException("요청한 좌석 중 일부를 찾을 수 없습니다.");
+			throw new SeatNotDefinedException("요청한 좌석 중 일부를 찾을 수 없습니다.");
 		}
 
-		// 2. 비즈니스 규칙 검증
-		// 공연 연령 제한 검증
+		// 2. 공연 연령 제한에 대한 사용자를 검증합니다.
+		final Performance performance = schedule.getPerformance();
 		performance.verifyAgeLimit(user);
 
-		// 3. 총액 계산
-		final int calculatedTotalPrice = priceCalculator.calculate(performance, seats);
+		// 3. 사용자가 선택한 좌석의 총 금액을 계산합니다.
+		final int calculatedTotalPrice = priceCalculator.calculateTotalPrice(performance, seats);
+		// 4. 요청 금액(클라이언트)과 계산 금액이 일치하는지 검증합니다.
 		if (calculatedTotalPrice != request.getTotalAmount()) {
-			throw new ReservationException("요청된 총액과 서버에서 계산된 금액이 일치하지 않습니다.");
+			throw new TotalPriceMismatchException("요청된 금액과 계산된 금액이 일치하지 않습니다.");
 		}
 
-		// 4. 예매 좌석 검증 및 좌석 잠금 처리
+		// 5. 예매 좌석에 대한 검증 및 잠금 처리를 합니다.
 		schedule.lockSeatsForReservation(seats, seatStateRepository);
 
-		// 5. 예매 정보 및 좌석 정보저장
+		// 6. 예매 정보를 생성 및 저장합니다.
 		final Reservation reservation = reservationFactory.create(user, schedule, seats, calculatedTotalPrice);
 		reservationRepository.save(reservation);
 
-		// 6. 응답 DTO 생성 및 반환
-		return createReservationResponse(reservation, performance, schedule, seats);
-	}
-
-	private ReservationResponse createReservationResponse(
-		Reservation reservation,
-		Performance performance,
-		Schedule schedule,
-		List<SeatDefinition> seats
-	) {
-		final PerformanceInfo performanceInfo = new PerformanceInfo(
-			performance.getName(),
-			schedule.getPerformanceDatetime().toLocalDate(),
-			schedule.getPerformanceDatetime().toLocalTime()
-		);
-
-		final List<SeatInfo> seatInfos = seats.stream()
-			.map(seat -> new SeatInfo(
-				seat.getStadiumSection().getSection(),
-				seat.getRowNo(),
-				seat.getColumnNo()
-			))
-			.toList();
-
-		return new ReservationResponse(
-			reservation.getId(),
-			performanceInfo,
-			seatInfos,
-			reservation.getTotalPrice()
-		);
+		// 7. 응답 DTO 생성 및 반환합니다.
+		return reservationMapper.toResponse(reservation, performance, schedule, seats);
 	}
 }
