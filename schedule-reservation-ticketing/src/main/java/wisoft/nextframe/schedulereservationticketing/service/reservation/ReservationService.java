@@ -1,9 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +12,6 @@ import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.Pe
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.SeatInfo;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeat;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeatId;
@@ -24,7 +20,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationSeatRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
@@ -40,9 +35,9 @@ public class ReservationService {
 	private final ScheduleRepository scheduleRepository;
 	private final SeatDefinitionRepository seatDefinitionRepository;
 	private final SeatStateRepository seatStateRepository;
-	private final PerformancePricingRepository performancePricingRepository;
 	private final ReservationRepository reservationRepository;
 	private final ReservationSeatRepository reservationSeatRepository;
+	private final PriceCalculator priceCalculator;
 
 	@Transactional
 	public ReservationResponse reserveSeat(ReservationRequest request) {
@@ -65,8 +60,10 @@ public class ReservationService {
 			throw new SeatAlreadyLockedException("이미 예약되었거나 선택할 수 없는 좌석입니다.");
 		}
 
-		// 3. 가격 계산 및 검증
-		final int calculatedTotalPrice = calculateAndValidatePrice(performance.getId(), seats, request.getTotalAmount());
+		final int calculatedTotalPrice = priceCalculator.calculate(performance, seats);
+		if (calculatedTotalPrice != request.getTotalAmount()) {
+			throw new ReservationException("요청된 총액과 서버에서 계산된 금액이 일치하지 않습니다.");
+		}
 
 		// 4. 예매 정보 생성 및 저장
 		final Reservation reservation = Reservation.create(user, schedule, calculatedTotalPrice);
@@ -87,28 +84,6 @@ public class ReservationService {
 
 		// 7. 응답 DTO 생성 및 반환
 		return createReservationResponse(reservation, performance, schedule, seats);
-	}
-
-	private int calculateAndValidatePrice(UUID performanceId, List<SeatDefinition> seats, int clientTotalAmount) {
-		final List<UUID> sectionIds = seats.stream()
-			.map(seat -> seat.getStadiumSection().getId())
-			.distinct()
-			.toList();
-
-		final Map<UUID, Integer> priceMap = performancePricingRepository
-			.findById_PerformanceIdAndId_StadiumSectionIdIn(performanceId, sectionIds)
-			.stream()
-			.collect(Collectors.toMap(p -> p.getId().getStadiumSectionId(), PerformancePricing::getPrice));
-
-		final int serverCalculatedPrice = seats.stream()
-			.mapToInt(seat -> priceMap.get(seat.getStadiumSection().getId()))
-			.sum();
-
-		if (serverCalculatedPrice != clientTotalAmount) {
-			throw new ReservationException("요청된 총액과 서버에서 계산된 금액이 일치하지 않습니다.");
-		}
-
-		return serverCalculatedPrice;
 	}
 
 	private ReservationResponse createReservationResponse(Reservation reservation, Performance performance, Schedule schedule, List<SeatDefinition> seats) {
