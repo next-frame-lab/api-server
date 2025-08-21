@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PerformanceInfo {
+public class PerformanceInfoResponse {
 
 	private final String name;
 	private final LocalDate scheduleDate;

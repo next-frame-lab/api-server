@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SeatInfo {
+public class SeatInfoResponse {
 
 	private final String section;
 	private final int row;

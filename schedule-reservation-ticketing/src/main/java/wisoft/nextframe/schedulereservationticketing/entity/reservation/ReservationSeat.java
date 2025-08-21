@@ -8,8 +8,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,8 +15,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "reservation_seats")
 public class ReservationSeat {
@@ -36,4 +32,10 @@ public class ReservationSeat {
 	@MapsId("seatId")
 	@JoinColumn(name = "seat_id")
 	private SeatDefinition seatDefinition;
+
+	public ReservationSeat(Reservation reservation, SeatDefinition seatDefinition) {
+		this.reservation = reservation;
+		this.seatDefinition = seatDefinition;
+		this.id = new ReservationSeatId(reservation.getId(), seatDefinition.getId());
+	}
 }

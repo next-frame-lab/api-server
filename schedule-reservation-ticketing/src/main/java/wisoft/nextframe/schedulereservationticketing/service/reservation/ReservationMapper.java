@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.PerformanceInfo;
+import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.PerformanceInfoResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.SeatInfo;
+import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.SeatInfoResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -29,14 +29,14 @@ public class ReservationMapper {
 		Schedule schedule,
 		List<SeatDefinition> seats
 	) {
-		final PerformanceInfo performanceInfo = new PerformanceInfo(
+		final PerformanceInfoResponse performanceInfoResponse = new PerformanceInfoResponse(
 			performance.getName(),
 			schedule.getPerformanceDatetime().toLocalDate(),
 			schedule.getPerformanceDatetime().toLocalTime()
 		);
 
-		final List<SeatInfo> seatInfos = seats.stream()
-			.map(seat -> new SeatInfo(
+		final List<SeatInfoResponse> seatInfoResponses = seats.stream()
+			.map(seat -> new SeatInfoResponse(
 				seat.getStadiumSection().getSection(),
 				seat.getRowNo(),
 				seat.getColumnNo()
@@ -45,8 +45,8 @@ public class ReservationMapper {
 
 		return new ReservationResponse(
 			reservation.getId(),
-			performanceInfo,
-			seatInfos,
+			performanceInfoResponse,
+			seatInfoResponses,
 			reservation.getTotalPrice()
 		);
 	}
