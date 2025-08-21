@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.ticketing.service;
+package wisoft.nextframe.schedulereservationticketing.service.ticketing;
 
 import java.util.UUID;
 

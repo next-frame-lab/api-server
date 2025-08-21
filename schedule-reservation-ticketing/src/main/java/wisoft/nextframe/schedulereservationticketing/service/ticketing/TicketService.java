@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.ticketing.service;
+package wisoft.nextframe.schedulereservationticketing.service.ticketing;
 
 import java.util.UUID;
 
@@ -8,9 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
-import wisoft.nextframe.schedulereservationticketing.ticketing.entity.Ticket;
-import wisoft.nextframe.schedulereservationticketing.ticketing.repository.TicketRepository;
+import wisoft.nextframe.schedulereservationticketing.entity.ticketing.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.entity.ticketing.Ticket;
+import wisoft.nextframe.schedulereservationticketing.exception.ticketing.AlreadyIssuedException;
+import wisoft.nextframe.schedulereservationticketing.repository.ticketing.TicketRepository;
 
 @Slf4j
 @Service
@@ -21,7 +22,6 @@ public class TicketService {
 
 	/**
 	 * 예약 기반 티켓 발급
-	 * - 지금은 seatId/scheduleId가 없으므로 null 허용
 	 * - 중복 발급 방지 멱등성 보장
 	 */
 	@Transactional
@@ -32,11 +32,6 @@ public class TicketService {
 			.ifPresent(existing -> {
 				throw new AlreadyIssuedException(reservationIdObj);
 			});
-
-		// TODO: 예약 BC 연동 후 seatId, scheduleId 조회해서 세팅
-		// ReservationSnapshot s = reservationQueryPort.fetchSnapshot(reservationId);
-		// UUID seatId = s.seatId();
-		// UUID scheduleId = s.scheduleId();
 
 		Ticket ticket = Ticket.issue(reservationId);
 

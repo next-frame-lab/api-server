@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.ticketing.exception;
+package wisoft.nextframe.schedulereservationticketing.exception.ticketing;
 
 public class CannotIssueTicketWithoutPaymentException extends RuntimeException {
 	public CannotIssueTicketWithoutPaymentException() {

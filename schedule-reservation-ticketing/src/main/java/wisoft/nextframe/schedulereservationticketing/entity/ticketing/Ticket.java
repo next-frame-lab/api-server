@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.ticketing.entity;
+package wisoft.nextframe.schedulereservationticketing.entity.ticketing;
 
 import static java.util.Objects.*;
 
@@ -48,7 +48,6 @@ public class Ticket {
 
 	@Column(name = "qr_code", nullable = false)
 	private String qrCode;
-
 
 	// seatId, scheduleId는 추후 조회 후 세팅
 	public static Ticket issue(UUID reservationId) {
