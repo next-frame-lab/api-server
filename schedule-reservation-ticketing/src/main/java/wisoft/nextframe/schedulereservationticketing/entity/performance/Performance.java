@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.typeconverter.DurationMinutesConverter;
+import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 
 @Getter
 @Builder
@@ -52,4 +54,10 @@ public class Performance {
 
 	@Column(name = "description", columnDefinition = "text")
 	private String description;
+
+	public void verifyAgeLimit(User user) {
+		if (this.adultOnly && !user.isAdult()) {
+			throw new ReservationException("성인만 예매 가능한 공연입니다.");
+		}
+	}
 }

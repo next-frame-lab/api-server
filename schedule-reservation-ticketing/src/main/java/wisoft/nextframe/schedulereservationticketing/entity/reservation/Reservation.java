@@ -57,4 +57,12 @@ public class Reservation {
 	@CreationTimestamp
 	@Column(name = "reserved_at", nullable = false, updatable = false)
 	private LocalDateTime reservedAt;
+
+	public static Reservation create(User user, Schedule schedule, int totalPrice) {
+		return Reservation.builder()
+			.user(user)
+			.schedule(schedule)
+			.totalPrice(totalPrice)
+			.build();
+	}
 }
