@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.entity.schedule;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -17,7 +18,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
+import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @Getter
 @Builder
@@ -55,4 +59,19 @@ public class Schedule {
 
 	@Column(name = "ticket_close_time")
 	private LocalDateTime ticketCloseTime;
+
+	public void lockSeatsForReservation(List<SeatDefinition> seats, SeatStateRepository seatStateRepository) {
+		// 1. 좌석 ID 목록을 추출합니다.
+		final List<UUID> seatIds = seats.stream()
+			.map(SeatDefinition::getId)
+			.toList();
+
+		// 2. 좌석이 이미 잠겨있는지 검증합니다.
+		if (seatStateRepository.existsByScheduleIdSeatIsLocked(this.id, seatIds)) {
+			throw new SeatAlreadyLockedException("이미 예약되었거나 선택할 수 없는 좌석입니다.");
+		}
+
+		// 3. 좌석을 잠급니다.
+		seatStateRepository.lockSeats(this.id, seatIds);
+	}
 }

@@ -55,21 +55,20 @@ public class ReservationService {
 		// 공연 연령 제한 검증
 		performance.verifyAgeLimit(user);
 
-		// 좌석 중복 검증
-		if (seatStateRepository.existsByScheduleIdSeatIsLocked(request.getScheduleId(), request.getSeatIds())) {
-			throw new SeatAlreadyLockedException("이미 예약되었거나 선택할 수 없는 좌석입니다.");
-		}
-
+		// 3. 가격 계산
 		final int calculatedTotalPrice = priceCalculator.calculate(performance, seats);
 		if (calculatedTotalPrice != request.getTotalAmount()) {
 			throw new ReservationException("요청된 총액과 서버에서 계산된 금액이 일치하지 않습니다.");
 		}
 
-		// 4. 예매 정보 생성 및 저장
+		// 4. 예매 좌석 검증 및 좌석 잠금 처리
+		schedule.lockSeatsForReservation(seats, seatStateRepository);
+
+		// 5. 예매 정보 생성 및 저장
 		final Reservation reservation = Reservation.create(user, schedule, calculatedTotalPrice);
 		reservationRepository.save(reservation);
 
-		// 5. 예매 좌석 정보 생성 및 저장
+		// 6. 예매 좌석 정보 생성 및 저장
 		final List<ReservationSeat> reservationSeats = seats.stream()
 			.map(seat -> ReservationSeat.builder()
 				.id(new ReservationSeatId(reservation.getId(), seat.getId()))
@@ -78,9 +77,6 @@ public class ReservationService {
 				.build())
 			.toList();
 		reservationSeatRepository.saveAll(reservationSeats);
-
-		// 6. 좌석 잠금 처리
-		seatStateRepository.lockSeats(schedule.getId(), request.getSeatIds());
 
 		// 7. 응답 DTO 생성 및 반환
 		return createReservationResponse(reservation, performance, schedule, seats);
