@@ -25,7 +25,7 @@ public class PriceCalculator {
 	 * @param seats 선택된 좌석 목록
 	 * @return 계산된 총 가격
 	 */
-	public int calculate(Performance performance, List<SeatDefinition> seats) {
+	public int calculateTotalPrice(Performance performance, List<SeatDefinition> seats) {
 		// 1. 좌석들로부터 섹션 ID 목록을 추출합니다.
 		final List<UUID> sectionIds = seats.stream()
 			.map(seat -> seat.getStadiumSection().getId())
