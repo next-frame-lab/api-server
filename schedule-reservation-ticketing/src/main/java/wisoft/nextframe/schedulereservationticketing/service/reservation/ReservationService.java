@@ -30,7 +30,7 @@ public class ReservationService {
 
 	@Transactional
 	public ReservationResponse reserveSeat(ReservationRequest request) {
-		// 1. 데이터 준비
+		// 1. 예매에 필요한 데이터를 준비합니다.
 		final ReservationContext context = dataProvider.provide(request);
 		final Performance performance = context.performance();
 		final User user = context.user();

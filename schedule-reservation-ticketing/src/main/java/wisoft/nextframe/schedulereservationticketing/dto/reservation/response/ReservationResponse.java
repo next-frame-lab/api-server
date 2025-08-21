@@ -13,7 +13,7 @@ import lombok.Getter;
 public class ReservationResponse {
 
 	private final UUID reservationId;
-	private final PerformanceInfo performance;
-	private final List<SeatInfo> seats;
+	private final PerformanceInfoResponse performance;
+	private final List<SeatInfoResponse> seats;
 	private final int totalAmount;
 }

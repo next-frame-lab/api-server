@@ -10,6 +10,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiErrorResponse;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
 
 @Slf4j
 @RestControllerAdvice
@@ -37,6 +38,14 @@ public class GlobalExceptionHandler {
 		log.warn("handleEntityNotFound: {}", ex.getMessage());
 		ApiErrorResponse response = new ApiErrorResponse("NOT_FOUND");
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+
+	// 409 Conflict - 좌석이 이미 잠겨있음
+	@ExceptionHandler(SeatAlreadyLockedException.class)
+	public ResponseEntity<ApiErrorResponse> handleSeatAlreadyLockedException(SeatAlreadyLockedException ex) {
+		log.warn("handleSeatAlreadyLocked: {}", ex.getMessage());
+		ApiErrorResponse response = new ApiErrorResponse("SEAT_ALREADY_LOCKED");
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 	}
 
 	// 500 Internal Server Error - 처리되지 않은 모든 서버 내부 예외를 처리

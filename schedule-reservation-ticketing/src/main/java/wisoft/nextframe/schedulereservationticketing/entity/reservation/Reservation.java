@@ -1,13 +1,13 @@
 package wisoft.nextframe.schedulereservationticketing.entity.reservation;
 
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.web.bind.annotation.BindParam;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 @Getter
@@ -54,7 +55,9 @@ public class Reservation {
 	@Column(name = "total_price", nullable = false)
 	private Integer totalPrice;
 
+	@Builder.Default
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
 	@Column(name = "status", nullable = false, columnDefinition = "reservation_status")
 	private ReservationStatus status = ReservationStatus.CREATED;
 
@@ -62,6 +65,7 @@ public class Reservation {
 	@Column(name = "reserved_at", nullable = false, updatable = false)
 	private LocalDateTime reservedAt;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ReservationSeat> reservationSeats = new ArrayList<>();
 
@@ -74,8 +78,10 @@ public class Reservation {
 	}
 
 	// 연관 관계 편의 메서드
-	public void addReservationSeats(List<ReservationSeat> seats) {
-		this.reservationSeats.addAll(seats);
-		seats.forEach(seat -> seat.setReservation(this));
+	public void addReservationSeats(List<SeatDefinition> seatDefinitions) {
+		for (SeatDefinition seatDefinition : seatDefinitions) {
+			final ReservationSeat reservationSeat = new ReservationSeat(this, seatDefinition);
+			this.reservationSeats.add(reservationSeat);
+		}
 	}
 }
