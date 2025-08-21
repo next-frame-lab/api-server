@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 
 @Getter
@@ -25,6 +26,7 @@ public class ReservationSeat {
 	@EmbeddedId
 	private ReservationSeatId id;
 
+	@Setter
 	@ManyToOne(fetch = FetchType.LAZY)
 	@MapsId("reservationId")
 	@JoinColumn(name = "reservation_id")

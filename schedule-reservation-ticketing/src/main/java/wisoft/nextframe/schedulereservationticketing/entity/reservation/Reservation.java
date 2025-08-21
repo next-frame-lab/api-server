@@ -2,11 +2,14 @@ package wisoft.nextframe.schedulereservationticketing.entity.reservation;
 
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.web.bind.annotation.BindParam;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -58,11 +62,20 @@ public class Reservation {
 	@Column(name = "reserved_at", nullable = false, updatable = false)
 	private LocalDateTime reservedAt;
 
+	@OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ReservationSeat> reservationSeats = new ArrayList<>();
+
 	public static Reservation create(User user, Schedule schedule, int totalPrice) {
 		return Reservation.builder()
 			.user(user)
 			.schedule(schedule)
 			.totalPrice(totalPrice)
 			.build();
+	}
+
+	// 연관 관계 편의 메서드
+	public void addReservationSeats(List<ReservationSeat> seats) {
+		this.reservationSeats.addAll(seats);
+		seats.forEach(seat -> seat.setReservation(this));
 	}
 }
