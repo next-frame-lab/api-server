@@ -19,7 +19,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationSeatRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
@@ -36,8 +35,8 @@ public class ReservationService {
 	private final SeatDefinitionRepository seatDefinitionRepository;
 	private final SeatStateRepository seatStateRepository;
 	private final ReservationRepository reservationRepository;
-	private final ReservationSeatRepository reservationSeatRepository;
 	private final PriceCalculator priceCalculator;
+	private final ReservationFactory reservationFactory;
 
 	@Transactional
 	public ReservationResponse reserveSeat(ReservationRequest request) {
@@ -55,7 +54,7 @@ public class ReservationService {
 		// 공연 연령 제한 검증
 		performance.verifyAgeLimit(user);
 
-		// 3. 가격 계산
+		// 3. 총액 계산
 		final int calculatedTotalPrice = priceCalculator.calculate(performance, seats);
 		if (calculatedTotalPrice != request.getTotalAmount()) {
 			throw new ReservationException("요청된 총액과 서버에서 계산된 금액이 일치하지 않습니다.");
@@ -64,25 +63,20 @@ public class ReservationService {
 		// 4. 예매 좌석 검증 및 좌석 잠금 처리
 		schedule.lockSeatsForReservation(seats, seatStateRepository);
 
-		// 5. 예매 정보 생성 및 저장
-		final Reservation reservation = Reservation.create(user, schedule, calculatedTotalPrice);
+		// 5. 예매 정보 및 좌석 정보저장
+		final Reservation reservation = reservationFactory.create(user, schedule, seats, calculatedTotalPrice);
 		reservationRepository.save(reservation);
 
-		// 6. 예매 좌석 정보 생성 및 저장
-		final List<ReservationSeat> reservationSeats = seats.stream()
-			.map(seat -> ReservationSeat.builder()
-				.id(new ReservationSeatId(reservation.getId(), seat.getId()))
-				.reservation(reservation)
-				.seatDefinition(seat)
-				.build())
-			.toList();
-		reservationSeatRepository.saveAll(reservationSeats);
-
-		// 7. 응답 DTO 생성 및 반환
+		// 6. 응답 DTO 생성 및 반환
 		return createReservationResponse(reservation, performance, schedule, seats);
 	}
 
-	private ReservationResponse createReservationResponse(Reservation reservation, Performance performance, Schedule schedule, List<SeatDefinition> seats) {
+	private ReservationResponse createReservationResponse(
+		Reservation reservation,
+		Performance performance,
+		Schedule schedule,
+		List<SeatDefinition> seats
+	) {
 		final PerformanceInfo performanceInfo = new PerformanceInfo(
 			performance.getName(),
 			schedule.getPerformanceDatetime().toLocalDate(),
