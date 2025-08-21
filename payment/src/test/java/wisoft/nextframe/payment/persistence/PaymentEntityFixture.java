@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import wisoft.nextframe.payment.common.Money;
+import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
 import wisoft.nextframe.payment.infra.payment.PaymentEntity;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 public class PaymentEntityFixture {
 

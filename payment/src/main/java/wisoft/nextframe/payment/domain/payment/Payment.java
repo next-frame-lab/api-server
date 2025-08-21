@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.common.exception.InvalidAmountException;
+import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
 import wisoft.nextframe.payment.domain.payment.exception.TooLargeAmountException;
 import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 @Getter
 public class Payment {

@@ -12,11 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.common.Money;
+import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedException;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
-import wisoft.nextframe.schedulereservationticketing.reservation.ReservationId;
 
 // 도메인 핵심 로직을 담당하는 서비스. 외부 시스템의 세부 구현에 의존하지 않습니다.
 @Slf4j
@@ -65,7 +65,7 @@ public class PaymentService {
 			paymentRepository.save(payment);
 			log.info("결제 저장 완료 - paymentId: {}", payment.getId());
 
-			ticketingClient.issueTicket(payment.getReservationId().getValue());
+			ticketingClient.issueTicket(payment.getReservationId());
 			log.info("티켓 발급 요청 완료 - reservationId: {}", payment.getReservationId());
 
 			return payment;

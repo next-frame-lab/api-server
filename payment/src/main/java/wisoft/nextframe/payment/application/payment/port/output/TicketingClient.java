@@ -1,8 +1,7 @@
-// payment/service/port/TicketingClient.java
 package wisoft.nextframe.payment.application.payment.port.output;
 
-import java.util.UUID;
+import wisoft.nextframe.payment.domain.ReservationId;
 
 public interface TicketingClient {
-    void issueTicket(UUID reservationId);
+	void issueTicket(ReservationId reservationId);
 }
