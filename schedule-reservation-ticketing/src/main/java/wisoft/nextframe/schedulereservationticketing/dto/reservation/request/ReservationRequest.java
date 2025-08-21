@@ -13,7 +13,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ReservationRequest {
 
-
 	@NotNull
 	private final UUID userId;
 
