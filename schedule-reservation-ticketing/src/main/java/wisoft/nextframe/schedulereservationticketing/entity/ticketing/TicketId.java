@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.ticketing.entity;
+package wisoft.nextframe.schedulereservationticketing.entity.ticketing;
 
 import java.util.Objects;
 import java.util.UUID;

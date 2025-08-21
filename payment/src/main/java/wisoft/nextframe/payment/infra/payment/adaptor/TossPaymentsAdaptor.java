@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.payment.client;
+package wisoft.nextframe.payment.infra.payment.adaptor;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
