@@ -16,6 +16,11 @@ public class StadiumSectionBuilder {
 		return this;
 	}
 
+	public StadiumSectionBuilder withId(UUID id) {
+		this.id = id;
+		return this;
+	}
+
 	public StadiumSection build() {
 		return new StadiumSection(id, stadium, sectionName);
 	}
