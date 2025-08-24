@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.performance;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -93,6 +94,14 @@ public class PerformanceService {
 				.build())
 			.toList();
 
+		LocalDateTime ticketOpenTime = null;
+		LocalDateTime ticketCloseTime = null;
+
+		if (!schedules.isEmpty()) {
+			ticketOpenTime = schedules.getFirst().getTicketOpenTime();
+			ticketCloseTime = schedules.getFirst().getTicketCloseTime();
+		}
+
 		// 최종 응답 DTO 조립
 		return PerformanceDetailResponse.builder()
 			.id(performance.getId())
@@ -104,6 +113,8 @@ public class PerformanceService {
 			.runningTime((int)performance.getRunningTime().toMinutes())
 			.description(performance.getDescription())
 			.adultOnly(performance.getAdultOnly())
+			.ticketOpenTime(ticketOpenTime)
+			.ticketCloseTime(ticketCloseTime)
 			.stadium(stadiumResponse)
 			.performanceSchedules(scheduleDtos)
 			.seatSectionPrices(seatSectionPriceResponses)

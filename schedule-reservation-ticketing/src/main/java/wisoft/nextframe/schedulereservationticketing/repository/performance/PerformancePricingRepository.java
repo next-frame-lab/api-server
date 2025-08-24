@@ -10,6 +10,11 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 
 public interface PerformancePricingRepository extends JpaRepository<PerformancePricing, PerformancePricingId> {
 
+	/*
+	todo: 데이터 모델 수정 필요
+	- 현재 이 메서드를 호출하면, 특정 공연장이나 일정(Schedule)에 관계없이 해당 공연(Performance)에 연결된 모든 가격 정보가 한꺼번에 조회된다.
+	  -> 이 문제를 해결하려면, 가격 정보가 Performance가 아닌 Schedule에 직접 연결되도록 데이터 모델을 변경해야 함.
+	 */
 	List<PerformancePricing> findByPerformanceId(UUID performanceId);
 
 	/**
