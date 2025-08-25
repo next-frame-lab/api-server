@@ -11,11 +11,10 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 
 public interface SeatDefinitionRepository extends JpaRepository<SeatDefinition, UUID> {
 
-	@Query(value = """
-				select sd from SeatDefinition sd
-				join fetch sd.stadiumSection ss
-				order by ss.section asc, sd.rowNo asc, sd.columnNo asc 
-		""")
+	@Query("SELECT sd FROM SeatDefinition sd " +
+		"JOIN FETCH sd.stadiumSection ss " +
+		"WHERE ss.stadium.id = :stadiumId " +
+		"ORDER BY ss.section ASC, sd.rowNo ASC, sd.columnNo ASC")
 	List<SeatDefinition> findAllByStadiumIdWithSorting(@Param("stadiumId") UUID stadiumId);
 
 	/**
