@@ -5,6 +5,7 @@ import org.springframework.web.client.RestClient;
 
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.domain.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.dto.ticketing.TicketIssueRequest;
 
 @Component
 public class TicketingAdaptor implements TicketingClient {
@@ -19,9 +20,11 @@ public class TicketingAdaptor implements TicketingClient {
 
 	@Override
 	public void issueTicket(ReservationId reservationId) {
+		TicketIssueRequest request = new TicketIssueRequest(reservationId.getValue());
+
 		restClient.post()
-			.uri("/issue")
-			.body(reservationId)
+			.uri("/tickets")
+			.body(request)
 			.retrieve()
 			.toBodilessEntity();
 	}
