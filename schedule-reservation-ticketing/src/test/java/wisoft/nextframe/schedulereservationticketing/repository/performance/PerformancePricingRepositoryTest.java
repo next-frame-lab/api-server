@@ -12,12 +12,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @SpringBootTest
@@ -27,18 +29,18 @@ class PerformancePricingRepositoryTest {
 	@Autowired
 	private PerformancePricingRepository performancePricingRepository;
 	@Autowired
-	private PerformanceRepository performanceRepository;
+	private ScheduleRepository scheduleRepository;
 	@Autowired
 	private StadiumSectionRepository stadiumSectionRepository;
 
-	private Performance savedPerformance;
+	private Schedule savedSchedule;
 	private StadiumSection savedSection;
 
 	@BeforeEach
 	void setUp() {
 		savedSection = stadiumSectionRepository.save(new StadiumSectionBuilder().build());
 
-		savedPerformance = performanceRepository.save(new PerformanceBuilder().build());
+		savedSchedule = scheduleRepository.save(new ScheduleBuilder().build());
 	}
 
 	@Test
@@ -46,13 +48,13 @@ class PerformancePricingRepositoryTest {
 	void saveAndFindById_Success() {
 		// given
 		PerformancePricingId pricingId = PerformancePricingId.builder()
-			.performanceId(savedPerformance.getId())
+			.scheduleId(savedSchedule.getId())
 			.stadiumSectionId(savedSection.getId())
 			.build();
 
 		PerformancePricing newPricing = PerformancePricing.builder()
 			.id(pricingId)
-			.performance(savedPerformance)
+			.schedule(savedSchedule)
 			.stadiumSection(savedSection)
 			.price(180000)
 			.build();
@@ -67,7 +69,7 @@ class PerformancePricingRepositoryTest {
 		PerformancePricing foundPricing = foundPricingOptional.get();
 		assertThat(foundPricing.getId()).isEqualTo(pricingId);
 		assertThat(foundPricing.getPrice()).isEqualTo(180000);
-		assertThat(foundPricing.getPerformance().getId()).isEqualTo(savedPerformance.getId());
+		assertThat(foundPricing.getSchedule().getId()).isEqualTo(savedSchedule.getId());
 		assertThat(foundPricing.getStadiumSection().getId()).isEqualTo(savedSection.getId());
 	}
 }

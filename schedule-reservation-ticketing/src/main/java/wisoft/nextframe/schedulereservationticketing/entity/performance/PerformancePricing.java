@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 
 @Getter
@@ -26,10 +27,10 @@ public class PerformancePricing {
 	@EmbeddedId
 	private PerformancePricingId id;
 
-	@MapsId("performanceId")
+	@MapsId("scheduleId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "performance_id", nullable = false)
-	private Performance performance;
+	@JoinColumn(name = "schedule_id", nullable = false)
+	private Schedule schedule;
 
 	@MapsId("stadiumSectionId")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

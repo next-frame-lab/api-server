@@ -23,7 +23,9 @@ import jakarta.persistence.EntityNotFoundException;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformancePricingBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
@@ -31,6 +33,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
@@ -52,14 +55,38 @@ class PerformanceServiceTest {
 	void getPerformanceDetail_Success() {
 		// given
 		final UUID performanceId = UUID.randomUUID();
-		final Performance performance = new PerformanceBuilder().withId(performanceId).withName("오페라의 유령").build();
-		final List<Schedule> schedules = List.of(new ScheduleBuilder().withPerformance(performance).build());
-		final List<PerformancePricing> pricings = List.of(
-			new PerformancePricingBuilder().withPerformance(performance).build());
+		final UUID stadiumId = UUID.randomUUID();
 
+		// 1. 테스트용 엔티티 준비
+		final Performance performance = new PerformanceBuilder()
+			.withId(performanceId)
+			.withName("오페라의 유령")
+			.build();
+
+		final Stadium stadium = new StadiumBuilder()
+			.withId(stadiumId)
+			.build();
+
+		final List<Schedule> schedules = List.of(
+			new ScheduleBuilder()
+				.withPerformance(performance)
+				.withStadium(stadium) // Stadium 정보 추가
+				.build()
+		);
+
+		// 2. Repository가 반환할 DTO 목록 준비
+		final List<SeatSectionPriceResponse> seatPrices = List.of(
+			SeatSectionPriceResponse.builder()
+				.section("A")// DTO 생성 (빌더가 있다면 빌더 사용)
+				.price(150000)
+				.build()
+		);
+		// 3. Mock Repository 설정
 		given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
 		given(scheduleRepository.findByPerformanceId(performanceId)).willReturn(schedules);
-		given(performancePricingRepository.findByPerformanceId(performanceId)).willReturn(pricings);
+		// 'findCommonPricingByPerformanceAndStadium' 메소드를 Mocking
+		given(performancePricingRepository.findCommonPricingByPerformanceAndStadium(performanceId, stadiumId))
+			.willReturn(seatPrices);
 
 		// when
 		final PerformanceDetailResponse response = performanceService.getPerformanceDetail(performanceId);
@@ -71,6 +98,7 @@ class PerformanceServiceTest {
 		assertThat(response.getPerformanceSchedules()).hasSize(1);
 		assertThat(response.getSeatSectionPrices()).hasSize(1);
 		assertThat(response.getSeatSectionPrices().getFirst().getSection()).isEqualTo("A");
+		assertThat(response.getSeatSectionPrices().getFirst().getPrice()).isEqualTo(150000);
 	}
 
 	@Test

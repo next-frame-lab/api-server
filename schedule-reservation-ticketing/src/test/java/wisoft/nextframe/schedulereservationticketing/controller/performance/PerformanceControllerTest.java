@@ -1,12 +1,8 @@
 package wisoft.nextframe.schedulereservationticketing.controller.performance;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +20,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
@@ -58,8 +55,9 @@ class PerformanceControllerTest {
 		final StadiumSection section = stadiumSectionRepository.save(
 			new StadiumSectionBuilder().withStadium(stadium).build());
 		final Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		scheduleRepository.save(new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
-		performancePricingRepository.save(new PerformancePricingBuilder().withPerformance(performance).withStadiumSection(section).build());
+		final Schedule schedule = scheduleRepository.save(
+			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+		performancePricingRepository.save(new PerformancePricingBuilder().withSchedule(schedule).withStadiumSection(section).build());
 		final UUID performanceId = performance.getId();
 
 		// when & then
