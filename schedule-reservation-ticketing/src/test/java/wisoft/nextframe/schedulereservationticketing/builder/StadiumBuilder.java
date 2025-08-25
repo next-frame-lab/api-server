@@ -10,6 +10,11 @@ public class StadiumBuilder {
 	private String name = "공연장 이름";
 	private String address = "공연장 주소";
 
+	public StadiumBuilder withId(UUID id) {
+		this.id = id;
+		return this;
+	}
+
 	public StadiumBuilder withName(String name) {
 		this.name = name;
 		return this;

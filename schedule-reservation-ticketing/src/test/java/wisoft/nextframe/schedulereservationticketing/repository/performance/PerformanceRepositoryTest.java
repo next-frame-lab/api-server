@@ -104,7 +104,7 @@ class PerformanceRepositoryTest {
 			.withStadium(stadium)
 			.withPerformanceDatetime(LocalDate.of(2025, 9, 1).atStartOfDay())
 			.withTicketOpenTime(now.minusDays(10))
-			.withTicketCloseTime(now.plusDays(10))
+			.withTicketCloseTime(now.plusDays(5))
 			.build()
 		);
 		scheduleRepository.save(new ScheduleBuilder()
@@ -112,7 +112,7 @@ class PerformanceRepositoryTest {
 			.withStadium(stadium)
 			.withPerformanceDatetime(LocalDate.of(2025, 9, 30).atStartOfDay())
 			.withTicketOpenTime(now.minusDays(10))
-			.withTicketCloseTime(now.plusDays(10))
+			.withTicketCloseTime(now.plusDays(5))
 			.build()
 		);
 

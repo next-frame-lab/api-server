@@ -2,6 +2,7 @@ package wisoft.nextframe.schedulereservationticketing.service.performance;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +21,6 @@ import wisoft.nextframe.schedulereservationticketing.dto.performancelist.respons
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
@@ -43,9 +43,20 @@ public class PerformanceService {
 
 		// 2. 공연 일정, 공연 가격 정보 조회
 		final List<Schedule> schedules = scheduleRepository.findByPerformanceId(performanceId);
-		final List<PerformancePricing> pricings = performancePricingRepository.findByPerformanceId(performanceId);
 
-		return toPerformanceDetailResponse(performance, schedules, pricings);
+		// 3. 공통 좌석 정보 조회
+		List<SeatSectionPriceResponse> seatSectionPrices;
+		if (schedules.isEmpty()) {
+			// 스케줄이 없으면 가격 정보도 없음
+			seatSectionPrices = Collections.emptyList();
+		} else {
+			// 첫 번째 스케줄에서 stadiumId를 추출
+			UUID stadiumId = schedules.getFirst().getStadium().getId();
+			// 새로 만든 Repository 메소드 호출
+			seatSectionPrices = performancePricingRepository.findCommonPricingByPerformanceAndStadium(performanceId, stadiumId);
+		}
+
+		return toPerformanceDetailResponse(performance, schedules, seatSectionPrices);
 	}
 
 	public PerformanceListResponse getReservablePerformances(Pageable pageable) {
@@ -62,7 +73,7 @@ public class PerformanceService {
 	private PerformanceDetailResponse toPerformanceDetailResponse(
 		Performance performance,
 		List<Schedule> schedules,
-		List<PerformancePricing> pricings
+		List<SeatSectionPriceResponse> seatSectionPrices
 	) {
 
 		// Stadium 정보 반환
@@ -83,14 +94,6 @@ public class PerformanceService {
 				.id(schedule.getId())
 				.date(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 				.time(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("HH:mm")))
-				.build())
-			.toList();
-
-		// 좌석 가격 정보 반환
-		final List<SeatSectionPriceResponse> seatSectionPriceResponses = pricings.stream()
-			.map(pricing -> SeatSectionPriceResponse.builder()
-				.section(pricing.getStadiumSection().getSection())
-				.price(pricing.getPrice())
 				.build())
 			.toList();
 
@@ -117,7 +120,7 @@ public class PerformanceService {
 			.ticketCloseTime(ticketCloseTime)
 			.stadium(stadiumResponse)
 			.performanceSchedules(scheduleDtos)
-			.seatSectionPrices(seatSectionPriceResponses)
+			.seatSectionPrices(seatSectionPrices)
 			.build();
 	}
 }

@@ -20,8 +20,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 public class PerformancePricingId implements Serializable {
 
-	@Column(name = "performance_id", nullable = false)
-	private UUID performanceId;
+	@Column(name = "schedule_id", nullable = false)
+	private UUID scheduleId;
 
 	@Column(name = "stadium_section_id", nullable = false)
 	private UUID stadiumSectionId;

@@ -1,18 +1,18 @@
 package wisoft.nextframe.schedulereservationticketing.builder;
 
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 
 public class PerformancePricingBuilder {
 
-	private Performance performance = new PerformanceBuilder().build();
+	private Schedule schedule = new ScheduleBuilder().build();
 	private StadiumSection stadiumSection = new StadiumSectionBuilder().build();
 	private Integer price = 120000;
 
-	public PerformancePricingBuilder withPerformance(Performance performance) {
-		this.performance = performance;
+	public PerformancePricingBuilder withSchedule(Schedule schedule) {
+		this.schedule = schedule;
 		return this;
 	}
 
@@ -22,8 +22,8 @@ public class PerformancePricingBuilder {
 	}
 
 	public PerformancePricing build() {
-		PerformancePricingId id = new PerformancePricingId(performance.getId(), stadiumSection.getId());
+		PerformancePricingId id = new PerformancePricingId(schedule.getId(), stadiumSection.getId());
 
-		return new PerformancePricing(id, performance, stadiumSection, price);
+		return new PerformancePricing(id, schedule, stadiumSection, price);
 	}
 }
