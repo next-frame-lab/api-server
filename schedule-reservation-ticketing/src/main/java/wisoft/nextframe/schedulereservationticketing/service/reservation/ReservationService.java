@@ -41,7 +41,7 @@ public class ReservationService {
 		performance.verifyAgeLimit(user);
 
 		// 3. 사용자가 선택한 좌석의 총 금액을 계산합니다.
-		final int calculatedTotalPrice = priceCalculator.calculateTotalPrice(performance, seats);
+		final int calculatedTotalPrice = priceCalculator.calculateTotalPrice(schedule, seats);
 
 		// 4. 요청 금액(클라이언트)과 계산 금액이 일치하는지 검증합니다.
 		if (calculatedTotalPrice != request.getTotalAmount()) {
