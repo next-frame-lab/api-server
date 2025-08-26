@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.seatstate;
+package wisoft.nextframe.schedulereservationticketing.dto.seat;
 
 import java.util.UUID;
 
@@ -19,6 +19,6 @@ public class LockedSeatResponse {
 
 	@JsonProperty("isLocked")
 	public boolean isLocked() {
-		return isLocked;
+		return this.isLocked;
 	}
 }

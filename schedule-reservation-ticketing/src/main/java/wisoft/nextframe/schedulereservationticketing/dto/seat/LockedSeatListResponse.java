@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.seatstate;
+package wisoft.nextframe.schedulereservationticketing.dto.seat;
 
 import java.util.List;
 
