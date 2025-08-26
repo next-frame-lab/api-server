@@ -2,7 +2,6 @@ package wisoft.nextframe.schedulereservationticketing.service.performance;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,24 +36,22 @@ public class PerformanceService {
 	private final PerformancePricingRepository performancePricingRepository;
 
 	public PerformanceDetailResponse getPerformanceDetail(UUID performanceId) {
-		// 1. 기본 공연 정보 조회
+		// 1. 공연(Performance)를 조회합니다.
 		final Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(EntityNotFoundException::new);
+			.orElseThrow(() -> new EntityNotFoundException("해당 공연을 찾을 수 없습니다."));
 
-		// 2. 공연 일정, 공연 가격 정보 조회
+		// 2. 공연(Performanc)에 해당하는 공연일정(Schedule)을 조회합니다.
 		final List<Schedule> schedules = scheduleRepository.findByPerformanceId(performanceId);
-
-		// 3. 공통 좌석 정보 조회
-		List<SeatSectionPriceResponse> seatSectionPrices;
 		if (schedules.isEmpty()) {
-			// 스케줄이 없으면 가격 정보도 없음
-			seatSectionPrices = Collections.emptyList();
-		} else {
-			// 첫 번째 스케줄에서 stadiumId를 추출
-			UUID stadiumId = schedules.getFirst().getStadium().getId();
-			// 새로 만든 Repository 메소드 호출
-			seatSectionPrices = performancePricingRepository.findCommonPricingByPerformanceAndStadium(performanceId, stadiumId);
+			throw new EntityNotFoundException("해당 공연 일정을 찾을 수 없습니다.");
 		}
+
+		// 3. 섹션별 가격(SeatSectionPrice) 정보를 조회합니다.
+		// 공연 일정에서 공연장 아이디를 가져옵니다.
+		final UUID stadiumId = schedules.getFirst().getStadium().getId();
+		// 공연 아이디, 공연장 아이디를 통해 섹션별 가격 정보를 조회합니다.
+		final List<SeatSectionPriceResponse> seatSectionPrices
+			= performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId);
 
 		return toPerformanceDetailResponse(performance, schedules, seatSectionPrices);
 	}

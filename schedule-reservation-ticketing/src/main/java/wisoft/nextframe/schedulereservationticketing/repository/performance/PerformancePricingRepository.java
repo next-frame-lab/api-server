@@ -32,7 +32,7 @@ public interface PerformancePricingRepository extends JpaRepository<PerformanceP
 		    WHERE s.performance.id = :performanceId AND s.stadium.id = :stadiumId
 		    ORDER BY pp.price DESC
 		""")
-	List<SeatSectionPriceResponse> findCommonPricingByPerformanceAndStadium(
+	List<SeatSectionPriceResponse> findSeatSectionPrices(
 		@Param("performanceId") UUID performanceId,
 		@Param("stadiumId") UUID stadiumId
 	);
