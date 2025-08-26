@@ -113,7 +113,7 @@ class PerformanceServiceTest {
 
 	@Test
 	@DisplayName("성공: 예매 가능한 공연 목록 조회 성공 테스트")
-	void getReservablePerformances_Success() {
+	void getPerformanceList_Success() {
 		// given
 		final List<PerformanceSummaryResponse> summaryList = List.of(createPerformanceSummaryDto());
 		final PageRequest pageable = PageRequest.of(0, 32);
@@ -121,7 +121,7 @@ class PerformanceServiceTest {
 		given(performanceRepository.findReservablePerformances(any(Pageable.class))).willReturn(mockPage);
 
 		// when
-		final PerformanceListResponse response = performanceService.getReservablePerformances(pageable);
+		final PerformanceListResponse response = performanceService.getPerformanceList(pageable);
 
 		// then
 		assertThat(response).isNotNull();

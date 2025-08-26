@@ -51,14 +51,11 @@ public class PerformanceService {
 		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices);
 	}
 
-	public PerformanceListResponse getReservablePerformances(Pageable pageable) {
-		// 1. DTO로 구성된 Page 객체 조회
+	public PerformanceListResponse getPerformanceList(Pageable pageable) {
+		// 1. PerformanceSummaryResponse로 구성된 공연 목록 Page 객체 조회합니다.
 		final Page<PerformanceSummaryResponse> performancePage = performanceRepository.findReservablePerformances(pageable);
 
-		// 2. Page 객체를 사용하여 최종 응답 DTO를 조립
-		return PerformanceListResponse.builder()
-			.performances(performancePage.getContent())
-			.pagination(PaginationResponse.from(performancePage))
-			.build();
+		// 2. Page 객체를 사용하여 최종 응답 DTO를 조립합니다.
+		return PerformanceListResponse.from(performancePage);
 	}
 }
