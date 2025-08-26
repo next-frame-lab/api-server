@@ -34,8 +34,8 @@ public class PerformanceController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<?>> getPerformances(@PageableDefault(size = 32) Pageable pageable) {
-		final PerformanceListResponse data = performanceService.getReservablePerformances(pageable);
+	public ResponseEntity<ApiResponse<?>> getPerformanceList(@PageableDefault(size = 32) Pageable pageable) {
+		final PerformanceListResponse data = performanceService.getPerformanceList(pageable);
 
 		final ApiResponse<PerformanceListResponse> response = ApiResponse.success(data);
 
