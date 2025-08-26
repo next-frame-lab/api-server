@@ -21,16 +21,14 @@ import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityNotFoundException;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.PerformancePricingBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performancelist.response.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
@@ -93,12 +91,12 @@ class PerformanceServiceTest {
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.getId()).isEqualTo(performanceId);
-		assertThat(response.getName()).isEqualTo("오페라의 유령");
-		assertThat(response.getPerformanceSchedules()).hasSize(1);
-		assertThat(response.getSeatSectionPrices()).hasSize(1);
-		assertThat(response.getSeatSectionPrices().getFirst().getSection()).isEqualTo("A");
-		assertThat(response.getSeatSectionPrices().getFirst().getPrice()).isEqualTo(150000);
+		assertThat(response.id()).isEqualTo(performanceId);
+		assertThat(response.name()).isEqualTo("오페라의 유령");
+		assertThat(response.performanceSchedules()).hasSize(1);
+		assertThat(response.seatSectionPrices()).hasSize(1);
+		assertThat(response.seatSectionPrices().getFirst().section()).isEqualTo("A");
+		assertThat(response.seatSectionPrices().getFirst().price()).isEqualTo(150000);
 	}
 
 	@Test
