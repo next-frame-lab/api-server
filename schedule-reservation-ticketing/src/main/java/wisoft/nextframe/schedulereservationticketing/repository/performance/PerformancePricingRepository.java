@@ -36,4 +36,11 @@ public interface PerformancePricingRepository extends JpaRepository<PerformanceP
 		@Param("performanceId") UUID performanceId,
 		@Param("stadiumId") UUID stadiumId
 	);
+
+	@Query("SELECT pp FROM PerformancePricing pp " +
+		"WHERE pp.schedule.id = :scheduleId AND pp.stadiumSection.id IN :sectionIds")
+	List<PerformancePricing> findByScheduleIdAndSectionIds(
+		@Param("scheduleId") UUID scheduleId,
+		@Param("sectionIds") List<UUID> sectionIds
+	);
 }
