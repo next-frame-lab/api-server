@@ -22,7 +22,7 @@ import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
@@ -117,17 +117,17 @@ class PerformanceRepositoryTest {
 		);
 
 		// when
-		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceSummaryResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// then
 		assertThat(resultPage.getContent()).isNotEmpty();
 
-		final List<PerformanceResponse> foundedPerformancList = resultPage.getContent().stream()
+		final List<PerformanceSummaryResponse> foundedPerformancList = resultPage.getContent().stream()
 			.filter(dto -> dto.getId().equals(reservablePerf.getId()))
 			.toList();
 		assertThat(foundedPerformancList).hasSize(1);
 
-		final PerformanceResponse performanceDto = foundedPerformancList.getFirst();
+		final PerformanceSummaryResponse performanceDto = foundedPerformancList.getFirst();
 		assertThat(performanceDto.getName()).isEqualTo(uniqueName);
 		assertThat(performanceDto.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
 		assertThat(performanceDto.getEndDate()).isEqualTo(LocalDate.of(2025, 9, 30));
@@ -151,7 +151,7 @@ class PerformanceRepositoryTest {
 			.build());
 
 		// When
-		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceSummaryResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
 		final boolean found = resultPage.getContent().stream()
@@ -177,7 +177,7 @@ class PerformanceRepositoryTest {
 			.build());
 
 		// When
-		final Page<PerformanceResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
+		final Page<PerformanceSummaryResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// Then
 		final boolean found = resultPage.getContent().stream()
