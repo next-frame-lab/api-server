@@ -83,7 +83,7 @@ class PerformanceServiceTest {
 		given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
 		given(scheduleRepository.findByPerformanceId(performanceId)).willReturn(schedules);
 		// 'findCommonPricingByPerformanceAndStadium' 메소드를 Mocking
-		given(performancePricingRepository.findCommonPricingByPerformanceAndStadium(performanceId, stadiumId))
+		given(performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId))
 			.willReturn(seatPrices);
 
 		// when
