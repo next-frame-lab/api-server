@@ -9,7 +9,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 
 @Getter
-public class PerformanceResponse {
+public class PerformanceSummaryResponse {
 
 	private final UUID id;
 	private final String name;
@@ -21,7 +21,7 @@ public class PerformanceResponse {
 	private final LocalDate endDate;
 	private final Boolean adultOnly;
 
-	public PerformanceResponse(
+	public PerformanceSummaryResponse(
 		UUID id,
 		String name,
 		String imageUrl,

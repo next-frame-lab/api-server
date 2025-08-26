@@ -26,7 +26,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
@@ -115,9 +115,9 @@ class PerformanceServiceTest {
 	@DisplayName("성공: 예매 가능한 공연 목록 조회 성공 테스트")
 	void getReservablePerformances_Success() {
 		// given
-		final List<PerformanceResponse> summaryList = List.of(createPerformanceSummaryDto());
+		final List<PerformanceSummaryResponse> summaryList = List.of(createPerformanceSummaryDto());
 		final PageRequest pageable = PageRequest.of(0, 32);
-		final PageImpl<PerformanceResponse> mockPage = new PageImpl<>(summaryList, pageable, 1);
+		final PageImpl<PerformanceSummaryResponse> mockPage = new PageImpl<>(summaryList, pageable, 1);
 		given(performanceRepository.findReservablePerformances(any(Pageable.class))).willReturn(mockPage);
 
 		// when
@@ -126,19 +126,19 @@ class PerformanceServiceTest {
 		// then
 		assertThat(response).isNotNull();
 		// 공연 목록 검증
-		assertThat(response.getPerformances()).hasSize(1);
-		assertThat(response.getPerformances().getFirst().getName()).isEqualTo("햄릿");
+		assertThat(response.performances()).hasSize(1);
+		assertThat(response.performances().getFirst().getName()).isEqualTo("햄릿");
 		// 페이지네이션 정보 검증
-		assertThat(response.getPagination().getTotalItems()).isEqualTo(1);
-		assertThat(response.getPagination().getTotalPages()).isEqualTo(1);
-		assertThat(response.getPagination().getPage()).isZero();
+		assertThat(response.pagination().totalItems()).isEqualTo(1);
+		assertThat(response.pagination().totalPages()).isEqualTo(1);
+		assertThat(response.pagination().page()).isZero();
 	}
 
-	private PerformanceResponse createPerformanceSummaryDto() {
+	private PerformanceSummaryResponse createPerformanceSummaryDto() {
 		Date startDate = Date.valueOf(LocalDate.of(2025, 8, 1));
 		Date endDate = Date.valueOf(LocalDate.of(2025, 8, 31));
 
-		return new PerformanceResponse(
+		return new PerformanceSummaryResponse(
 			UUID.randomUUID(),
 			"햄릿",
 			"http://example.com/image.jpg",
