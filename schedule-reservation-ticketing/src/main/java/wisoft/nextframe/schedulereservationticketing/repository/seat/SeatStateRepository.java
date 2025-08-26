@@ -44,4 +44,11 @@ public interface SeatStateRepository extends JpaRepository<SeatState, SeatStateI
 				and ss.id.seatId in :seatIds
 		""")
 	int lockSeats(@Param("scheduleId") UUID scheduleId, @Param("seatIds") List<UUID> seatIds);
+
+	/**
+	 * 특정 스케줄 ID에 대해 잠겨 있는(isLocked=true) 모든 좌석 상태를 조회합니다.
+	 * @param scheduleId 스케줄의 UUID
+	 * @return 잠겨 있는 SeatState 엔티티 목록
+	 */
+	List<SeatState> findByScheduleIdAndIsLockedTrue(UUID scheduleId);
 }
