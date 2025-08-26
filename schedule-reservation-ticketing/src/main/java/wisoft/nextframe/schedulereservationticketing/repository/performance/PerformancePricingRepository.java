@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
 
@@ -22,7 +22,7 @@ public interface PerformancePricingRepository extends JpaRepository<PerformanceP
 	 * @return 좌석 등급과 가격 정보가 담긴 DTO 리스트
 	 */
 	@Query("""
-		    SELECT DISTINCT new wisoft.nextframe.schedulereservationticketing.dto.performancedetail.response.SeatSectionPriceResponse(
+		    SELECT DISTINCT new wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse(
 		        ss.section,
 		        pp.price
 		    )
