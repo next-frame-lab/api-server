@@ -1,7 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.service.performance;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,15 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceScheduleResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.StadiumResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
@@ -53,7 +48,7 @@ public class PerformanceService {
 		final List<SeatSectionPriceResponse> seatSectionPrices
 			= performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId);
 
-		return toPerformanceDetailResponse(performance, schedules, seatSectionPrices);
+		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices);
 	}
 
 	public PerformanceListResponse getReservablePerformances(Pageable pageable) {
@@ -64,60 +59,6 @@ public class PerformanceService {
 		return PerformanceListResponse.builder()
 			.performances(performancePage.getContent())
 			.pagination(PaginationResponse.from(performancePage))
-			.build();
-	}
-
-	private PerformanceDetailResponse toPerformanceDetailResponse(
-		Performance performance,
-		List<Schedule> schedules,
-		List<SeatSectionPriceResponse> seatSectionPrices
-	) {
-
-		// Stadium 정보 반환
-		final StadiumResponse stadiumResponse = schedules.stream()
-			.findFirst()
-			.map(schedule -> {
-				final Stadium stadium = schedule.getStadium();
-				return StadiumResponse.builder()
-					.id(stadium.getId())
-					.name(stadium.getName())
-					.address(stadium.getAddress())
-					.build();
-			}).orElse(null);
-
-		// 스케줄 정보 반환
-		final List<PerformanceScheduleResponse> scheduleDtos = schedules.stream()
-			.map(schedule -> PerformanceScheduleResponse.builder()
-				.id(schedule.getId())
-				.date(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-				.time(schedule.getPerformanceDatetime().format(DateTimeFormatter.ofPattern("HH:mm")))
-				.build())
-			.toList();
-
-		LocalDateTime ticketOpenTime = null;
-		LocalDateTime ticketCloseTime = null;
-
-		if (!schedules.isEmpty()) {
-			ticketOpenTime = schedules.getFirst().getTicketOpenTime();
-			ticketCloseTime = schedules.getFirst().getTicketCloseTime();
-		}
-
-		// 최종 응답 DTO 조립
-		return PerformanceDetailResponse.builder()
-			.id(performance.getId())
-			.imageUrl(performance.getImageUrl())
-			.name(performance.getName())
-			.type(performance.getType().name())
-			.genre(performance.getGenre().name())
-			.averageStar(4.8)
-			.runningTime((int)performance.getRunningTime().toMinutes())
-			.description(performance.getDescription())
-			.adultOnly(performance.getAdultOnly())
-			.ticketOpenTime(ticketOpenTime)
-			.ticketCloseTime(ticketCloseTime)
-			.stadium(stadiumResponse)
-			.performanceSchedules(scheduleDtos)
-			.seatSectionPrices(seatSectionPrices)
 			.build();
 	}
 }

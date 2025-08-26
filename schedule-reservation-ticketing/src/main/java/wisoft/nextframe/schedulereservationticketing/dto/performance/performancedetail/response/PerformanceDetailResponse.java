@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.Builder;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
+import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 
 @Builder
 public record PerformanceDetailResponse(UUID id, String imageUrl, String name, String type, String genre,
@@ -12,4 +16,39 @@ public record PerformanceDetailResponse(UUID id, String imageUrl, String name, S
 																				LocalDateTime ticketOpenTime, LocalDateTime ticketCloseTime,
 																				StadiumResponse stadium, List<PerformanceScheduleResponse> performanceSchedules,
 																				List<SeatSectionPriceResponse> seatSectionPrices) {
+
+	public static PerformanceDetailResponse from(
+		Performance performance,
+		List<Schedule> schedules,
+		List<SeatSectionPriceResponse> seatSectionPrices
+	) {
+		final StadiumResponse stadiumResponse = schedules.stream()
+			.findFirst()
+			.map(schedule -> StadiumResponse.from(schedule.getStadium()))
+			.orElse(null);
+
+		final List<PerformanceScheduleResponse> performanceScheduleResponses = schedules.stream()
+			.map(PerformanceScheduleResponse::from)
+			.toList();
+
+		final LocalDateTime ticketOpenTime = schedules.getFirst().getTicketOpenTime();
+		final LocalDateTime ticketCloseTime = schedules.getFirst().getTicketCloseTime();
+
+		return PerformanceDetailResponse.builder()
+			.id(performance.getId())
+			.imageUrl(performance.getImageUrl())
+			.name(performance.getName())
+			.type(performance.getType().name())
+			.genre(performance.getGenre().name())
+			.averageStar(4.8)
+			.runningTime((int) performance.getRunningTime().toMinutes())
+			.description(performance.getDescription())
+			.adultOnly(performance.getAdultOnly())
+			.ticketOpenTime(ticketOpenTime)
+			.ticketCloseTime(ticketCloseTime)
+			.stadium(stadiumResponse)
+			.performanceSchedules(performanceScheduleResponses)
+			.seatSectionPrices(seatSectionPrices)
+			.build();
+	}
 }
