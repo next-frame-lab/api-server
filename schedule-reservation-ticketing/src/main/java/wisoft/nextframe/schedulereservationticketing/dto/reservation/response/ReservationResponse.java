@@ -29,11 +29,11 @@ public record ReservationResponse(
 			.map(ReservationSeatResponse::from)
 			.toList();
 
-		return ReservationResponse.builder()
-			.reservationId(reservation.getId())
-			.performance(performanceResponse)
-			.seats(reservationSeatList)
-			.totalAmount(reservation.getTotalPrice())
-			.build();
+		return new ReservationResponse(
+			reservation.getId(),
+			performanceResponse,
+			reservationSeatList,
+			reservation.getTotalPrice()
+		);
 	}
 }

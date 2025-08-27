@@ -15,9 +15,9 @@ public record SeatStateResponse(
 ) {
 
 	public static SeatStateResponse from(SeatState seatState) {
-		return SeatStateResponse.builder()
-			.id(seatState.getSeat().getId())
-			.isLocked(seatState.getIsLocked())
-			.build();
+		return new SeatStateResponse(
+			seatState.getSeat().getId(),
+			seatState.getIsLocked()
+		);
 	}
 }
