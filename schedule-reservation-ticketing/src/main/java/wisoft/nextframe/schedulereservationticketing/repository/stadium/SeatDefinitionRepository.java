@@ -18,11 +18,11 @@ public interface SeatDefinitionRepository extends JpaRepository<SeatDefinition, 
 	List<SeatDefinition> findAllByStadiumIdWithSorting(@Param("stadiumId") UUID stadiumId);
 
 	/**
-	 * 여러 좌석 ID에 해당하는 좌석 정보를 모두 조회합니다. (N+1 문제 방지를 위해 fetch join 사용)
+	 * 여러 좌석 ID에 해당하는 좌석 정보(section, row, column)를 모두 조회합니다. (N+1 문제 방지를 위해 fetch join 사용)
 	 * @param seatIds 좌석 ID 목록
 	 * @return 좌석 정보 목록
 	 */
-	@Query("select sd from SeatDefinition sd join fetch sd.stadiumSection where sd.id in :seatIds")
+	@Query("SELECT sd FROM SeatDefinition sd JOIN FETCH sd.stadiumSection WHERE sd.id IN :seatIds")
 	List<SeatDefinition> findWithStadiumSectionByIdIn(@Param("seatIds") List<UUID> seatIds);
 
 }

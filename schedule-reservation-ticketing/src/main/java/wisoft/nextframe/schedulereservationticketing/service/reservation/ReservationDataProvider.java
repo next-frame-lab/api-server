@@ -11,6 +11,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.InvalidSeatCountException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.PerformanceScheduleMismatchException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatNotDefinedException;
@@ -39,6 +40,10 @@ public class ReservationDataProvider {
 
 		final Schedule schedule = scheduleRepository.findById(request.scheduleId())
 			.orElseThrow(() -> new EntityNotFoundException("해당 공연 일정을 찾을 수 없습니다."));
+
+		if (request.seatIds().isEmpty() || request.seatIds().size() > 4) {
+			throw new InvalidSeatCountException("좌석은 1개 이상, 4개 이하로 선택해야 합니다.");
+		}
 
 		final List<SeatDefinition> seats = seatDefinitionRepository.findWithStadiumSectionByIdIn(request.seatIds());
 
