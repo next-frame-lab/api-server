@@ -1,13 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.dto.reservation.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record SeatInfoResponse(String section, int row, int column) {
 
-@Getter
-@AllArgsConstructor
-public class SeatInfoResponse {
-
-	private final String section;
-	private final int row;
-	private final int column;
 }

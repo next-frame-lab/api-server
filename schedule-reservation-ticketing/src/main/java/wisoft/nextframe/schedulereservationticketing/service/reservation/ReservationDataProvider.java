@@ -33,23 +33,23 @@ public class ReservationDataProvider {
 	 */
 	public ReservationContext provide(ReservationRequest request) {
 		// 1. 각 ID를 사용하여 엔티티를 조회합니다.
-		final User user = userRepository.findById(request.getUserId())
+		final User user = userRepository.findById(request.userId())
 			.orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
-		final Schedule schedule = scheduleRepository.findById(request.getScheduleId())
+		final Schedule schedule = scheduleRepository.findById(request.scheduleId())
 			.orElseThrow(() -> new EntityNotFoundException("스케줄을 찾을 수 없습니다."));
 
-		final List<SeatDefinition> seats = seatDefinitionRepository.findWithStadiumSectionByIdIn(request.getSeatIds());
+		final List<SeatDefinition> seats = seatDefinitionRepository.findWithStadiumSectionByIdIn(request.seatIds());
 
 		// 2. 조회된 데이터의 정합성을 검증합니다.
 		// 2-1. 요청된 좌석이 모두 존재하는지 확인합니다.
-		if (seats.size() != request.getSeatIds().size()) {
+		if (seats.size() != request.seatIds().size()) {
 			throw new SeatNotDefinedException("요청한 좌석 중 일부를 찾을 수 없습니다.");
 		}
 
 		// 2-2. 요청된 스케줄이 해당 공연의 스케줄이 맞는지 확인합니다.
 		final Performance performance = schedule.getPerformance();
-		if (!performance.getId().equals(request.getPerformanceId())) {
+		if (!performance.getId().equals(request.performanceId())) {
 			throw new ReservationException("요청된 공연과 스케줄 정보가 일치하지 않습니다.");
 		}
 
