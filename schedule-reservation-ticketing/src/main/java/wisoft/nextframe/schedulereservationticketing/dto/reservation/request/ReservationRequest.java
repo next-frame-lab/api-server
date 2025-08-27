@@ -7,26 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class ReservationRequest {
-
-	@NotNull
-	private final UUID userId;
-
-	@NotNull
-	private final UUID performanceId;
-
-	@NotNull
-	private final UUID scheduleId;
-
-	@NotEmpty
-	@Size(max = 4)
-	private final List<UUID> seatIds;
-
-	private final long elapsedTime;
-
-	private final int totalAmount;
+public record ReservationRequest(@NotNull UUID userId, @NotNull UUID performanceId, @NotNull UUID scheduleId,
+																 @NotEmpty @Size(max = 4) List<UUID> seatIds, long elapsedTime, int totalAmount) {
 }

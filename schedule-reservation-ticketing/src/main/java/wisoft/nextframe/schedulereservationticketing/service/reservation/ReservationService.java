@@ -44,7 +44,7 @@ public class ReservationService {
 		final int calculatedTotalPrice = priceCalculator.calculateTotalPrice(schedule, seats);
 
 		// 4. 요청 금액(클라이언트)과 계산 금액이 일치하는지 검증합니다.
-		if (calculatedTotalPrice != request.getTotalAmount()) {
+		if (calculatedTotalPrice != request.totalAmount()) {
 			throw new TotalPriceMismatchException("요청된 금액과 계산된 금액이 일치하지 않습니다.");
 		}
 
