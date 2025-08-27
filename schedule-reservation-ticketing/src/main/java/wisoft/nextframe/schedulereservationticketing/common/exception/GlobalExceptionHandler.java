@@ -10,7 +10,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiErrorResponse;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.PerformanceScheduleMismatchException;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatNotDefinedException;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.TotalPriceMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -28,6 +32,18 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
 		log.warn("handleTypeMismatch: {}", ex.getMessage());
+		ApiErrorResponse response = new ApiErrorResponse("BAD_REQUEST");
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
+
+	// 400 Bad Request - 공연 좌석 예매 시, 클라이언트가 잘못된 요청을 하는 경우
+	@ExceptionHandler({
+		TotalPriceMismatchException.class,
+		SeatNotDefinedException.class,
+		PerformanceScheduleMismatchException.class
+	})
+	public ResponseEntity<ApiErrorResponse> handleReservation(ReservationException ex) {
+		log.warn("handleReservation: {}", ex.getMessage());
 		ApiErrorResponse response = new ApiErrorResponse("BAD_REQUEST");
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
