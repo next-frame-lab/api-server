@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.seatdefinition.SeatDefinitionListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatdefinition.SeatDefinitionListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.stadium.StadiumService;
 
 @RestController

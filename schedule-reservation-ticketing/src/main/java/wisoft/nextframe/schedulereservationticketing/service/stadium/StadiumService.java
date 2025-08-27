@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.dto.seatdefinition.SeatDefinitionListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatdefinition.SeatDefinitionListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;

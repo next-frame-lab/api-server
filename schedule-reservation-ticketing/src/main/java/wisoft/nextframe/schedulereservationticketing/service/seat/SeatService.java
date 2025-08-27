@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.dto.seat.LockedSeatListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.seat.LockedSeatResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.LockedSeatListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.LockedSeatResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 

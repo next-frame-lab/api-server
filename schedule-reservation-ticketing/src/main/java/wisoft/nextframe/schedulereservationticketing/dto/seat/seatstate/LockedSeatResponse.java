@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.seat;
+package wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate;
 
 import java.util.UUID;
 
