@@ -25,7 +25,6 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final PriceCalculator priceCalculator;
 	private final ReservationFactory reservationFactory;
-	private final ReservationMapper reservationMapper;
 	private final ReservationDataProvider dataProvider;
 
 	@Transactional
@@ -56,6 +55,6 @@ public class ReservationService {
 		reservationRepository.save(reservation);
 
 		// 7. 응답 DTO 생성 및 반환합니다.
-		return reservationMapper.toResponse(reservation, performance, schedule, seats);
+		return ReservationResponse.from(reservation, performance, schedule, seats);
 	}
 }
