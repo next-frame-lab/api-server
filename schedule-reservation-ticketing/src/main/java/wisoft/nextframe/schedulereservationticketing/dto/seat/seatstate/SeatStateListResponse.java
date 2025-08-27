@@ -5,16 +5,13 @@ import java.util.List;
 import lombok.Builder;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 
-@Builder
 public record SeatStateListResponse(List<SeatStateResponse> seats) {
 
 	public static SeatStateListResponse from(List<SeatState> seatStates) {
-		final List<SeatStateResponse> seatStateResponses = seatStates.stream()
+		final List<SeatStateResponse> seatStateResponseList = seatStates.stream()
 			.map(SeatStateResponse::from)
 			.toList();
 
-		return SeatStateListResponse.builder()
-			.seats(seatStateResponses)
-			.build();
+		return new SeatStateListResponse(seatStateResponseList);
 	}
 }
