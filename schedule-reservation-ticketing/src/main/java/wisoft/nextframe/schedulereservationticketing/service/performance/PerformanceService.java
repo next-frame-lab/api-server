@@ -44,6 +44,7 @@ public class PerformanceService {
 		// 3. 좌석의 섹션별 가격(SeatSectionPrice) 정보를 조회합니다.
 		// 공연 일정에서 공연장 아이디를 가져옵니다.
 		final UUID stadiumId = schedules.getFirst().getStadium().getId();
+
 		// 공연 아이디, 공연장 아이디를 통해 섹션별 가격 정보를 조회합니다.
 		final List<SeatSectionPriceResponse> seatSectionPrices
 			= performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId);
