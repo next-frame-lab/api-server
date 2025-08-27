@@ -37,6 +37,13 @@ public interface PerformancePricingRepository extends JpaRepository<PerformanceP
 		@Param("stadiumId") UUID stadiumId
 	);
 
+	/**
+	 * 특정 스케줄 ID와 섹션 ID에 해당하는 가격 정보 목록을 조회합니다.
+	 *
+	 * @param scheduleId 조회할 스케줄의 ID
+	 * @param sectionIds 조회할 스타디움 섹션의 ID 목록
+	 * @return 조회된 PerformancePricing 엔티티 목록
+	 */
 	@Query("SELECT pp FROM PerformancePricing pp " +
 		"WHERE pp.schedule.id = :scheduleId AND pp.stadiumSection.id IN :sectionIds")
 	List<PerformancePricing> findByScheduleIdAndSectionIds(

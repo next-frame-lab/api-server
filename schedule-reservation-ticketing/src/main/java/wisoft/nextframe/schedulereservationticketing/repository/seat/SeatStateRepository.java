@@ -20,12 +20,12 @@ public interface SeatStateRepository extends JpaRepository<SeatState, SeatStateI
 	 * @return 잠긴 좌석이 있으면 true, 없으면 false
 	 */
 	@Query("""
-			select exists (
-				select 1
-					from SeatState ss
-					where ss.id.scheduleId = :scheduleId
-					and ss.id.seatId in :seatIds
-					and ss.isLocked = true
+			SELECT EXISTS (
+				SELECT 1
+					FROM SeatState ss
+					WHERE ss.id.scheduleId = :scheduleId
+					AND ss.id.seatId IN :seatIds
+					AND ss.isLocked = TRUE
 				)
 	""")
 	boolean existsByScheduleIdSeatIsLocked(@Param("scheduleId") UUID scheduleId, @Param("seatIds") List<UUID> seatIds);
