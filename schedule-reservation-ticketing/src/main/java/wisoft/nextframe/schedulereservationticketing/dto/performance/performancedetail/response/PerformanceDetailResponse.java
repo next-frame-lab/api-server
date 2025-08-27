@@ -4,11 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Builder;
-import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 
 @Builder
 public record PerformanceDetailResponse(UUID id, String imageUrl, String name, String type, String genre,
@@ -16,6 +15,9 @@ public record PerformanceDetailResponse(UUID id, String imageUrl, String name, S
 																				LocalDateTime ticketOpenTime, LocalDateTime ticketCloseTime,
 																				StadiumResponse stadium, List<PerformanceScheduleResponse> performanceSchedules,
 																				List<SeatSectionPriceResponse> seatSectionPrices) {
+
+	// todo: 공연 별점 기능 개발 후 변경할 예정
+	public static final Double DEFAULT_AVERAGE_STAR = 4.8;
 
 	public static PerformanceDetailResponse from(
 		Performance performance,
@@ -25,7 +27,7 @@ public record PerformanceDetailResponse(UUID id, String imageUrl, String name, S
 		final StadiumResponse stadiumResponse = schedules.stream()
 			.findFirst()
 			.map(schedule -> StadiumResponse.from(schedule.getStadium()))
-			.orElse(null);
+			.orElseThrow(() -> new EntityNotFoundException("해당 공연장을 찾을 수 없습니다."));
 
 		final List<PerformanceScheduleResponse> performanceScheduleResponses = schedules.stream()
 			.map(PerformanceScheduleResponse::from)
@@ -40,7 +42,7 @@ public record PerformanceDetailResponse(UUID id, String imageUrl, String name, S
 			.name(performance.getName())
 			.type(performance.getType().name())
 			.genre(performance.getGenre().name())
-			.averageStar(4.8)
+			.averageStar(DEFAULT_AVERAGE_STAR)
 			.runningTime((int) performance.getRunningTime().toMinutes())
 			.description(performance.getDescription())
 			.adultOnly(performance.getAdultOnly())
