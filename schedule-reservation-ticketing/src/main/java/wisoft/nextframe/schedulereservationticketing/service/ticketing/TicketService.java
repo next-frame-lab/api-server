@@ -2,15 +2,17 @@ package wisoft.nextframe.schedulereservationticketing.service.ticketing;
 
 import java.util.UUID;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.entity.ticketing.ReservationId;
+import wisoft.nextframe.schedulereservationticketing.dto.ticketing.TicketInfoResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.ticketing.Ticket;
+import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 import wisoft.nextframe.schedulereservationticketing.exception.ticketing.AlreadyIssuedException;
+import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.ticketing.TicketRepository;
 
 @Slf4j
@@ -19,6 +21,8 @@ import wisoft.nextframe.schedulereservationticketing.repository.ticketing.Ticket
 public class TicketService {
 
 	private final TicketRepository ticketRepository;
+	private final ReservationRepository reservationRepository;
+	private final TicketSender ticketSender;
 
 	/**
 	 * 예약 기반 티켓 발급
@@ -26,23 +30,26 @@ public class TicketService {
 	 */
 	@Transactional
 	public Ticket issueByReservation(UUID reservationId) {
-		ReservationId reservationIdObj = ReservationId.of(reservationId);
+		// 1. Reservation 조회
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new ReservationException("없는 예약 ID 입니다. reservationId=" + reservationId));
 
-		ticketRepository.findByReservationId(reservationId)
+		// 2. 중복 발급 체크
+		ticketRepository.findByReservationId(reservation.getId())
 			.ifPresent(existing -> {
-				throw new AlreadyIssuedException(reservationIdObj);
+				throw new AlreadyIssuedException(reservationId);
 			});
 
-		Ticket ticket = Ticket.issue(reservationId);
+		// 3. 티켓 발급
+		Ticket ticket = Ticket.issue(reservation);
+		ticketRepository.saveAndFlush(ticket);
 
-		// 2. 저장
-		try {
-			return ticketRepository.save(ticket);
-		} catch (DataIntegrityViolationException e) {
-			// 멀티 스레드 경쟁 시 유니크 제약으로 중복 저장 실패 가능
-			log.warn("중복 발급 경쟁 감지 reservationId={}", reservationId);
-			return ticketRepository.findByReservationId(reservationId)
-				.orElseThrow(() -> e); // 정말 없으면 원인 재전파
-		}
+		TicketInfoResponse ticketInfo = ticketRepository.findTicketInfoById(ticket.getId())
+			.orElseThrow(() -> new IllegalStateException("티켓 정보 조회 실패. ticketId=" + ticket.getId()));
+
+		ticketSender.send(ticketInfo, reservation.getUser().getEmail());
+
+		return ticket;
+
 	}
 }
