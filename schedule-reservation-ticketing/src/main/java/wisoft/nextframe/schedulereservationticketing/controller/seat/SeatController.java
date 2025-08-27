@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.LockedSeatListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
 
 @RestController
@@ -23,9 +23,9 @@ public class SeatController {
 
 	@GetMapping("/{scheduleId}/seat-states")
 	public ResponseEntity<ApiResponse<?>> getLockedSeats(@PathVariable UUID scheduleId) {
-		final LockedSeatListResponse data = seatStateService.getLockedSeats(scheduleId);
+		final SeatStateListResponse data = seatStateService.getSeatStates(scheduleId);
 
-		final ApiResponse<LockedSeatListResponse> response = ApiResponse.success(data);
+		final ApiResponse<SeatStateListResponse> response = ApiResponse.success(data);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
