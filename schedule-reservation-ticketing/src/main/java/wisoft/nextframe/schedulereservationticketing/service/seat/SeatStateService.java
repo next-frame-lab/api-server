@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.LockedSeatListResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.LockedSeatResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
@@ -19,22 +19,12 @@ public class SeatStateService {
 	
 	private final SeatStateRepository seatStateRepository;
 
-	public LockedSeatListResponse getLockedSeats(UUID scheduleId) {
+	public SeatStateListResponse getSeatStates(UUID scheduleId) {
 		
-		// 1. scheduleId에 해당하는 스케줄의 잠긴 좌석 엔티티 목록을 조회합니다.
-		final List<SeatState> lockedSeats = seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId);
-		
-		// 2. LockedSeatResponse DTO 목록으로 변환합니다.
-		final List<LockedSeatResponse> lockedSeatResponsesList = lockedSeats.stream()
-			.map(seat -> LockedSeatResponse.builder()
-				.id(seat.getSeat().getId())
-				.isLocked(seat.getIsLocked())
-				.build()
-			).toList();
+		// 1. 공연 일정(scheduleId)에 해당하는 잠긴(예약된) 좌석 엔티티 목록을 조회합니다.
+		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId);
 
-		// 3. 최종 DTO인 LockedSeatListResponse로 감싸서 반환합니다.
-		return LockedSeatListResponse.builder()
-			.seats(lockedSeatResponsesList)
-			.build();
+		// 2. 데이터를 응답 DTO로 변환합니다.
+		return SeatStateListResponse.from(seatStates);
 	}
 }
