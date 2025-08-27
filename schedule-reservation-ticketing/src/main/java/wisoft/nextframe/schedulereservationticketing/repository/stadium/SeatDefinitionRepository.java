@@ -11,6 +11,13 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 
 public interface SeatDefinitionRepository extends JpaRepository<SeatDefinition, UUID> {
 
+	/**
+	 * 공연장 아이디에 해당하는 모든 좌석 정보를 조회합니다.
+	 * 정렬 순서: 구역(section) + 행(row) + 열(column) 순으로 오름차순 정렬
+	 *
+	 * @param stadiumId 좌석을 조회할 공연장의 아이디
+	 * @return 정렬된 좌석(SeatDefinition) 목록
+	 */
 	@Query("SELECT sd FROM SeatDefinition sd " +
 		"JOIN FETCH sd.stadiumSection ss " +
 		"WHERE ss.stadium.id = :stadiumId " +

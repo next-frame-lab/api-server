@@ -15,7 +15,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRe
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class SeatService {
+public class SeatStateService {
 	
 	private final SeatStateRepository seatStateRepository;
 
