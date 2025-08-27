@@ -6,10 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
 @Builder
-public class LockedSeatListResponse {
-
-	private List<LockedSeatResponse> seats;
+public record LockedSeatListResponse(List<LockedSeatResponse> seats) {
 }

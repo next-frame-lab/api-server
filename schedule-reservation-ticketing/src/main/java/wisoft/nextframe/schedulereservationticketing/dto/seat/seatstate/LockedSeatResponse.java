@@ -8,17 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Builder
-public class LockedSeatResponse {
-
-	@Getter
-	private UUID id;
-
-	private boolean isLocked;
-
+public record LockedSeatResponse(
+	UUID id,
 	@JsonProperty("isLocked")
-	public boolean isLocked() {
-		return this.isLocked;
-	}
+	boolean isLocked
+) {
 }
