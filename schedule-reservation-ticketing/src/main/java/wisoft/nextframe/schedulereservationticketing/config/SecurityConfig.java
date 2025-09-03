@@ -5,10 +5,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.config.oauth.OAuth2AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -16,12 +18,17 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
 	private final OAuth2UserService oAuth2UserService;
+	private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			// CSRF 보호 기능을 비활성화합니다.
 			.csrf(AbstractHttpConfigurer::disable)
+
+			// 세션을 사용하지 않으므로, STATELESS(상태 비저장)으로 설정합니다. -> 토큰 기반 인증을 사용하기 때문입니다.
+			.sessionManagement(session ->
+				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
 			// HTTP 요청에 대한 접근 권한을 설정합니다.
 			.authorizeHttpRequests(authorize -> authorize
@@ -36,6 +43,8 @@ public class SecurityConfig {
 				.userInfoEndpoint(userInfo ->
 					userInfo.userService(oAuth2UserService)
 				)
+				// 로그인 성공 시, 성공 핸들러가 동작하도록 설정합니다.
+				.successHandler(oAuth2AuthenticationSuccessHandler)
 			);
 
 		return http.build();
