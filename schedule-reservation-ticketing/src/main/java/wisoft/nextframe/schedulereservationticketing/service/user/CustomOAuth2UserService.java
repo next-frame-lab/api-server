@@ -19,7 +19,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 
 @Service
 @RequiredArgsConstructor
-public class OAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 	private final UserRepository userRepository;
 
