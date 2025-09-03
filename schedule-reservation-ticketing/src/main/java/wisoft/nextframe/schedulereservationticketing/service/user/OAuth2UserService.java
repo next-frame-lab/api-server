@@ -69,7 +69,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 				.email(email)
 				.name(name)
 				.birthDate(LocalDate.of(1998, 4, 7))
-				.phoneNumber("010-0000-0000")
+				.phoneNumber("010-1234-1234")
 				.build();
 			userRepository.save(user);
 		}

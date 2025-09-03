@@ -1,8 +1,10 @@
 package wisoft.nextframe.schedulereservationticketing.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -15,10 +17,11 @@ public class SecurityConfig {
 
 	private final OAuth2UserService oAuth2UserService;
 
+	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			// CSRF 보호 기능을 비활성화합니다.
-			.csrf(csrf -> csrf.disable())
+			.csrf(AbstractHttpConfigurer::disable)
 
 			// HTTP 요청에 대한 접근 권한을 설정합니다.
 			.authorizeHttpRequests(authorize -> authorize
