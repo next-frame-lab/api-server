@@ -27,6 +27,9 @@ public class KakaoUserInfoResponse {
 		@NoArgsConstructor
 		public static class Profile {
 			private String nickname;
+
+			@JsonProperty("profile_image_url")
+			private String profileImageUrl;
 		}
 	}
 }
