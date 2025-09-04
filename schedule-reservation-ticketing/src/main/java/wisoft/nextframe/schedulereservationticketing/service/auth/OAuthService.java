@@ -1,0 +1,110 @@
+package wisoft.nextframe.schedulereservationticketing.service.auth;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+
+import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoTokenResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
+
+@Service
+@RequiredArgsConstructor
+public class OAuthService {
+
+	private final UserRepository userRepository;
+	private final JwtTokenProvider jwtTokenProvider;
+
+	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+	private String kakaoClientId;
+
+	@Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+	private String kakaoClientSecret;
+
+	@Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+	private String frontendRedirectUri;
+
+	/**
+	 * 인가 코드를 받아 카카오 로그인을 처리하는 메서드
+	 */
+	@Transactional
+	public TokenResponse kakaoSignin(String authCode) {
+		// 1. 인가 코드로 카카오로부터 Access Token을 발급받습니다.
+		final String kakaoAccessToken = getKakaoAccessToken(authCode);
+
+		// 2. 발급 받은 Access Token으로 카카오 사용자 정보를 가져옵니다.
+		final KakaoUserInfoResponse userInfo = getKakaoUserInfo(kakaoAccessToken);
+
+		// 3. 가져온 사용자 정보로 DB에서 회원을 찾거나, 없으면 새로 가입시킵니다.
+		final User user = saveOrUpdateUser(userInfo);
+
+		// 4. 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성합니다.
+		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
+		final String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+		return TokenResponse.from(accessToken, refreshToken);
+	}
+
+	/**
+	 * 1단계: 카카오 인증 서버에 인가 코드를 보내 Access Token을 받아오는 메서드
+	 */
+	private String getKakaoAccessToken(String authCode) {
+		final RestClient restClient = RestClient.create("https://kauth.kakao.com");
+
+		final KakaoTokenResponse response = restClient.post()
+			.uri("/oauth/token")
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.body("grant_type=authorization_code"
+				+ "&client_id=" + kakaoClientId
+				+ "&client_secret=" + kakaoClientSecret
+				+ "&redirect_uri=" + frontendRedirectUri
+				+ "&code=" + authCode)
+			.retrieve() // 요청을 보내고 응답을 받습니다.
+			.body(KakaoTokenResponse.class);
+
+		return response.getAccessToken();
+	}
+
+	/**
+	 * 2단계: Access Token을 사용해 카카오 API 서버에서 사용자 정보를 받아오는 메서드
+	 */
+	private KakaoUserInfoResponse getKakaoUserInfo(String kakaoAccessToken) {
+		final RestClient restClient = RestClient.create("https://kapi.kakao.com");
+
+		return restClient.get()
+			.uri("/v2/user/me")
+			.header("Authorization", "Bearer " + kakaoAccessToken)
+			.retrieve()
+			.body(KakaoUserInfoResponse.class);
+	}
+
+	/**
+	 * 3단계: 사용자 정보를 바탕으로 회원을 저장하거나 업데이터하는 메서드
+	 */
+	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo) {
+		final String email = userInfo.getKakaoAccount().getEmail();
+		final Optional<User> userOptional = userRepository.findByEmail(email);
+
+		User user;
+
+		if (userOptional.isPresent()) {
+			user = userOptional.get();
+		} else {
+			user = User.builder()
+				.email(email)
+				.name(userInfo.getKakaoAccount().getProfile().getNickname())
+				.build();
+			userRepository.save(user);
+		}
+
+		return user;
+	}
+}
