@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshResponse;
+import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
 import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 
 @RestController
@@ -19,12 +22,22 @@ import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 public class AuthController {
 
 	private final OAuthService oAuthService;
+	private final AuthService authService;
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<?>> signin(@RequestBody KaKaoSigninRequest request) {
 		final SigninResponse signinResponse = oAuthService.kakaoSignin(request.provider() ,request.authCode());
 
 		final ApiResponse<SigninResponse> response = ApiResponse.success(signinResponse);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@PostMapping("/refresh")
+	public ResponseEntity<ApiResponse<?>> refreshToken(@RequestBody TokenRefreshRequest request) {
+		final TokenRefreshResponse tokenRefreshResponse = authService.reissueToken(request.getRefreshToken());
+
+		final ApiResponse<TokenRefreshResponse> response = ApiResponse.success(tokenRefreshResponse);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
