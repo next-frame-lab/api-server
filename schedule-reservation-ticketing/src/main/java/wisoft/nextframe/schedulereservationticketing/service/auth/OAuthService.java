@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoTokenResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
@@ -36,7 +37,7 @@ public class OAuthService {
 	 * 인가 코드를 받아 카카오 로그인을 처리하는 메서드
 	 */
 	@Transactional
-	public TokenResponse kakaoSignin(String authCode) {
+	public SigninResponse kakaoSignin(String provider, String authCode) {
 		// 1. 인가 코드로 카카오로부터 Access Token을 발급받습니다.
 		final String kakaoAccessToken = getKakaoAccessToken(authCode);
 
@@ -44,13 +45,20 @@ public class OAuthService {
 		final KakaoUserInfoResponse userInfo = getKakaoUserInfo(kakaoAccessToken);
 
 		// 3. 가져온 사용자 정보로 DB에서 회원을 찾거나, 없으면 새로 가입시킵니다.
-		final User user = saveOrUpdateUser(userInfo);
+		final User user = saveOrUpdateUser(userInfo, provider);
 
 		// 4. 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성합니다.
 		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
 		final String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-		return TokenResponse.from(accessToken, refreshToken);
+		return SigninResponse.from(
+			accessToken,
+			refreshToken,
+			user.getImageUrl(),
+			user.getName(),
+			user.getBirthDate(),
+			user.getEmail()
+		);
 	}
 
 	/**
@@ -89,18 +97,25 @@ public class OAuthService {
 	/**
 	 * 3단계: 사용자 정보를 바탕으로 회원을 저장하거나 업데이터하는 메서드
 	 */
-	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo) {
+	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo, String provider) {
 		final String email = userInfo.getKakaoAccount().getEmail();
-		final Optional<User> userOptional = userRepository.findByEmail(email);
+		final String nickname = userInfo.getKakaoAccount().getProfile().getNickname();
+		final String imageUrl = userInfo.getKakaoAccount().getProfile().getProfileImageUrl();
+
+		final Optional<User> userOptional = userRepository.findByEmailAndProvider(email, provider);
 
 		User user;
-
 		if (userOptional.isPresent()) {
+			// 이미 가입된 회원이면, 최신 정보(이름, 프로필 이미지)로 업데이트합니다.
 			user = userOptional.get();
+			user.updateProfile(nickname, imageUrl);
 		} else {
 			user = User.builder()
 				.email(email)
-				.name(userInfo.getKakaoAccount().getProfile().getNickname())
+				.name(nickname)
+				.imageUrl(imageUrl)
+				.provider(provider)
+				.birthDate(LocalDate.of(1998,4,7))
 				.build();
 			userRepository.save(user);
 		}
