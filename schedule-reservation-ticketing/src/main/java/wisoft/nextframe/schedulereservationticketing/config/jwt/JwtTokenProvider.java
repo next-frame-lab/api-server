@@ -15,6 +15,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 @Component
 public class JwtTokenProvider {
@@ -55,9 +56,7 @@ public class JwtTokenProvider {
 	}
 
 	/**
-	 * [추가] JWT 토큰을 파싱하여 만료 시간을 LocalDateTime 객체로 반환하는 메서드
-	 * @param token 만료 시간을 추출할 JWT 토큰
-	 * @return 토큰의 만료 시간을 담은 LocalDateTime 객체
+	 * JWT 토큰을 파싱하여 만료 시간을 LocalDateTime 객체로 반환하는 메서드
 	 */
 	public LocalDateTime getExpirationDateFromToken(String token) {
 		// 토큰의 payload 부분(Claims)을 디코딩하여 가져옵니다.
@@ -71,5 +70,44 @@ public class JwtTokenProvider {
 		return claims.getExpiration().toInstant()
 			.atZone(ZoneId.systemDefault())
 			.toLocalDateTime();
+	}
+
+	/**
+	 * JWT 토큰의 유효성을 검증하는 메서드
+	 */
+	public boolean validateToken(String token) {
+		try {
+			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+			return true;
+		} catch (SignatureException e) {
+			// 서명 오류
+			System.out.println("Invalid JWT signature: " + e.getMessage());
+		} catch (io.jsonwebtoken.MalformedJwtException e) {
+			// 형식 오류
+			System.out.println("Invalid JWT token: " + e.getMessage());
+		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			// 만료 오류
+			System.out.println("JWT token is expired: " + e.getMessage());
+		} catch (io.jsonwebtoken.UnsupportedJwtException e) {
+			// 지원되지 않는 토큰
+			System.out.println("JWT token is unsupported: " + e.getMessage());
+		} catch (IllegalArgumentException e) {
+			// 클레임이 비어있는 경우
+			System.out.println("JWT claims string is empty: " + e.getMessage());
+		}
+		return false;
+	}
+
+	/**
+	 * JWT 토큰에서 사용자 ID (UUID)를 추출하는 메서드
+	 */
+	public UUID getUserIdFromToken(String token) {
+		Claims claims = Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
+		// Subject에 저장된 UUID 문자열을 다시 UUID 객체로 변환하여 반환
+		return UUID.fromString(claims.getSubject());
 	}
 }
