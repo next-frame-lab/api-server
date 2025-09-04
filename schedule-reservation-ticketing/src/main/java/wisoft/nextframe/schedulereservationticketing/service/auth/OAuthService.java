@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,9 @@ import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoTokenResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.user.RefreshToken;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.repository.user.RefreshTokenRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 @Service
@@ -22,6 +25,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 public class OAuthService {
 
 	private final UserRepository userRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -50,6 +54,10 @@ public class OAuthService {
 		// 4. 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성합니다.
 		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
 		final String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+		// 5. Refresh Token을 DB에 저장 또는 업데이트합니다.
+		final LocalDateTime refreshTokenExpiresAt = jwtTokenProvider.getExpirationDateFromToken(refreshToken);
+		saveOrUpdateRefreshToken(user, refreshToken, refreshTokenExpiresAt);
 
 		return SigninResponse.from(
 			accessToken,
@@ -121,5 +129,23 @@ public class OAuthService {
 		}
 
 		return user;
+	}
+
+	private void saveOrUpdateRefreshToken(User user, String tokenValue, LocalDateTime expiresAt) {
+		Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findByUser(user);
+
+		if (optionalRefreshToken.isPresent()) {
+			// 기존 토큰이 있으면, 값과 만료 시간을 모두 업데이트
+			RefreshToken refreshToken = optionalRefreshToken.get();
+			refreshToken.updateTokenValue(tokenValue, expiresAt);
+		} else {
+			// 기존 토큰이 없으면, 새로 생성하여 저장
+			RefreshToken newRefreshToken = RefreshToken.builder()
+				.user(user)
+				.tokenValue(tokenValue)
+				.expiresAt(expiresAt)
+				.build();
+			refreshTokenRepository.save(newRefreshToken);
+		}
 	}
 }
