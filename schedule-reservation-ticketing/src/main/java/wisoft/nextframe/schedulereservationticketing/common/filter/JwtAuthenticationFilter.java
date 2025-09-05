@@ -65,11 +65,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			// 5. 생성된 인증 객체를 SecurityContextHolder에 저장합니다.
 			//    이렇게 하면, 현재 요청을 처리하는 동안 이 사용자는 '인증된 사용자'로 간주됩니다.
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-
-			// 6. 다음 필터로 요청과 응답을 전달합니다.
-			//    여기서 인증 처리가 완료되었거나, 토큰이 없어 인증이 필요 없는 요청은 다음 단계로 넘어갑니다.
-			filterChain.doFilter(request, response);
 		}
+		// 6. 다음 필터로 요청과 응답을 전달합니다.
+		//    여기서 인증 처리가 완료되었거나, 토큰이 없어 인증이 필요 없는 요청은 다음 단계로 넘어갑니다.
+		filterChain.doFilter(request, response);
 	}
 
 
