@@ -1,0 +1,27 @@
+name: Java CI
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 소스 코드 체크아웃
+      - uses: actions/checkout@v4
+
+      # 2. JDK 21 설치
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 3. gradlew 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4. 전체 모듈 빌드 + 테스트 실행
+      - name: Build with Gradle
+        run: ./gradlew build --stacktrace
