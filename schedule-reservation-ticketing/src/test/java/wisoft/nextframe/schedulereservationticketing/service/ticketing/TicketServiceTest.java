@@ -51,7 +51,6 @@ public class TicketServiceTest {
 		given(ticketRepository.findByReservationId(reservationId)).willReturn(Optional.empty());
 
 		Ticket ticket = Ticket.issue(reservation);
-		given(ticketRepository.save(any(Ticket.class))).willReturn(ticket);
 
 		TicketInfoResponse response = new TicketInfoResponse(
 			ticket.getId(),
@@ -70,7 +69,7 @@ public class TicketServiceTest {
 
 		//then
 		assertThat(result).isNotNull();
-		verify(ticketRepository).save(any(Ticket.class));
+		verify(ticketRepository).saveAndFlush(any(Ticket.class));
 		verify(ticketSender).send(eq(response), eq("user@test.com"));
 	}
 }
