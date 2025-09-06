@@ -102,7 +102,7 @@ class PerformanceRepositoryTest {
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(reservablePerf)
 			.withStadium(stadium)
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 1).atStartOfDay())
+			.withPerformanceDatetime(now.plusDays(30))
 			.withTicketOpenTime(now.minusDays(10))
 			.withTicketCloseTime(now.plusDays(4))
 			.build()
@@ -110,7 +110,7 @@ class PerformanceRepositoryTest {
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(reservablePerf)
 			.withStadium(stadium)
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 30).atStartOfDay())
+			.withPerformanceDatetime(now.plusDays(50))
 			.withTicketOpenTime(now.minusDays(10))
 			.withTicketCloseTime(now.plusDays(4))
 			.build()
@@ -127,10 +127,10 @@ class PerformanceRepositoryTest {
 			.toList();
 		assertThat(foundedPerformancList).hasSize(1);
 
-		final PerformanceSummaryResponse performanceDto = foundedPerformancList.getFirst();
-		assertThat(performanceDto.getName()).isEqualTo(uniqueName);
-		assertThat(performanceDto.getStartDate()).isEqualTo(LocalDate.of(2025, 9, 1));
-		assertThat(performanceDto.getEndDate()).isEqualTo(LocalDate.of(2025, 9, 30));
+		final PerformanceSummaryResponse performanceSummaryResponse = foundedPerformancList.getFirst();
+		assertThat(performanceSummaryResponse.getName()).isEqualTo(uniqueName);
+		assertThat(performanceSummaryResponse.getStartDate()).isEqualTo(now.plusDays(30).toLocalDate());
+		assertThat(performanceSummaryResponse.getEndDate()).isEqualTo(now.plusDays(50).toLocalDate());
 	}
 
 	@Test

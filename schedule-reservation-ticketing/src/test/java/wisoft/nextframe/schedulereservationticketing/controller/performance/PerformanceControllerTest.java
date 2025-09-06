@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,7 @@ class PerformanceControllerTest {
 
 	@Test
 	@DisplayName("공연 상세 조회 통합 테스트 - 성공 (200 OK)")
+	@WithMockUser
 	void getPerformanceDetail_Success() throws Exception {
 		// given
 		final Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
@@ -72,6 +74,7 @@ class PerformanceControllerTest {
 
 	@Test
 	@DisplayName("공연 상세 조회 통합 테스트 - 실패 (존재하지 않는 ID, 404 NOT FOUND)")
+	@WithMockUser
 	void getPerformanceDetail_NotFound() throws Exception {
 		// given
 		final UUID notExistId = UUID.randomUUID();
