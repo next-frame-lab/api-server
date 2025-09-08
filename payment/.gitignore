@@ -173,14 +173,13 @@ Temporary Items
 # iCloud generated files
 *.icloud
 
+# Created by https://www.toptal.com/developers/gitignore/api/gradle
+# Edit at https://www.toptal.com/developers/gitignore?templates=gradle
+
 ### Gradle ###
 .gradle
 **/build/
 !src/**/build/
-gradlew.bat
-gradlew
-.idea
-gradle
 
 # Ignore Gradle GUI config
 gradle-app.setting
