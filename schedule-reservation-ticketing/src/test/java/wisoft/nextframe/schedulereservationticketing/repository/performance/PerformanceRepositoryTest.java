@@ -122,12 +122,12 @@ class PerformanceRepositoryTest {
 		// then
 		assertThat(resultPage.getContent()).isNotEmpty();
 
-		final List<PerformanceSummaryResponse> foundedPerformancList = resultPage.getContent().stream()
+		final List<PerformanceSummaryResponse> foundedPerformanceList = resultPage.getContent().stream()
 			.filter(dto -> dto.getId().equals(reservablePerf.getId()))
 			.toList();
-		assertThat(foundedPerformancList).hasSize(1);
+		assertThat(foundedPerformanceList).hasSize(1);
 
-		final PerformanceSummaryResponse performanceSummaryResponse = foundedPerformancList.getFirst();
+		final PerformanceSummaryResponse performanceSummaryResponse = foundedPerformanceList.getFirst();
 		assertThat(performanceSummaryResponse.getName()).isEqualTo(uniqueName);
 		assertThat(performanceSummaryResponse.getStartDate()).isEqualTo(now.plusDays(30).toLocalDate());
 		assertThat(performanceSummaryResponse.getEndDate()).isEqualTo(now.plusDays(50).toLocalDate());
