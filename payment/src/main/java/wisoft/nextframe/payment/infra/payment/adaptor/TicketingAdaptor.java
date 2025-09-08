@@ -5,7 +5,6 @@ import org.springframework.web.client.RestClient;
 
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.domain.ReservationId;
-import wisoft.nextframe.schedulereservationticketing.dto.ticketing.TicketIssueRequest;
 
 @Component
 public class TicketingAdaptor implements TicketingClient {
