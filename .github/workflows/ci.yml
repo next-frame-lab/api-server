@@ -39,12 +39,14 @@ jobs:
       # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
         run: |
+          mkdir -p ./payment/src/main/resources
           echo "${{ secrets.PAYMENT_APPLICATION_YML }}" > ./payment/src/main/resources/application.yml
           echo "${{ secrets.PAYMENT_APPLICATION_DEV_YML }}" > ./payment/src/main/resources/application-dev.yml
           echo "${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}" > ./payment/src/main/resources/application-dev-db.yml
       
       - name: Create configuration files for schedule-reservation-ticketing module
         run: |
+          mkdir -p ./schedule-reservation-ticketing/src/main/resources
           echo "${{ secrets.SRT_APPLICATION_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application.yml
           echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
 
