@@ -65,6 +65,14 @@ jobs:
           echo "${{ secrets.SRT_APPLICATION_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application.yml
           echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
 
+      - name: Validate YAML files
+        run: |
+          for file in $(find . -name "*.yml"); do
+            echo "Validating $file ..."
+            python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
+          done
+
+
       # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
       - name: Build and test modules with Gradle
         env:
@@ -73,4 +81,4 @@ jobs:
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace
+        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
