@@ -54,6 +54,7 @@ jobs:
       - name: Build and test payment module with Gradle
         run: ./gradlew clean build --stacktrace
 
+
   # ===============================================================
   # 두 번째 Job: schedule-reservation-ticketing 프로젝트 빌드
   # ===============================================================
