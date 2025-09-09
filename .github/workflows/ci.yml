@@ -54,10 +54,16 @@ jobs:
       # DB 준비 대기
       - name: Wait for Postgres to be ready
         run: |
-           echo "Waiting for Postgres..."
-           until pg_isready -h postgres -p 5432 -U testuser; do
-             sleep 2
-           done
+          echo "Waiting for Postgres..."
+          for i in {1..30}; do
+            pg_isready -h ${{ job.services.postgres.hostname }} -p 5432 -U testuser
+            if [ $? -eq 0 ]; then
+              echo "Postgres is ready!"
+              break
+            fi
+            sleep 2
+          done
+      
 
       # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
@@ -95,7 +101,7 @@ jobs:
       - name: Build and test modules with Gradle
         env:
           SPRING_PROFILES_ACTIVE: dev
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
+          SPRING_DATASOURCE_URL: jdbc:postgresql://${{ job.services.postgres.hostname }}:5432/testdb
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
