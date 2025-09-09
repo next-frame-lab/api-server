@@ -13,19 +13,26 @@ on:
 permissions:
   contents: read
 
-# 실행될 작업(job)들을 정의합니다. 이 워크 플로우는 'build'라는 단일 작업으로 구성됩니다.
+# 실행될 작업(job)들을 정의합니다.
 jobs:
-  build:
+  # ===============================================================
+  # 첫 번째 Job: payment 프로젝트 빌드
+  # ===============================================================
+  build-payment:
     # 작업이 실행될 가상 환경을 지정합니다.
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # 이 Job 내의 모든 명령어는 'payment' 폴더 내에서 실행하도록 설정합니다.
+        working-directory: ./payment
 
-    # 작업 내에서 순차적으로 실행될 단계(step)를 정의합니다.
+    # Job 내에서 순차작으로 실행될 단계(step)을 정의합니다.
     steps:
-      # 1. 'actions/checkout' 액션을 사용하여 현재 레포지토리의 코드를 가상 환경으로 내려받습니다.
+      # 1. 레포지토리 코드를 가상 환경으로 내려받습니다.
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 'actions/setup-java' 액션을 사용하여 JDK 21을 설정합니다.
+      # 2. JDK 21을 설정합니다.
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -36,18 +43,51 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
+      # 4. payment 프로젝트의 설정 파일들을 GitHub Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
         run: |
-          echo "${{ secrets.PAYMENT_APPLICATION_YML }}" > ./payment/src/main/resources/application.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_YML }}" > ./payment/src/main/resources/application-dev.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}" > ./payment/src/main/resources/application-dev-db.yml
-      
-      - name: Create configuration files for schedule-reservation-ticketing module
-        run: |
-          echo "${{ secrets.SRT_APPLICATION_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application.yml
-          echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
+          echo "${{ secrets.PAYMENT_APPLICATION_YML }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.PAYMENT_APPLICATION_DEV_YML }}" > ./src/main/resources/application-dev.yml
+          echo "${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}" > ./src/main/resources/application-dev-db.yml
 
-      # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
-      - name: Build and test modules with Gradle
-        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace
+      # 5. Gradle을 사용하여 payment 프로젝트를 빌드하고 테스트합니다.
+      - name: Build and test payment module with Gradle
+        run: ./gradlew clean build --stacktrace
+
+  # ===============================================================
+  # 두 번째 Job: schedule-reservation-ticketing 프로젝트 빌드
+  # ===============================================================
+  build-schedule-reservation-ticketing:
+    # 작업이 실행될 가상 환경을 지정합니다.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # 모든 명령어를 'schedule-reservation-ticketing' 폴더 내에서 실행하도록 설정합니다.
+        working-directory: ./schedule-reservation-ticketing
+
+    # Job 내에서 순차적으로 실행될 단계(step)를 정의합니다.
+    steps:
+      # 1. 레포지토리 코드를 가상 환경으로 내려받습니다.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. JDK 21을 설정합니다.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 3. gradlew 스크립트에 실행 권한을 부여합니다.
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4. SRT 프로젝트의 설정 파일들을 GitHub Secret 값으로 생성합니다.
+      - name: Create configuration files for SRT module
+        run: |
+          echo "${{ secrets.SRT_APPLICATION_YML }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./src/main/resources/application-dev-mail.yml
+
+      # 5. Gradle을 사용하여 SRT 프로젝트를 빌드하고 테스트합니다.
+      - name: Build and test schedule-reservation-ticketing module with Gradle
+        run: ./gradlew clean build --stacktrace
