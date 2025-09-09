@@ -5,9 +5,9 @@ on:
   # main 또는 develop 브랜치에 push 이벤트가 발생했을 때 실행됩니다.
   push:
     branches: [ "main", "develop" ]
-  # 모든 브랜치를 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
+  # main, develop, release, hotfix 브랜치 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
   pull_request:
-    branches: [ "**" ]
+    branches: [ "main", "develop", "release/*", "hotfix/*" ]
 
 # 워크플로우 실행 시 Gradle 빌드에 대한 권한을 설정합니다.
 permissions:
@@ -25,7 +25,7 @@ jobs:
         env:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassoword
+          POSTGRES_PASSWORD: testpassword
         ports:
           - 5432:5432
         options: >-
