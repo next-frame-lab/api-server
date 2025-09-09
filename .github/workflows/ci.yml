@@ -55,15 +55,25 @@ jobs:
       - name: Create configuration files for payment module
         run: |
           mkdir -p ./payment/src/main/resources
-          echo "${{ secrets.PAYMENT_APPLICATION_YML }}" > ./payment/src/main/resources/application.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_YML }}" > ./payment/src/main/resources/application-dev.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}" > ./payment/src/main/resources/application-dev-db.yml
-      
+          cat <<'EOF' > ./payment/src/main/resources/application.yml
+          ${{ secrets.PAYMENT_APPLICATION_YML }}
+          EOF
+          cat <<'EOF' > ./payment/src/main/resources/application-dev.yml
+          ${{ secrets.PAYMENT_APPLICATION_DEV_YML }}
+          EOF
+          cat <<'EOF' > ./payment/src/main/resources/application-dev-db.yml
+          ${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}
+          EOF
+
       - name: Create configuration files for schedule-reservation-ticketing module
         run: |
           mkdir -p ./schedule-reservation-ticketing/src/main/resources
-          echo "${{ secrets.SRT_APPLICATION_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application.yml
-          echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
+          cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application.yml
+          ${{ secrets.SRT_APPLICATION_YML }}
+          EOF
+          cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
+          ${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}
+          EOF
 
       - name: Validate YAML files
         run: |
