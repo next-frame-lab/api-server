@@ -5,9 +5,9 @@ on:
   # main 또는 develop 브랜치에 push 이벤트가 발생했을 때 실행됩니다.
   push:
     branches: [ "main", "develop" ]
-  # 모든 브랜치를 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
+  # main, develop, release, hotfix 브랜치 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
   pull_request:
-    branches: [ "**" ]
+    branches: [ "main", "develop", "release/*", "hotfix/*" ]
 
 # 워크플로우 실행 시 Gradle 빌드에 대한 권한을 설정합니다.
 permissions:
@@ -25,7 +25,7 @@ jobs:
         env:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassoword
+          POSTGRES_PASSWORD: testpassword
         ports:
           - 5432:5432
         options: >-
@@ -51,26 +51,52 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      # DB 준비 대기
+      - name: Wait for Postgres to be ready
+        run: |
+           echo "Waiting for Postgres..."
+           until pg_isready -h postgres -p 5432 -U testuser; do
+             sleep 2
+           done
+
       # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
         run: |
           mkdir -p ./payment/src/main/resources
-          echo "${{ secrets.PAYMENT_APPLICATION_YML }}" > ./payment/src/main/resources/application.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_YML }}" > ./payment/src/main/resources/application-dev.yml
-          echo "${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}" > ./payment/src/main/resources/application-dev-db.yml
-      
+          cat <<'EOF' > ./payment/src/main/resources/application.yml
+          ${{ secrets.PAYMENT_APPLICATION_YML }}
+          EOF
+          cat <<'EOF' > ./payment/src/main/resources/application-dev.yml
+          ${{ secrets.PAYMENT_APPLICATION_DEV_YML }}
+          EOF
+          cat <<'EOF' > ./payment/src/main/resources/application-dev-db.yml
+          ${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}
+          EOF
+
       - name: Create configuration files for schedule-reservation-ticketing module
         run: |
           mkdir -p ./schedule-reservation-ticketing/src/main/resources
-          echo "${{ secrets.SRT_APPLICATION_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application.yml
-          echo "${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}" > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
+          cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application.yml
+          ${{ secrets.SRT_APPLICATION_YML }}
+          EOF
+          cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
+          ${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}
+          EOF
+
+      - name: Validate YAML files
+        run: |
+          for file in $(find . -name "*.yml"); do
+            echo "Validating $file ..."
+            python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
+          done
+
 
       # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
       - name: Build and test modules with Gradle
         env:
           SPRING_PROFILES_ACTIVE: dev
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace
+        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
