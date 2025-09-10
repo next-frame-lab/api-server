@@ -7,11 +7,11 @@ on:
     branches: [ "main", "develop" ]
   # main, develop, release, hotfix 브랜치 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
   pull_request:
-    branches: [ "main", "develop", "release/*", "hotfix/*" ]
+    branches: [ "main", "develop" ]
 
-# 워크플로우 실행 시 Gradle 빌드에 대한 권한을 설정합니다.
-permissions:
-  contents: read
+## 워크플로우 실행 시 Gradle 빌드에 대한 권한을 설정합니다.
+#permissions:
+#  contents: read
 
 # 실행될 작업(job)들을 정의합니다. 이 워크 플로우는 'build'라는 단일 작업으로 구성됩니다.
 jobs:
