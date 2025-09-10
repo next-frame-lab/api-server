@@ -75,12 +75,6 @@ jobs:
           ${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}
           EOF
 
-      - name: 🧐 [DEBUG] Display SRT application.yml content
-        run: |
-          echo "--- Content of schedule-reservation-ticketing/src/main/resources/application.yml ---"
-          cat ./schedule-reservation-ticketing/src/main/resources/application.yml
-          echo "------------------------------------------------------------------------------------"
-
       - name: Validate YAML files
         run: |
           for file in $(find . -name "*.yml"); do
