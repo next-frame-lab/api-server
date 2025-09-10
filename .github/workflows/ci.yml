@@ -83,4 +83,4 @@ jobs:
 
       # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
       - name: Build and test modules with Gradle
-        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
+        run: ./gradlew :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
