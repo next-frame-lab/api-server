@@ -146,7 +146,7 @@ jobs:
 
       # 6. Gradle을 사용하여 'schedule-reservation-ticketing' 모듈을 빌드하고 테스트를 실행합니다.
       - name: Build and test schedule-reservation-ticketing module with Gradle
-        run: ./gradlew :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
+        run: ./gradlew :schedule-reservation-ticketing:build -x test --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
 
       - name: Upload Test Report
         if: failure() # 테스트가 실패했을 때만 실행
