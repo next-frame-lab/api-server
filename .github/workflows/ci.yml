@@ -29,7 +29,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U testuser -d testdb"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -50,14 +50,6 @@ jobs:
       # 3. gradlew 스크립트에 실행 권한을 부여합니다.
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-
-      # DB 준비 대기
-      - name: Wait for Postgres to be ready
-        run: |
-           echo "Waiting for Postgres..."
-           until pg_isready -h postgres -p 5432 -U testuser; do
-             sleep 2
-           done
 
       # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
