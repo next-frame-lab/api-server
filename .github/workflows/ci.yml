@@ -26,8 +26,6 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U testuser -d testdb"
           --health-interval 10s
@@ -85,10 +83,4 @@ jobs:
 
       # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
       - name: Build and test modules with Gradle
-        env:
-          SPRING_PROFILES_ACTIVE: dev
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
         run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
