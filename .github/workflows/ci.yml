@@ -87,8 +87,6 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
-        ports:
-          - 15432:5432
         options: >-
           --health-cmd "pg_isready -U testuser -d testdb"
           --health-interval 10s
@@ -132,6 +130,18 @@ jobs:
           for file in $(find ./schedule-reservation-ticketing -name "*.yml"); do
             echo "Validating $file ..."
             python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
+          done
+
+      - name: Verify application.yml files (mask sensitive info)
+        run: |
+          for file in $(find ./schedule-reservation-ticketing/src/main/resources -name "application*.yml"); do
+            echo "=== Checking $file ==="
+            if [ ! -s "$file" ]; then
+              echo "❌ $file is empty! Secret not injected."
+              exit 1
+            fi
+            # password 값은 마스킹 처리
+            sed -E 's/(password:).*/\1 ****/g' "$file" | sed -E 's/(username:).*/\1 ****/g'
           done
 
       # 6. Gradle을 사용하여 'schedule-reservation-ticketing' 모듈을 빌드하고 테스트를 실행합니다.
