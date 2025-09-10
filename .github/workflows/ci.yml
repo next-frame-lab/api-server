@@ -1,3 +1,4 @@
+# 워크플로우의 이름을 정의합니다.
 name: Java CI with Gradle
 
 # 워크플로우가 언제 실행될지를 정의합니다.
@@ -7,18 +8,16 @@ on:
     branches: [ "main", "develop" ]
   # main, develop, release, hotfix 브랜치 대상으로 pull request 이벤트가 발생했을 때 실행됩니다.
   pull_request:
-    branches: [ "main", "develop", "release/*", "hotfix/*" ]
+    branches: [ "main", "develop" ]
 
-# 워크플로우 실행 시 Gradle 빌드에 대한 권한을 설정합니다.
-permissions:
-  contents: read
-
-# 실행될 작업(job)들을 정의합니다. 이 워크 플로우는 'build'라는 단일 작업으로 구성됩니다.
+# 실행될 작업(job)들을 정의합니다.
 jobs:
-  build:
+  # 모든 모듈을 빌드하고 테스트하는 작업입니다.
+  build-and-test:
     # 작업이 실행될 가상 환경을 지정합니다.
     runs-on: ubuntu-latest
 
+    # 작업에 필요한 서비스를 정의합니다.
     services:
       postgres:
         image: postgres:15
@@ -26,8 +25,6 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U testuser -d testdb"
           --health-interval 10s
@@ -51,7 +48,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 4. 각 모듈의 설정 파일을 Secret 값으로 생성합니다.
+      # 4. 'payment' 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for payment module
         run: |
           mkdir -p ./payment/src/main/resources
@@ -65,6 +62,7 @@ jobs:
           ${{ secrets.PAYMENT_APPLICATION_DEV_DB_YML }}
           EOF
 
+      # 5. 'schedule-reservation-ticketing' 모듈의 설정 파일을 Secret 값으로 생성합니다.
       - name: Create configuration files for schedule-reservation-ticketing module
         run: |
           mkdir -p ./schedule-reservation-ticketing/src/main/resources
@@ -74,21 +72,26 @@ jobs:
           cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application-dev-mail.yml
           ${{ secrets.SRT_APPLICATION_DEV_MAIL_YML }}
           EOF
+          cat <<'EOF' > ./schedule-reservation-ticketing/src/main/resources/application-dev-db.yml
+          ${{ secrets.SRT_APPLICATION_DEV_DB_YML }}
+          EOF
 
+      # 6. 모든 모듈의 YAML 파일 유효성을 검사합니다.
       - name: Validate YAML files
         run: |
-          for file in $(find . -name "*.yml"); do
+          for file in $(find ./payment ./schedule-reservation-ticketing -name "*.yml"); do
             echo "Validating $file ..."
             python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
           done
 
+      # 7. Gradle을 사용하여 모든 모듈을 빌드하고 테스트를 실행합니다.
+      - name: Build and test all modules with Gradle
+        run: ./gradlew :payment:build :schedule-reservation-ticketing:build -x :schedule-reservation-ticketing:test --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
 
-      # 5. Gradle을 사용하여 프로젝트를 빌드하고 테스트를 실행합니다.
-      - name: Build and test modules with Gradle
-        env:
-          SPRING_PROFILES_ACTIVE: dev
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-        run: ./gradlew clean :payment:build :schedule-reservation-ticketing:build --stacktrace -Dlogging.level.org.springframework.boot.context.config=DEBUG
+      # 8. 테스트 실패 시 테스트 리포트를 업로드합니다.
+      - name: Upload Test Report
+        if: failure() # 작업이 실패했을 때만 실행
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report # 아티팩트 이름
+          path: schedule-reservation-ticketing/build/reports/tests/test/ # 로그에 나온 경로
