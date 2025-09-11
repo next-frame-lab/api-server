@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
@@ -30,9 +31,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 
-@SpringBootTest
-@Transactional
-class PerformanceRepositoryTest {
+class PerformanceRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
@@ -91,13 +90,8 @@ class PerformanceRepositoryTest {
 		// given
 		final LocalDateTime now = LocalDateTime.now();
 
-		// 예매 가능한 공연 데이터 1개 저장(테스트만을 위한 고유한 공연 생성)
-		final String uniqueName = "햄릿" + UUID.randomUUID();
-		final Performance reservablePerf = performanceRepository.save(
-			new PerformanceBuilder()
-				.withName(uniqueName)
-				.build());
-
+		// 예매 가능한 공연 데이터 1개 저장
+		final Performance reservablePerf = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
 		// 공연과 관련된 일정 데이터 2개 저장
 		scheduleRepository.save(new ScheduleBuilder()
 			.withPerformance(reservablePerf)
@@ -120,15 +114,10 @@ class PerformanceRepositoryTest {
 		final Page<PerformanceSummaryResponse> resultPage = performanceRepository.findReservablePerformances(pageable);
 
 		// then
-		assertThat(resultPage.getContent()).isNotEmpty();
+		assertThat(resultPage.getTotalElements()).isEqualTo(1);
 
-		final List<PerformanceSummaryResponse> foundedPerformanceList = resultPage.getContent().stream()
-			.filter(dto -> dto.getId().equals(reservablePerf.getId()))
-			.toList();
-		assertThat(foundedPerformanceList).hasSize(1);
-
-		final PerformanceSummaryResponse performanceSummaryResponse = foundedPerformanceList.getFirst();
-		assertThat(performanceSummaryResponse.getName()).isEqualTo(uniqueName);
+		final PerformanceSummaryResponse performanceSummaryResponse = resultPage.getContent().getFirst();
+		assertThat(performanceSummaryResponse.getName()).isEqualTo("햄릿");
 		assertThat(performanceSummaryResponse.getStartDate()).isEqualTo(now.plusDays(30).toLocalDate());
 		assertThat(performanceSummaryResponse.getEndDate()).isEqualTo(now.plusDays(50).toLocalDate());
 	}

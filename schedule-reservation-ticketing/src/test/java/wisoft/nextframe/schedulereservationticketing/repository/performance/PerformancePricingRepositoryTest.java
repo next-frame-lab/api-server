@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
@@ -22,9 +23,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSecti
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
-@SpringBootTest
-@Transactional
-class PerformancePricingRepositoryTest {
+class PerformancePricingRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private PerformancePricingRepository performancePricingRepository;
