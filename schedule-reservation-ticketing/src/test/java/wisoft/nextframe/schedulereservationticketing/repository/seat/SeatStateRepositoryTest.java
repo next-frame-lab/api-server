@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
@@ -30,9 +31,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefi
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
-@SpringBootTest
-@Transactional
-class SeatStateRepositoryTest {
+class SeatStateRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private EntityManager entityManager;
