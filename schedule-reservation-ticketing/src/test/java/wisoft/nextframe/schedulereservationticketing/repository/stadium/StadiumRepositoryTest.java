@@ -8,14 +8,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import jakarta.transaction.Transactional;
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 
-@SpringBootTest
-@Transactional
-class StadiumRepositoryTest {
+class StadiumRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private StadiumRepository stadiumRepository;
@@ -25,10 +22,10 @@ class StadiumRepositoryTest {
 	void saveAndFindById_Success() {
 		// given
 		UUID stadiumId = UUID.randomUUID();
-		Stadium newStadium = Stadium.builder().id(stadiumId).name("서울월드컵경기장").address("서울시 마포구 성산동").build();
+		Stadium stadium = Stadium.builder().id(stadiumId).name("서울월드컵경기장").address("서울시 마포구 성산동").build();
 
 		// when
-		stadiumRepository.save(newStadium);
+		stadiumRepository.save(stadium);
 		Optional<Stadium> foundStadiumOptional = stadiumRepository.findById(stadiumId);
 
 		// then

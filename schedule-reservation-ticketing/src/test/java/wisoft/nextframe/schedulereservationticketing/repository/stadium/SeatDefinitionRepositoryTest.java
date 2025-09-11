@@ -14,13 +14,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
+import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 
-@SpringBootTest
-@Transactional
-class SeatDefinitionRepositoryTest {
+class SeatDefinitionRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
 	private SeatDefinitionRepository seatDefinitionRepository;
