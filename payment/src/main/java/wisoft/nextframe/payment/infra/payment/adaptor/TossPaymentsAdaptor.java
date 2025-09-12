@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestClient;
 import wisoft.nextframe.payment.application.payment.port.output.TossPaymentsClient;
 
 @Component
+@Profile("prod")
 public class TossPaymentsAdaptor implements TossPaymentsClient {
 
 	private final RestClient restClient;
@@ -30,7 +32,6 @@ public class TossPaymentsAdaptor implements TossPaymentsClient {
 			.build();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> confirmPayment(String paymentKey, String orderId, int amount) {
 		return restClient.post()
