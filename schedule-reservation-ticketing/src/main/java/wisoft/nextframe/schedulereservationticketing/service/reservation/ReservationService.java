@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,9 @@ public class ReservationService {
 	private final ReservationDataProvider dataProvider;
 
 	@Transactional
-	public ReservationResponse reserveSeat(ReservationRequest request) {
+	public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
 		// 1. 예매에 필요한 데이터를 준비합니다.
-		final ReservationContext context = dataProvider.provide(request);
+		final ReservationContext context = dataProvider.provide(userId, request);
 		final Performance performance = context.performance();
 		final User user = context.user();
 		final List<SeatDefinition> seats = context.seats();
