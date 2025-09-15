@@ -13,12 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;

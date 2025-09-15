@@ -6,15 +6,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
+import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
 @RestController
@@ -23,13 +31,30 @@ import wisoft.nextframe.schedulereservationticketing.service.performance.Perform
 public class PerformanceController {
 
 	private final PerformanceService performanceService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final UserRepository userRepository;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<?>> getPerformanceDetail(@PathVariable UUID id) {
+	public ResponseEntity<ApiResponse<?>> getPerformanceDetail(@PathVariable UUID id, HttpServletRequest request) {
 		final PerformanceDetailResponse data = performanceService.getPerformanceDetail(id);
 
-		final ApiResponse<PerformanceDetailResponse> response = ApiResponse.success(data);
+		if (data.adultOnly()) {
+			final String token = resolveToken(request);
 
+			if (token == null || !jwtTokenProvider.validateToken(token)) {
+				throw new AuthenticationCredentialsNotFoundException("유효한 인증 정보가 없습니다.");
+			}
+
+			final UUID userId = jwtTokenProvider.getUserIdFromToken(token);
+			final User user = userRepository.findById(userId)
+				.orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+			if (!user.isAdult()) {
+				throw new AccessDeniedException("성인 인증이 필요한 공연입니다.");
+			}
+		}
+
+		final ApiResponse<PerformanceDetailResponse> response = ApiResponse.success(data);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -40,5 +65,13 @@ public class PerformanceController {
 		final ApiResponse<PerformanceListResponse> response = ApiResponse.success(data);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	private String resolveToken(HttpServletRequest request) {
+		final String bearerToken = request.getHeader("Authorization");
+		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7);
+		}
+		return null;
 	}
 }

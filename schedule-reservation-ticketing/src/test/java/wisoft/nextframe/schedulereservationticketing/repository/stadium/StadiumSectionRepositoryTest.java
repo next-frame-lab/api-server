@@ -10,10 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import jakarta.transaction.Transactional;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;

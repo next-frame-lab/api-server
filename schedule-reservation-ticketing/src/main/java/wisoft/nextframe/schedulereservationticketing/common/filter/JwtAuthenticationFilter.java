@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final List<String> EXCLUDED_PATHS = List.of(
 		"/",
 		"/api/v1/auth/**",
-		"/api/v1/performances"
+		"/api/v1/performances/**"
 	);
 	private final AntPathMatcher pathMatcher = new AntPathMatcher();
 

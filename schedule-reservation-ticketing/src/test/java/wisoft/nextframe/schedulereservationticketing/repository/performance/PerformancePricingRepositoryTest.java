@@ -8,14 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import jakarta.transaction.Transactional;
-import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricingId;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
