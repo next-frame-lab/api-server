@@ -13,19 +13,19 @@ on:
         type: string
     # 호출하는 워크플로우로부터 전달받을 시크릿(secret)을 정의합니다.
     secrets:
-      CONFIG_YML:
+      APPLICATION_YML:
         description: 'application.yml 파일 내용'
         required: true
-      CONFIG_DEV_YML:
+      APPLICATION_DEV_YML:
         description: 'application-dev.yml 파일 내용'
         required: false
-      CONFIG_DEV_DB_YML:
+      APPLICATION_DEV_DB_YML:
         description: 'application-dev-db.yml 파일 내용'
         required: false
-      CONFIG_DEV_MAIL_YML:
+      APPLICATION_DEV_MAIL_YML:
         description: 'application-dev-mail.yml 파일 내용'
         required: false
-      CONFIG_TEST_YML:
+      APPLICATION_TEST_YML:
         description: 'application-test.yml 파일 내용'
         required: false
 
@@ -49,21 +49,21 @@ jobs:
       - name: 설정 파일 생성
         run: |
           mkdir -p ./${{ inputs.module-path }}/src/main/resources
-          echo "${{ secrets.CONFIG_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application.yml
           
-          if [ -n "${{ secrets.CONFIG_DEV_YML }}" ]; then
-            echo "${{ secrets.CONFIG_DEV_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev.yml
+          if [ -n "${{ secrets.APPLICATION_DEV_YML }}" ]; then
+            echo "${{ secrets.APPLICATION_DEV_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev.yml
           fi
-          if [ -n "${{ secrets.CONFIG_DEV_DB_YML }}" ]; then
-            echo "${{ secrets.CONFIG_DEV_DB_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-db.yml
+          if [ -n "${{ secrets.APPLICATION_DEV_DB_YML }}" ]; then
+            echo "${{ secrets.APPLICATION_DEV_DB_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-db.yml
           fi
-          if [ -n "${{ secrets.CONFIG_DEV_MAIL_YML }}" ]; then
-            echo "${{ secrets.CONFIG_DEV_MAIL_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-mail.yml
+          if [ -n "${{ secrets.APPLICATION_DEV_MAIL_YML }}" ]; then
+            echo "${{ secrets.APPLICATION_DEV_MAIL_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-mail.yml
           fi
 
-          if [ -n "${{ secrets.CONFIG_TEST_YML }}" ]; then
+          if [ -n "${{ secrets.APPLICATION_TEST_YML }}" ]; then
             mkdir -p ./${{ inputs.module-path }}/src/test/resources
-            echo "${{ secrets.CONFIG_TEST_YML }}" > ./${{ inputs.module-path }}/src/test/resources/application-test.yml
+            echo "${{ secrets.APPLICATION_TEST_YML }}" > ./${{ inputs.module-path }}/src/test/resources/application-test.yml
           fi
 
       - name: 설정 파일 유효성 검사
