@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.InvalidSeatCountException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.PerformanceScheduleMismatchException;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatNotDefinedException;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
@@ -28,14 +28,14 @@ public class ReservationDataProvider {
 	private final SeatDefinitionRepository seatDefinitionRepository;
 
 	/**
-	 * ReservationRequest를 기반으로 예매에 필요한 모든 엔티티를 조회하고 검증하여
+	 * userId, ReservationRequest를 기반으로 예매에 필요한 모든 엔티티를 조회하고 검증하여
 	 * ReservationContext 객체로 반환합니다.
 	 * @param request 예매 요청 DTO
 	 * @return 예매 컨텍스트 객체
 	 */
-	public ReservationContext provide(ReservationRequest request) {
+	public ReservationContext provide(UUID userId, ReservationRequest request) {
 		// 1. 각 ID를 사용하여 엔티티를 조회합니다.
-		final User user = userRepository.findById(request.userId())
+		final User user = userRepository.findById(userId)
 			.orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
 		final Schedule schedule = scheduleRepository.findById(request.scheduleId())
