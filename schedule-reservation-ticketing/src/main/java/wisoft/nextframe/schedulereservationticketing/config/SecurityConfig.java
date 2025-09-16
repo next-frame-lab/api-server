@@ -19,6 +19,7 @@ import wisoft.nextframe.schedulereservationticketing.common.filter.JwtAuthentica
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
