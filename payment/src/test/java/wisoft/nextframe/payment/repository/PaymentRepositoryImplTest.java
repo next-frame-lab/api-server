@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
-import wisoft.nextframe.payment.persistence.PaymentEntityFixture;
+import wisoft.nextframe.payment.domain.fixture.PaymentEntityFixture;
 import wisoft.nextframe.payment.infra.payment.JpaPaymentRepository;
 import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.payment.infra.payment.PaymentMapper;

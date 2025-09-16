@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentClient;
 
 @SpringBootTest
-class TossPaymentsStubTest {
+class StubPaymentTest {
 
 	@Autowired
 	private PaymentClient paymentClient;
