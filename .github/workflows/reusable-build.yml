@@ -47,23 +47,30 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: 설정 파일 생성
+        env:
+          SECRET_CONFIG_YML: ${{ secrets.APPLICATION_YML }}
+          SECRET_CONFIG_DEV_YML: ${{ secrets.APPLICATION_DEV_YML }}
+          SECRET_CONFIG_DEV_DB_YML: ${{ secrets.APPLICATION_DEV_DB_YML }}
+          SECRET_CONFIG_DEV_MAIL_YML: ${{ secrets.APPLICATION_DEV_MAIL_YML }}
+          SECRET_CONFIG_TEST_YML: ${{ secrets.APPLICATION_TEST_YML }}
         run: |
           mkdir -p ./${{ inputs.module-path }}/src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application.yml
+          # 이제 secrets 대신 안전하게 환경 변수를 사용합니다.
+          echo "$SECRET_CONFIG_YML" > ./${{ inputs.module-path }}/src/main/resources/application.yml
           
-          if [ -n "${{ secrets.APPLICATION_DEV_YML }}" ]; then
-            echo "${{ secrets.APPLICATION_DEV_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev.yml
+          if [ -n "$SECRET_CONFIG_DEV_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev.yml
           fi
-          if [ -n "${{ secrets.APPLICATION_DEV_DB_YML }}" ]; then
-            echo "${{ secrets.APPLICATION_DEV_DB_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-db.yml
+          if [ -n "$SECRET_CONFIG_DEV_DB_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_DB_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev-db.yml
           fi
-          if [ -n "${{ secrets.APPLICATION_DEV_MAIL_YML }}" ]; then
-            echo "${{ secrets.APPLICATION_DEV_MAIL_YML }}" > ./${{ inputs.module-path }}/src/main/resources/application-dev-mail.yml
+          if [ -n "$SECRET_CONFIG_DEV_MAIL_YML" ]; then
+            echo "$SECRET_CONFIG_DEV_MAIL_YML" > ./${{ inputs.module-path }}/src/main/resources/application-dev-mail.yml
           fi
-
-          if [ -n "${{ secrets.APPLICATION_TEST_YML }}" ]; then
+          
+          if [ -n "$SECRET_CONFIG_TEST_YML" ]; then
             mkdir -p ./${{ inputs.module-path }}/src/test/resources
-            echo "${{ secrets.APPLICATION_TEST_YML }}" > ./${{ inputs.module-path }}/src/test/resources/application-test.yml
+            echo "$SECRET_CONFIG_TEST_YML" > ./${{ inputs.module-path }}/src/test/resources/application-test.yml
           fi
 
       - name: 설정 파일 유효성 검사
