@@ -4,13 +4,14 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
-import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
@@ -24,9 +25,9 @@ import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
 @RequiredArgsConstructor
 public class PaymentService {
 
-	private final TicketingClient ticketingClient;
 	private final PaymentRepository paymentRepository;
-	private final TossPaymentsGateway tossPaymentsGateway;
+	private final PaymentGateway paymentGateway;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public Payment confirmPayment(PaymentConfirmRequest request) {
@@ -53,7 +54,7 @@ public class PaymentService {
 
 
 		// 외부 결제 승인
-		TossPaymentsGateway.TossPaymentConfirmResult result = tossPaymentsGateway.confirmPayment(
+		PaymentGateway.PaymentConfirmResult result = paymentGateway.confirmPayment(
 			request.paymentKey(),
 			request.orderId(),
 			request.amount()
@@ -65,8 +66,8 @@ public class PaymentService {
 			paymentRepository.save(payment);
 			log.info("결제 저장 완료 - paymentId: {}", payment.getId());
 
-			ticketingClient.issueTicket(payment.getReservationId());
-			log.info("티켓 발급 요청 완료 - reservationId: {}", payment.getReservationId());
+			payment.getDomainEvents().forEach(eventPublisher::publishEvent);
+			payment.clearDomainEvents();
 
 			return payment;
 		} else {
