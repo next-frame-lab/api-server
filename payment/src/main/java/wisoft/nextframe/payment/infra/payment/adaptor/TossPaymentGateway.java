@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.application.payment;
+package wisoft.nextframe.payment.infra.payment.adaptor;
 
 import java.util.Map;
 
@@ -6,24 +6,17 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.payment.port.output.TossPaymentsClient;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentClient;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TossPaymentsGateway {
+public class TossPaymentGateway implements PaymentGateway {
 
-	private final TossPaymentsClient tossClient;
+	private final PaymentClient tossClient;
 
-	public record TossPaymentConfirmResult(
-		boolean isSuccess,
-		int totalAmount,
-		String errorCode,
-		String errorMessage
-	) {
-	}
-
-	public TossPaymentConfirmResult confirmPayment(String paymentKey, String orderId, int amount) {
+	public PaymentConfirmResult confirmPayment(String paymentKey, String orderId, int amount) {
 		try {
 			// 1. TossPaymentsClient를 통해 실제 외부 API 호출
 			Map<String, Object> body = tossClient.confirmPayment(paymentKey, orderId, amount);
@@ -34,19 +27,19 @@ public class TossPaymentsGateway {
 
 			if ("DONE".equals(paymentStatus) && approvedAt != null) {
 				int totalAmount = extractInt(body.get("totalAmount"), amount);
-				return new TossPaymentConfirmResult(true, totalAmount, null, null);
+				return new PaymentConfirmResult(true, totalAmount, null, null);
 			} else {
 				String tossCode = String.valueOf(body.getOrDefault("code", "TOSS_ERROR"));
 				String tossMsg = String.valueOf(body.getOrDefault("message", "토스 승인 실패"));
 				log.warn("Toss confirm failed. paymentStatus={}, tossCode={}, tossMsg={}, body={}", paymentStatus, tossCode,
 					tossMsg, body);
-				return new TossPaymentConfirmResult(false, 0, tossCode, tossMsg);
+				return new PaymentConfirmResult(false, 0, tossCode, tossMsg);
 			}
 		} catch (Exception ex) {
 			// 5. 네트워크/타임아웃/예외 처리
 			String msg = ex.getMessage() != null ? ex.getMessage() : "NETWORK_ERROR";
 			log.error("Toss confirmPayment exception", ex);
-			return new TossPaymentConfirmResult(false, 0, "NETWORK_ERROR", "네트워크 오류: " + msg);
+			return new PaymentConfirmResult(false, 0, "NETWORK_ERROR", "네트워크 오류: " + msg);
 		}
 	}
 

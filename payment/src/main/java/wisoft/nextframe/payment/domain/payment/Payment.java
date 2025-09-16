@@ -1,11 +1,16 @@
 package wisoft.nextframe.payment.domain.payment;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import lombok.Getter;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.common.exception.InvalidAmountException;
 import wisoft.nextframe.payment.domain.ReservationId;
+import wisoft.nextframe.payment.domain.payment.event.DomainEvent;
+import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
@@ -24,6 +29,7 @@ public class Payment {
 	private LocalDateTime approvedAt;
 	private LocalDateTime failedAt;
 	private Refund currentRefund;
+	private final List<DomainEvent> domainEvents = new ArrayList<>();
 
 	private Payment(PaymentId id, Money amount, LocalDateTime requestedAt, ReservationId reservationId) {
 		this.id = id;
@@ -80,9 +86,17 @@ public class Payment {
 		}
 		this.status = PaymentStatus.SUCCEEDED;
 		this.approvedAt = LocalDateTime.now();
+
+		domainEvents.add(new PaymentApprovedEvent(this.id.getValue(), this.reservationId.getValue()));
 	}
 
 	public void fail() {
+		if (this.status == PaymentStatus.SUCCEEDED) {
+			throw new InvalidPaymentStatusException("결제 실패", status, PaymentStatus.REQUESTED);
+		}
+		if (this.status == PaymentStatus.FAILED) {
+			return;
+		}
 		this.status = PaymentStatus.FAILED;
 		this.failedAt = LocalDateTime.now();
 	}
@@ -96,6 +110,14 @@ public class Payment {
 			&& requestedAt.plusMinutes(10).isBefore(LocalDateTime.now())) {
 			this.status = PaymentStatus.FAILED;
 		}
+	}
+
+	public List<DomainEvent> getDomainEvents() {
+		return Collections.unmodifiableList(domainEvents);
+	}
+
+	public void clearDomainEvents() {
+		domainEvents.clear();
 	}
 
 }

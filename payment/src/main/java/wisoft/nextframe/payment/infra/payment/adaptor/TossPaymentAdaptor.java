@@ -11,15 +11,15 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import wisoft.nextframe.payment.application.payment.port.output.TossPaymentsClient;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentClient;
 
 @Component
 @Profile("prod")
-public class TossPaymentsAdaptor implements TossPaymentsClient {
+public class TossPaymentAdaptor implements PaymentClient {
 
 	private final RestClient restClient;
 
-	public TossPaymentsAdaptor(RestClient.Builder builder, @Value("${toss.secret-key}") String secretKey) {
+	public TossPaymentAdaptor(RestClient.Builder builder, @Value("${toss.secret-key}") String secretKey) {
 		if (secretKey == null || secretKey.isEmpty()) {
 			throw new IllegalStateException("toss.secret-key가 설정되어 있지 않습니다.");
 		}

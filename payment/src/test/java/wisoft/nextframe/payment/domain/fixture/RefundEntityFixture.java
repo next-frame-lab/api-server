@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.payment.persistence;
+package wisoft.nextframe.payment.domain.fixture;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

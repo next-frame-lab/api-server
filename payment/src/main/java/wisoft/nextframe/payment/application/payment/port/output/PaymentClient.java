@@ -3,7 +3,7 @@ package wisoft.nextframe.payment.application.payment.port.output;
 
 import java.util.Map;
 
-public interface TossPaymentsClient {
+public interface PaymentClient {
 
 	/**
 	 * 외부 결제 시스템에 결제를 요청한다.
