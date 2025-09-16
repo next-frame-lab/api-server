@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.fixture;
+package wisoft.nextframe.payment.domain.fixture;
 
 import static org.mockito.Mockito.*;
 

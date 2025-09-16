@@ -6,11 +6,11 @@ import java.util.Map;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import wisoft.nextframe.payment.application.payment.port.output.TossPaymentsClient;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentClient;
 
 @Component
 @Profile({"loadtest", "dev"})
-public class StubTossPaymentsAdaptor implements TossPaymentsClient {
+public class StubPaymentAdaptor implements PaymentClient {
 
 	@Override
 	public Map<String, Object> confirmPayment(String paymentKey, String orderId, int amount) {

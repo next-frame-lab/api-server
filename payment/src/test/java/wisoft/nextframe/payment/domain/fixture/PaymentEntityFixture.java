@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.persistence;
+package wisoft.nextframe.payment.domain.fixture;
 
 import static java.util.UUID.*;
 import static wisoft.nextframe.payment.domain.payment.PaymentStatus.*;
