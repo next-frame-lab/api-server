@@ -1,7 +1,7 @@
 package wisoft.nextframe.payment.domain;
 
 import static org.assertj.core.api.Assertions.*;
-import static wisoft.nextframe.payment.fixture.TestPaymentFactory.*;
+import static wisoft.nextframe.payment.domain.fixture.TestPaymentFactory.*;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentStatus;
+import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
+import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
 import wisoft.nextframe.payment.domain.payment.exception.TooLargeAmountException;
@@ -63,7 +65,7 @@ class PaymentTest {
 	}
 
 	@Nested
-	@DisplayName("결제 성공 상태일 때")
+	@DisplayName("결제 승인 상태일 때")
 	class WhenSucceeded {
 
 		@Test
@@ -77,6 +79,26 @@ class PaymentTest {
 				.hasMessage("이미 결제 성공 처리된 건입니다.");
 		}
 
+		@Test
+		@DisplayName("승인 시 PaymentApprovedEvent가 발행된다")
+		void approvePayment_eventPublished() {
+			Payment payment = requested();
+			payment.approve();
+
+			assertThat(payment.getDomainEvents())
+				.hasSize(1)
+				.first()
+				.isInstanceOf(PaymentApprovedEvent.class);
+		}
+
+		@Test
+		@DisplayName("이미 성공한 결제건에서 fail() 호출 시 예외가 발생한다")
+		void denyFail_whenSucceeded() {
+			Payment payment = requested();
+			payment.approve();
+			assertThatThrownBy(payment::fail)
+				.isInstanceOf(InvalidPaymentStatusException.class);
+		}
 	}
 
 	@Nested
@@ -98,5 +120,16 @@ class PaymentTest {
 			payment.fail();
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
 		}
+	}
+
+	@Test
+	@DisplayName("clearDomainEvents() 호출 시 이벤트 리스트가 비워진다")
+	void clearEvents() {
+		Payment payment = requested();
+		payment.approve();
+		assertThat(payment.getDomainEvents()).isNotEmpty();
+
+		payment.clearDomainEvents();
+		assertThat(payment.getDomainEvents()).isEmpty();
 	}
 }
