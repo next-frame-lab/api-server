@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import wisoft.nextframe.payment.domain.fixture.PaymentEntityFixture;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.payment.infra.payment.PaymentMapper;
