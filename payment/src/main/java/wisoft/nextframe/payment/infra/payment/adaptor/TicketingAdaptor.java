@@ -13,7 +13,7 @@ public class TicketingAdaptor implements TicketingClient {
 
 	public TicketingAdaptor(RestClient.Builder builder) {
 		this.restClient = builder
-			.baseUrl("http://localhost:8081/api/v1")
+			.baseUrl("http://127.0.0.1:18081/api/v1")
 			.build();
 	}
 
