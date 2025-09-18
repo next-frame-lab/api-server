@@ -32,8 +32,6 @@ jobs:
               - payment/**
             srt:
               - schedule-reservation-ticketing/**
-          # 마지막 원격 커밋 이후의 변경사항을 기준으로 감지합니다.
-#          since_last_remote_commit: true
 
   # 두 번째 작업: 'payment' 모듈의 CI를 실행합니다.
   payment-ci:

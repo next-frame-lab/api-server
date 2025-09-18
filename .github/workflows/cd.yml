@@ -1,9 +1,14 @@
 name: API Server CD
 
+#on:
+#  push:
+#    branches:
+#      - main
+
 on:
   push:
     branches:
-      - main
+      - chore-ci-ci-workflow-modify
 
 jobs:
   # 첫 번째 작업: 어떤 모듈의 파일이 변경되었는지 감지합니다.
@@ -34,7 +39,7 @@ jobs:
           # 마지막 원격 커밋 이후의 변경사항을 기준으로 감지합니다.
           since_last_remote_commit: true
 
-  deploy-payment:
+  payment-cd:
     # 'changes' 작업이 성공적으로 완료되어야 이 작업을 시작합니다.
     needs: changes
     # 'changes' 작업의 출력값 'payment'가 'true'일 때만 이 작업을 실행합니다. (조건부 실행)
@@ -54,6 +59,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
@@ -66,32 +72,27 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: SSH 파일 저장
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/new_id
-          chmod 600 /tmp/new_id
-
       - name: Bastion 서버 연결 테스트
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/new_id ${{secrets.BASTION_USER}}@${{secrets.BASTION_HOST}} -p ${{ secrets.BASTION_PORT }} "echo \"Bastion 중간 서버 연결 성공\""
+          ssh -o StrictHostKeyChecking=no ${{secrets.BASTION_USER}}@${{secrets.BASTION_HOST}} -p ${{ secrets.BASTION_PORT }} "echo \"Bastion 중간 서버 연결 성공\""
 
       - name: 빌드 파일 애플리케이션 서버로 복사
         run: |
-          scp -o StrictHostKeyChecking=no -i /tmp/new_id \
+          scp -o StrictHostKeyChecking=no \
               -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_PORT }} \
               payment/build/libs/*-SNAPSHOT.jar \
               ${{ secrets.DAISY04_USER }}@${{ secrets.DAISY04_HOST }}:${{ env.APP_DIR }}/
 
       - name: 애플리케이션 서버에 변경 사항 적용
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/new_id \
+          ssh -o StrictHostKeyChecking=no \
               -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_PORT }} \
               ${{ secrets.DAISY04_USER }}@${{ secrets.DAISY04_HOST }} '
               mv ${{ env.APP_DIR }}/*-SNAPSHOT.jar ${{ env.APP_DIR }}/payment.jar &&
               sudo systemctl restart nextframe-payment
           '
 
-  deploy-schedule-reservation-ticketing:
+  srt-cd:
     # 'changes' 작업이 성공적으로 완료되어야 이 작업을 시작합니다.
     needs: changes
     # 'changes' 작업의 출력값 'schedule-reservation-ticketing'가 'true'일 때만 이 작업을 실행합니다. (조건부 실행)
@@ -111,6 +112,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
@@ -123,18 +125,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: SSH 파일 저장
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/new_id
-          chmod 600 /tmp/new_id
-
       - name: Bastion 서버 연결 테스트
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/new_id ${{secrets.BASTION_USER}}@${{secrets.BASTION_HOST}} -p ${{ secrets.BASTION_PORT }} "echo \"Bastion 중간 서버 연결 성공\""
+          ssh -o StrictHostKeyChecking=no ${{secrets.BASTION_USER}}@${{secrets.BASTION_HOST}} -p ${{ secrets.BASTION_PORT }} "echo \"Bastion 중간 서버 연결 성공\""
 
       - name: 빌드 파일 애플리케이션 서버로 복사
         run: |
-          scp -o StrictHostKeyChecking=no -i /tmp/new_id \
+          scp -o StrictHostKeyChecking=no \
               -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_PORT }} \
               schedule-reservation-ticketing/build/libs/*-SNAPSHOT.jar \
               ${{ secrets.DAISY04_USER }}@${{ secrets.DAISY04_HOST }}:${{ env.APP_DIR }}/
@@ -142,7 +139,7 @@ jobs:
 
       - name: 애플리케이션 서버에 변경 사항 적용
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/new_id \
+          ssh -o StrictHostKeyChecking=no \
               -J ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}:${{ secrets.BASTION_PORT }} \
               ${{ secrets.DAISY04_USER }}@${{ secrets.DAISY04_HOST }} '
               mv ${{ env.APP_DIR }}/*-SNAPSHOT.jar ${{ env.APP_DIR }}/schedule-reservation-ticketing.jar &&
