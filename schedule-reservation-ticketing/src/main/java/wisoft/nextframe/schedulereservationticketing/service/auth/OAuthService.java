@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,15 +27,7 @@ public class OAuthService {
 	private final UserRepository userRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final JwtTokenProvider jwtTokenProvider;
-
-	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-	private String kakaoClientId;
-
-	@Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-	private String kakaoClientSecret;
-
-	@Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-	private String frontendRedirectUri;
+	private final OAuth2ClientProperties oAuth2ClientProperties;
 
 	/**
 	 * 인가 코드를 받아 카카오 로그인을 처리하는 메서드
@@ -73,30 +65,38 @@ public class OAuthService {
 	 * 1단계: 카카오 인증 서버에 인가 코드를 보내 Access Token을 받아오는 메서드
 	 */
 	private String getKakaoAccessToken(String authCode) {
-		final RestClient restClient = RestClient.create("https://kauth.kakao.com");
+		// 2. application.yml의 설정 정보를 객체로부터 가져옵니다.
+		final OAuth2ClientProperties.Registration kakaoRegistration = oAuth2ClientProperties.getRegistration().get("kakao");
+		final OAuth2ClientProperties.Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
+
+		final RestClient restClient = RestClient.create();
 
 		final KakaoTokenResponse response = restClient.post()
-			.uri("/oauth/token")
+			.uri(kakaoProvider.getTokenUri())
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 			.body("grant_type=authorization_code"
-				+ "&client_id=" + kakaoClientId
-				+ "&client_secret=" + kakaoClientSecret
-				+ "&redirect_uri=" + frontendRedirectUri
+				+ "&client_id=" + kakaoRegistration.getClientId()
+				+ "&client_secret=" + kakaoRegistration.getClientSecret()
+				+ "&redirect_uri=" + kakaoRegistration.getRedirectUri()
 				+ "&code=" + authCode)
 			.retrieve() // 요청을 보내고 응답을 받습니다.
 			.body(KakaoTokenResponse.class);
 
-		return response.getAccessToken();
+		// Optional.ofNullable을 사용하여 null 체크를 강화할 수 있습니다.
+		return Optional.ofNullable(response)
+			.map(KakaoTokenResponse::getAccessToken)
+			.orElseThrow(() -> new RuntimeException("카카오 Access Token을 받아오는데 실패했습니다."));
 	}
 
 	/**
 	 * 2단계: Access Token을 사용해 카카오 API 서버에서 사용자 정보를 받아오는 메서드
 	 */
 	private KakaoUserInfoResponse getKakaoUserInfo(String kakaoAccessToken) {
-		final RestClient restClient = RestClient.create("https://kapi.kakao.com");
+		final OAuth2ClientProperties.Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
+		final RestClient restClient = RestClient.create();
 
 		return restClient.get()
-			.uri("/v2/user/me")
+			.uri(kakaoProvider.getUserInfoUri())
 			.header("Authorization", "Bearer " + kakaoAccessToken)
 			.retrieve()
 			.body(KakaoUserInfoResponse.class);
