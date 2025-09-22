@@ -14,7 +14,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
@@ -75,19 +77,19 @@ public class JwtTokenProvider {
 			return true;
 		} catch (SignatureException e) {
 			// 서명 오류
-			System.out.println("Invalid JWT signature: " + e.getMessage());
+			log.warn("Invalid JWT signature: {}", e.getMessage());
 		} catch (io.jsonwebtoken.MalformedJwtException e) {
 			// 형식 오류
-			System.out.println("Invalid JWT token: " + e.getMessage());
+			log.warn("Invalid JWT token: {}", e.getMessage());
 		} catch (io.jsonwebtoken.ExpiredJwtException e) {
 			// 만료 오류
-			System.out.println("JWT token is expired: " + e.getMessage());
+			log.warn("JWT token is expired: {}", e.getMessage());
 		} catch (io.jsonwebtoken.UnsupportedJwtException e) {
 			// 지원되지 않는 토큰
-			System.out.println("JWT token is unsupported: " + e.getMessage());
+			log.warn("JWT token is unsupported: {}", e.getMessage());
 		} catch (IllegalArgumentException e) {
 			// 클레임이 비어있는 경우
-			System.out.println("JWT claims string is empty: " + e.getMessage());
+			log.warn("JWT claims string is empty: {}", e.getMessage());
 		}
 		return false;
 	}
