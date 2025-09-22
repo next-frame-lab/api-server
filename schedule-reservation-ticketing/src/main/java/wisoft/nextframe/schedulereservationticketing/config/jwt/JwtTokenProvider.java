@@ -1,13 +1,11 @@
 package wisoft.nextframe.schedulereservationticketing.config.jwt;
 
-
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -24,15 +22,11 @@ public class JwtTokenProvider {
 	private final long accessTokenExpireTime;
 	private final long refreshTokenExpireTime;
 
-	public JwtTokenProvider(
-		@Value("${jwt.secret-key}") String secretKey,
-		@Value("${jwt.access-token-expire-time}") long accessTokenExpireTime,
-		@Value("${jwt.refresh-token-expire-time}") long refreshTokenExpireTime
-	) {
-		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+	public JwtTokenProvider(JwtProperties jwtProperties) {
+		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.secretKey());
 		this.key = Keys.hmacShaKeyFor(keyBytes);
-		this.accessTokenExpireTime = accessTokenExpireTime;
-		this.refreshTokenExpireTime = refreshTokenExpireTime;
+		this.accessTokenExpireTime = jwtProperties.accessTokenExpireTime();
+		this.refreshTokenExpireTime = jwtProperties.refreshTokenExpireTime();
 	}
 
 	public String generateAccessToken(UUID userId) {
