@@ -46,9 +46,14 @@ public class KakaoApiClient {
 			.retrieve()
 			.body(KakaoTokenResponse.class);
 
-		return Optional.ofNullable(response)
-			.map(KakaoTokenResponse::getAccessToken)
-			.orElseThrow(() -> new RuntimeException("카카오 Access Token을 받아오는데 실패했습니다."));
+		if (response == null) {
+			throw new RuntimeException("카카오 서버로부터 토큰 응답을 받지 못했습니다. (response is null)");
+		}
+		String accessToken = response.getAccessToken();
+		if (accessToken == null) {
+			throw new RuntimeException("카카오 토큰 응답에는 access token이 없습니다. (access token is null)");
+		}
+		return accessToken;
 	}
 
 	/**
@@ -59,10 +64,13 @@ public class KakaoApiClient {
 	public KakaoUserInfoResponse getKakaoUserInfo(String kakaoAccessToken) {
 		final OAuth2ClientProperties.Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
 
-		return restClient.get()
+		final KakaoUserInfoResponse response = restClient.get()
 			.uri(kakaoProvider.getUserInfoUri())
 			.header("Authorization", "Bearer " + kakaoAccessToken)
 			.retrieve()
 			.body(KakaoUserInfoResponse.class);
+
+		return Optional.ofNullable(response)
+			.orElseThrow(() -> new RuntimeException("카카오 사용자 정보를 받아오는데 실패했습니다."));
 	}
 }

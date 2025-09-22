@@ -50,6 +50,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		if (StringUtils.hasText(token)) {
 			try {
+				// 토큰 검증
+				if (!jwtTokenProvider.validateToken(token)) {
+					throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.");
+				}
+
 				// 토큰 검증 및 사용자 ID 추출
 				final UUID userId = jwtTokenProvider.getUserIdFromToken(token);
 				log.debug("JWT 토큰이 유효합니다. userId: {}", userId);
