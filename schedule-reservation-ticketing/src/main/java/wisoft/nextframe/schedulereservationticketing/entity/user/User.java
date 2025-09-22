@@ -52,8 +52,9 @@ public class User {
 		return Period.between(birthDate, LocalDate.now()).getYears() >= 19;
 	}
 
-	public void updateProfile(String name, String imageUrl) {
+	public User updateProfile(String name, String imageUrl) {
 		this.name = name;
 		this.imageUrl = imageUrl;
+		return this;
 	}
 }
