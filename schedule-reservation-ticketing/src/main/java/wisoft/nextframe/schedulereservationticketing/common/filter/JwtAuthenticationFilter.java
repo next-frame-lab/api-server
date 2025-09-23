@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -73,7 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		} else {
 			log.debug("요청 헤더에 유효한 JWT 토큰이 없습니다. uri: {}", request.getRequestURI());
 		}
-
 		filterChain.doFilter(request, response);
 	}
 
