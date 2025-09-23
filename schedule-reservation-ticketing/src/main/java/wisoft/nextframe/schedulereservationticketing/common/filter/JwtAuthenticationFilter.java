@@ -21,6 +21,7 @@ import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
