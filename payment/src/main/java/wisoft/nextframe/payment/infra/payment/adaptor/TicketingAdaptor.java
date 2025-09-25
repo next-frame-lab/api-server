@@ -1,5 +1,7 @@
 package wisoft.nextframe.payment.infra.payment.adaptor;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -11,9 +13,9 @@ public class TicketingAdaptor implements TicketingClient {
 
 	private final RestClient restClient;
 
-	public TicketingAdaptor(RestClient.Builder builder) {
+	public TicketingAdaptor(RestClient.Builder builder, @Value("${srt-service.url}") String baseUrl) {
 		this.restClient = builder
-			.baseUrl("http://127.0.0.1:18081/api/v1")
+			.baseUrl(baseUrl)
 			.build();
 	}
 
@@ -23,6 +25,7 @@ public class TicketingAdaptor implements TicketingClient {
 
 		restClient.post()
 			.uri("/tickets")
+			.contentType(MediaType.APPLICATION_JSON)
 			.body(request)
 			.retrieve()
 			.toBodilessEntity();
