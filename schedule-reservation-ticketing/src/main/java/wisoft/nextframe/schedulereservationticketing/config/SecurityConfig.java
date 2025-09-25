@@ -36,6 +36,7 @@ public class SecurityConfig {
 				// 모든 사용자가 접근 가능한 경로를 지정합니다.(인증이 필요없는 접근 경로)
 				.requestMatchers("/",
 					"/api/v1/performances/**",
+					"api/v1/tickets",
 					"/api/v1/auth/**").permitAll()
 				// 그 외의 모든 요청은 인증된 사용자만 접근할 수 있도록 설정합니다.
 				.anyRequest().authenticated()

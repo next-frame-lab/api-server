@@ -39,4 +39,8 @@ public class SeatState {
 
 	@Column(name = "is_locked", nullable = false)
 	private Boolean isLocked;
+
+	public void lock() {
+		this.isLocked = true;
+	}
 }
