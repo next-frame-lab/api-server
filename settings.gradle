@@ -2,3 +2,4 @@ rootProject.name = 'nextframe'
 
 include 'schedule-reservation-ticketing'
 include 'payment'
+include 'payment-gateway'
