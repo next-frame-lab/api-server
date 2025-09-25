@@ -17,7 +17,6 @@ import wisoft.nextframe.schedulereservationticketing.service.ticketing.TicketSen
 @RequiredArgsConstructor
 public class EmailTicketSender implements TicketSender {
 
-	// todo log로 바꾸기
 	private final JavaMailSender mailSender;
 	private final QrCodeGenerator qrCodeGenerator;
 
