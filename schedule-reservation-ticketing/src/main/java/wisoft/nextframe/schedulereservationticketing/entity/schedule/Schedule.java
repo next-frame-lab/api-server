@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
@@ -66,12 +67,21 @@ public class Schedule {
 			.map(SeatDefinition::getId)
 			.toList();
 
-		// 2. 좌석이 이미 잠겨있는지 검증합니다.
-		if (seatStateRepository.existsByScheduleIdSeatIsLocked(this.id, seatIds)) {
-			throw new SeatAlreadyLockedException("이미 예약되었거나 선택할 수 없는 좌석입니다.");
+		// 2. 좌석을 조회함과 동시에 잠급니다.
+		final List<SeatState> seatStates = seatStateRepository.findAndLockByScheduleIdAndSeatIds(this.id, seatIds);
+
+		// 3. 요청한 모든 좌석이 존재하는지 확인합니다.
+		if (seatStates.size() != seatIds.size()) {
+			throw new IllegalArgumentException("요청한 좌석 중 일부가 존재하지 않습니다.");
 		}
 
-		// 3. 좌석을 잠급니다.
-		seatStateRepository.lockSeats(this.id, seatIds);
+		// 4. 이미 잠겨 있는 좌석이 있는지 확인합니다.
+		for (final SeatState seatState : seatStates) {
+			if (seatState.getIsLocked()) {
+				throw new SeatAlreadyLockedException("이미 예약되었거나 선택할 수 없는 좌석입니다.");
+			}
+			// 5. 좌석 상태를 잠금으로 변경합니다.
+			seatState.lock();
+		}
 	}
 }
