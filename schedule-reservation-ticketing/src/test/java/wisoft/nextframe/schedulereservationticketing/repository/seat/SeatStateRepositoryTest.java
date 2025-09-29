@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
@@ -67,6 +68,23 @@ class SeatStateRepositoryTest extends AbstractIntegrationTest {
 
 		savedSeat2 = seatDefinitionRepository.save(
 			SeatDefinition.builder().id(UUID.randomUUID()).stadiumSection(section).rowNo(1).columnNo(2).build());
+
+		// given: 테스트에 사용할 좌석 상태를 미리 저장
+		SeatState unlockedSeatState1 = SeatState.builder()
+			.id(new SeatStateId(savedSchedule.getId(), savedSeat1.getId()))
+			.schedule(savedSchedule)
+			.seat(savedSeat1)
+			.isLocked(false)
+			.build();
+		seatStateRepository.save(unlockedSeatState1);
+
+		SeatState unlockedSeatState2 = SeatState.builder()
+			.id(new SeatStateId(savedSchedule.getId(), savedSeat2.getId()))
+			.schedule(savedSchedule)
+			.seat(savedSeat2)
+			.isLocked(false)
+			.build();
+		seatStateRepository.save(unlockedSeatState2);
 	}
 
 	@Test
@@ -100,101 +118,24 @@ class SeatStateRepositoryTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("성공: 좌석 중 하나라도 잠겨있으면 ture를 반환한다")
-	void existsByScheduleIdSeatIsLocked_Success1() {
-		// given: 1번 좌석은 잠금(true), 2번 좌석은 잠금 해제(false) 상태로 저장
-		final SeatState lockedSeatState = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat1.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat1)
-			.isLocked(true) // 좌석 상태 true
-			.build();
-		seatStateRepository.save(lockedSeatState);
-
-		final SeatState unlockedSeatState = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat2.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat2)
-			.isLocked(false) // 좌석 상태 false
-			.build();
-		seatStateRepository.save(unlockedSeatState);
-
-		// when: 잠긴 좌석과 잠기지 않은 좌석 ID를 모두 포함하여 조회
-		boolean result = seatStateRepository.existsByScheduleIdSeatIsLocked(savedSchedule.getId(),
-			List.of(savedSeat1.getId(), savedSeat2.getId())
-		);
-
-		// then: 결과는 true여야 한다
-		assertThat(result).isTrue();
-	}
-
-	@Test
-	@DisplayName("성공: 요청한 모든 좌석이 잠겨있지 않으면 false를 반환한다")
-	void existsByScheduleIdSeatIsLocked_Success2() {
-		// given: 1번, 2번 좌석 모두 잠금 해제(false) 상태로 저장
-		SeatState unlockedSeatState1 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat1.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat1)
-			.isLocked(false) // 좌석 상태 false
-			.build();
-		seatStateRepository.save(unlockedSeatState1);
-
-		SeatState unlockedSeatState2 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat2.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat2)
-			.isLocked(false) // 좌석 상태 false
-			.build();
-		seatStateRepository.save(unlockedSeatState2);
-
-		// when: 잠금 해제된 좌석들의 ID로 조회
-		boolean result = seatStateRepository.existsByScheduleIdSeatIsLocked(
+	@DisplayName("성공: 요청한 좌석들을 비관적 락을 걸어 정상적으로 조회한다")
+	void findAndLockByScheduleIdAndSeatIds_Success() {
+		// when: 새로운 메서드를 호출하여 좌석 상태를 조회 (이때 락이 걸림)
+		List<SeatState> lockedSeats = seatStateRepository.findAndLockByScheduleIdAndSeatIds(
 			savedSchedule.getId(),
 			List.of(savedSeat1.getId(), savedSeat2.getId())
 		);
 
-		// then: 결과는 false여야 한다
-		assertThat(result).isFalse();
-	}
+		// then
+		// 1. 요청한 좌석들이 정확하게 조회되었는지 확인
+		assertThat(lockedSeats).hasSize(2);
+		assertThat(lockedSeats).extracting(seatState -> seatState.getId().getSeatId())
+			.containsExactlyInAnyOrder(savedSeat1.getId(), savedSeat2.getId());
 
-	@Test
-	@DisplayName("성공: 요청한 좌석들을 성공적으로 잠금 상태로 변경하고, 변경된 개수를 반환한다")
-	void lockSeats_Success() {
-		// given: 1번, 2번 좌석 모두 잠금 해제(false) 상태로 저장
-		SeatState unlockedSeatState1 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat1.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat1)
-			.isLocked(false)
-			.build();
-		seatStateRepository.save(unlockedSeatState1);
-
-		SeatState unlockedSeatState2 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat2.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat2)
-			.isLocked(false)
-			.build();
-		seatStateRepository.save(unlockedSeatState2);
-
-		// when: lockSeats 메서드 호출
-		int updatedCount = seatStateRepository.lockSeats(
-			savedSchedule.getId(),
-			List.of(savedSeat1.getId(), savedSeat2.getId())
-		);
-
-		entityManager.flush();
-		entityManager.clear();
-
-		// then: 현재 스케줄에 속한 1개의 row만 변경되었음을 확인
-		assertThat(updatedCount).isEqualTo(2);
-
-		// then: 실제 DB에서 좌석들의 상태가 true로 변경되었는지 확인
-		SeatState foundSeatState1 = seatStateRepository.findById(unlockedSeatState1.getId()).orElseThrow();
-		SeatState foundSeatState2 = seatStateRepository.findById(unlockedSeatState2.getId()).orElseThrow();
-
-		assertThat(foundSeatState1.getIsLocked()).isTrue();
-		assertThat(foundSeatState2.getIsLocked()).isTrue();
+		// 2. 조회된 엔티티에 PESSIMISTIC_WRITE 락이 걸려있는지 확인
+		for (SeatState seat : lockedSeats) {
+			LockModeType lockMode = entityManager.getLockMode(seat);
+			assertThat(lockMode).isEqualTo(LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		}
 	}
 }
