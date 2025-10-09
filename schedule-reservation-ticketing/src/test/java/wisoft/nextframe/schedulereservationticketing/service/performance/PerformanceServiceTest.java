@@ -3,8 +3,10 @@ package wisoft.nextframe.schedulereservationticketing.service.performance;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +21,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import jakarta.persistence.EntityNotFoundException;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
@@ -29,11 +30,14 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceStatisticRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +51,8 @@ class PerformanceServiceTest {
 	private ScheduleRepository scheduleRepository;
 	@Mock
 	private PerformancePricingRepository performancePricingRepository;
+	@Mock
+	private PerformanceStatisticRepository performanceStatisticRepository;
 
 	@Test
 	@DisplayName("성공: 공연 상세 조회 성공 테스트")
@@ -59,6 +65,13 @@ class PerformanceServiceTest {
 		final Performance performance = new PerformanceBuilder()
 			.withId(performanceId)
 			.withName("오페라의 유령")
+			.build();
+
+		final PerformanceStatistic performanceStatistic = PerformanceStatistic.builder()
+			.performanceId(performanceId)
+			.hit(3000)
+			.averageStar(BigDecimal.valueOf(4.5))
+			.updatedAt(LocalDateTime.now())
 			.build();
 
 		final Stadium stadium = new StadiumBuilder()
@@ -79,12 +92,15 @@ class PerformanceServiceTest {
 				.price(150000)
 				.build()
 		);
+
 		// 3. Mock Repository 설정
 		given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
 		given(scheduleRepository.findByPerformanceId(performanceId)).willReturn(schedules);
 		// 'findCommonPricingByPerformanceAndStadium' 메소드를 Mocking
 		given(performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId))
 			.willReturn(seatPrices);
+		given(performanceStatisticRepository.findById(performanceId))
+			.willReturn(Optional.ofNullable(performanceStatistic));
 
 		// when
 		final PerformanceDetailResponse response = performanceService.getPerformanceDetail(performanceId);
@@ -93,10 +109,12 @@ class PerformanceServiceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.id()).isEqualTo(performanceId);
 		assertThat(response.name()).isEqualTo("오페라의 유령");
+		assertThat(response.averageStar()).isEqualTo(BigDecimal.valueOf(4.5));
 		assertThat(response.performanceSchedules()).hasSize(1);
 		assertThat(response.seatSectionPrices()).hasSize(1);
 		assertThat(response.seatSectionPrices().getFirst().section()).isEqualTo("A");
 		assertThat(response.seatSectionPrices().getFirst().price()).isEqualTo(150000);
+
 	}
 
 	@Test
@@ -108,7 +126,7 @@ class PerformanceServiceTest {
 
 		// when and then
 		assertThatThrownBy(() -> performanceService.getPerformanceDetail(nonExistentId))
-			.isInstanceOf(EntityNotFoundException.class);
+			.isInstanceOf(DomainException.class);
 	}
 
 	@Test
