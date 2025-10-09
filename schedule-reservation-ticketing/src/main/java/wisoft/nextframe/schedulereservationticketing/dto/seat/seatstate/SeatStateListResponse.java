@@ -2,7 +2,6 @@ package wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate;
 
 import java.util.List;
 
-import lombok.Builder;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 
 public record SeatStateListResponse(List<SeatStateResponse> seats) {
