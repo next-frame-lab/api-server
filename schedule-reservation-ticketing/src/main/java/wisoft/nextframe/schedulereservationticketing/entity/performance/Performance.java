@@ -15,9 +15,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.typeconverter.DurationMinutesConverter;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 
 @Getter
 @Builder
@@ -57,7 +58,7 @@ public class Performance {
 
 	public void verifyAgeLimit(User user) {
 		if (this.adultOnly && !user.isAdult()) {
-			throw new ReservationException("성인만 예매 가능한 공연입니다.");
+			throw new DomainException(ErrorCode.ACCESS_DENIED);
 		}
 	}
 }

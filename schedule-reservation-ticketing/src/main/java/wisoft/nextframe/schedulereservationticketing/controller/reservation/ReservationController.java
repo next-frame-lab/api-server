@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
 import wisoft.nextframe.schedulereservationticketing.service.reservation.ReservationService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/reservations")
 @RequiredArgsConstructor

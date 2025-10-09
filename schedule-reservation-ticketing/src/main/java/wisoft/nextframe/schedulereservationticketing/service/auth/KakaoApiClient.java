@@ -10,6 +10,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoTokenResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
 
@@ -47,11 +49,11 @@ public class KakaoApiClient {
 			.body(KakaoTokenResponse.class);
 
 		if (response == null) {
-			throw new RuntimeException("카카오 서버로부터 토큰 응답을 받지 못했습니다. (response is null)");
+			throw new DomainException(ErrorCode.FAILED_TO_RECEIVE_KAKAO_TOKEN);
 		}
 		String accessToken = response.getAccessToken();
 		if (accessToken == null) {
-			throw new RuntimeException("카카오 토큰 응답에는 access token이 없습니다. (access token is null)");
+			throw new DomainException(ErrorCode.MISSING_KAKAO_ACCESS_TOKEN);
 		}
 		return accessToken;
 	}
@@ -71,6 +73,6 @@ public class KakaoApiClient {
 			.body(KakaoUserInfoResponse.class);
 
 		return Optional.ofNullable(response)
-			.orElseThrow(() -> new RuntimeException("카카오 사용자 정보를 받아오는데 실패했습니다."));
+			.orElseThrow(() -> new DomainException(ErrorCode.FAILED_TO_GET_KAKAO_USER_INFO));
 	}
 }

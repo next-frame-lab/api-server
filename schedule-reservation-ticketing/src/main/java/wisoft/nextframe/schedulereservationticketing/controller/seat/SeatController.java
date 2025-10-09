@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/schedules")

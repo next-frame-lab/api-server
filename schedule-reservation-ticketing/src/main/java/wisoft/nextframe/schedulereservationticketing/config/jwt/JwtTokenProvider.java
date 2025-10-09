@@ -38,10 +38,12 @@ public class JwtTokenProvider {
 	}
 
 	public String generateAccessToken(UUID userId) {
+		log.debug("Access Token 생성. userId: {}", userId);
 		return generateToken(userId, accessTokenExpireTime);
 	}
 
 	public String generateRefreshToken(UUID userId) {
+		log.debug("Refresh Token 생성. userId: {}", userId);
 		return generateToken(userId, refreshTokenExpireTime);
 	}
 
@@ -61,6 +63,7 @@ public class JwtTokenProvider {
 	 * JWT 토큰을 파싱하여 만료 시간을 LocalDateTime 객체로 반환하는 메서드
 	 */
 	public LocalDateTime getExpirationDateFromToken(String token) {
+		log.debug("토큰에서 만료 시간 추출 시도.");
 		// 토큰의 payload 부분(Claims)을 디코딩하여 가져옵니다.
 		final Claims claims = Jwts.parserBuilder()
 			.setSigningKey(key) // 토큰 생성 시 사용한 것과 동일한 secretKey
@@ -80,22 +83,15 @@ public class JwtTokenProvider {
 	public boolean validateToken(String token) {
 		try {
 			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+			log.debug("토큰 검증 성공.");
 			return true;
-		} catch (SignatureException e) {
-			// 서명 오류
-			log.warn("Invalid JWT signature: {}", e.getMessage());
-		} catch (io.jsonwebtoken.MalformedJwtException e) {
-			// 형식 오류
-			log.warn("Invalid JWT token: {}", e.getMessage());
+		} catch (SignatureException | io.jsonwebtoken.MalformedJwtException |
+						 io.jsonwebtoken.UnsupportedJwtException | IllegalArgumentException e) {
+			// 2. 클라이언트가 잘못된 토큰을 보낸 경우 WARN 레벨로 기록 (스택 트레이스 포함)
+			log.warn("유효하지 않은 JWT 토큰입니다.", e);
 		} catch (io.jsonwebtoken.ExpiredJwtException e) {
-			// 만료 오류
-			log.warn("JWT token is expired: {}", e.getMessage());
-		} catch (io.jsonwebtoken.UnsupportedJwtException e) {
-			// 지원되지 않는 토큰
-			log.warn("JWT token is unsupported: {}", e.getMessage());
-		} catch (IllegalArgumentException e) {
-			// 클레임이 비어있는 경우
-			log.warn("JWT claims string is empty: {}", e.getMessage());
+			// 3. 토큰이 만료된 것은 예상 가능한 상황이므로, 간단히 WARN 레벨로 메시지만 기록
+			log.warn("만료된 JWT 토큰입니다. message: {}", e.getMessage());
 		}
 		return false;
 	}
@@ -104,6 +100,7 @@ public class JwtTokenProvider {
 	 * JWT 토큰에서 사용자 ID (UUID)를 추출하는 메서드
 	 */
 	public UUID getUserIdFromToken(String token) {
+		log.debug("토큰에서 사용자 ID 추출 시도.");
 		Claims claims = Jwts.parserBuilder()
 			.setSigningKey(key)
 			.build()

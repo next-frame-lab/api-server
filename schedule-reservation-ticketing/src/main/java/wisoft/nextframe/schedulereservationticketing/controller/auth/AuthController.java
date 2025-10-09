@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
@@ -16,6 +17,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.Token
 import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
 import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
