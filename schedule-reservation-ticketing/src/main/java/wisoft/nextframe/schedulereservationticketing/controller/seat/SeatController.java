@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/schedules")
@@ -23,7 +25,9 @@ public class SeatController {
 
 	@GetMapping("/{scheduleId}/seat-states")
 	public ResponseEntity<ApiResponse<?>> getLockedSeats(@PathVariable UUID scheduleId) {
+		log.info("공연 좌석 상태 조회 요청. scheduleId: {}", scheduleId);
 		final SeatStateListResponse data = seatStateService.getSeatStates(scheduleId);
+		log.info("공연 좌석 상태 조회 완료. scheduleId: {}, lockedSeatCount: {}", scheduleId, data.seats().size());
 
 		final ApiResponse<SeatStateListResponse> response = ApiResponse.success(data);
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiErrorResponse;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.PerformanceScheduleMismatchException;
@@ -50,8 +51,11 @@ public class GlobalExceptionHandler {
 
 	// 404 Not Found - 요청한 리소스를 찾을 수 없음
 	@ExceptionHandler(EntityNotFoundException.class)
-	public ResponseEntity<ApiErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
-		log.warn("handleEntityNotFound: {}", ex.getMessage());
+	public ResponseEntity<ApiErrorResponse> handleEntityNotFound(
+		EntityNotFoundException ex,
+		HttpServletRequest request
+	) {
+		log.warn("Entity Not Found. Request: {} {}", request.getMethod(), request.getRequestURI(), ex);
 		ApiErrorResponse response = new ApiErrorResponse("NOT_FOUND");
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
@@ -66,8 +70,8 @@ public class GlobalExceptionHandler {
 
 	// 500 Internal Server Error - 처리되지 않은 모든 서버 내부 예외를 처리
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ApiErrorResponse> handleException(Exception ex) {
-		log.error("handleException: {}", ex.getMessage());
+	public ResponseEntity<ApiErrorResponse> handleException(Exception ex, HttpServletRequest request) {
+		log.error("Unhandled Exception. Request: {} {}", request.getMethod(), request.getRequestURI(), ex);
 		ApiErrorResponse response = new ApiErrorResponse("INTERNAL_SERVER_ERROR");
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
