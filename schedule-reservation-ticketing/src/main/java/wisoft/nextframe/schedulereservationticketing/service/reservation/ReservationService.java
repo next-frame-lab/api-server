@@ -3,6 +3,7 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class ReservationService {
 	private final ReservationFactory reservationFactory;
 	private final ReservationDataProvider dataProvider;
 
+	@CacheEvict(cacheNames = "seatStates", key = "#request.scheduleId")
 	@Transactional
 	public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
 		log.debug("좌석 예매 서비스 시작. userId: {}, scheduleId: {}", userId, request.scheduleId());
