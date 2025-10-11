@@ -3,6 +3,7 @@ package wisoft.nextframe.schedulereservationticketing.service.seat;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class SeatStateService {
 	
 	private final SeatStateRepository seatStateRepository;
 
+	@Cacheable(cacheNames = "seatStates", key = "#scheduleId")
 	public SeatStateListResponse getSeatStates(UUID scheduleId) {
 		log.debug("DB에서 잠긴 좌석 조회 시작. scheduleId: {}", scheduleId);
 		// 1. 공연 일정(scheduleId)에 해당하는 잠긴(예약된) 좌석 엔티티 목록을 조회합니다.
