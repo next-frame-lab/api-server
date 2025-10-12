@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
@@ -70,5 +72,20 @@ public class PerformanceService {
 
 		// 2. Page 객체를 사용하여 최종 응답 DTO를 조립합니다.
 		return PerformanceListResponse.from(performancePage);
+	}
+
+	public Top10PerformanceListResponse getTop10Performances() {
+		log.debug("인기 공연 TOP 10 목록 조회 시작.");
+
+		// 1. 상위 10개만 조회하기 위한 Pageable 객체를 생성합니다.
+		Pageable topTenPageable = PageRequest.of(0, 10);
+
+		// 2. Repository를 호출하여 JPQL로 정의된 인기 공연 목록을 조회합니다.
+		//    (결과는 PerformanceSummaryResponse DTO 리스트로 바로 매핑됩니다.)
+		List<PerformanceSummaryResponse> top10List = performanceRepository.findTop10Performances(topTenPageable).getContent();
+		log.debug("인기 공연 목록 조회 완료. 조회된 공연 수: {}", top10List.size());
+
+		// 3. 조회된 DTO 목록을 최종 응답 DTO(Top10PerformanceListResponse)로 감싸 반환합니다.
+		return new Top10PerformanceListResponse(top10List);
 	}
 }

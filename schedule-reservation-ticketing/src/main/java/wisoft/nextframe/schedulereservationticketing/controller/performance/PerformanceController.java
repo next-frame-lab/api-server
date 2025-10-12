@@ -22,6 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
@@ -74,6 +75,16 @@ public class PerformanceController {
 		final ApiResponse<PerformanceListResponse> response = ApiResponse.success(data);
 		log.info("공연 목록 조회 성공. 반환된 공연 수: {}", data.performances().size());
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/top10")
+	public ResponseEntity<ApiResponse<?>> getTop10Performances() {
+		log.info("인기 공연 TOP 10 조회 요청.");
+		final Top10PerformanceListResponse data = performanceService.getTop10Performances();
+
+		final ApiResponse<Top10PerformanceListResponse> response = ApiResponse.success(data);
+		log.info("인기 공연 TOP 10 조회 성공.");
+		return ResponseEntity.ok(response);
 	}
 
 	private String resolveToken(HttpServletRequest request) {
