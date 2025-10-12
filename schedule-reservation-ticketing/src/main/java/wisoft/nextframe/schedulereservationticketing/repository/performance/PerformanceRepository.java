@@ -48,4 +48,38 @@ public interface PerformanceRepository extends JpaRepository<Performance, UUID> 
 				GROUP BY p.id, p.name, p.imageUrl, p.type, p.genre, st.name, p.adultOnly
 		""")
 	Page<PerformanceSummaryResponse> findReservablePerformances(Pageable pageable);
+
+	/**
+	 * 조회수(hit)가 높은 인기 공연 10개를 DTO로 직접 조회합니다.
+	 *
+	 * 이 메소드는 다음 조건을 만족하는 공연을 찾습니다.
+	 * - PerformanceStatistic 테이블과 JOIN하여 hit 정보를 가져옵니다.
+	 * - GROUP BY를 사용하여 각 공연의 시작일과 종료일을 계산합니다.
+	 * - HAVING 절을 사용하여 공연의 마지막 날짜가 현재보다 이전인(종료된) 공연은 제외합니다.
+	 * - ORDER BY 절을 통해 조회수(hit)로 내림차순 정렬하고, 동점일 경우 공연 시작일(가장 빠른 일정) 오름차순으로 2차 정렬합니다.
+	 *
+	 * @param pageable 페이징 정보 (상위 10개를 가져오기 위해 PageRequest.of(0, 10)을 사용)
+	 * @return PerformanceSummaryResponse의 페이지 객체
+	 */
+	@Query(value = """
+        SELECT new wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse(
+            p.id,
+            p.name,
+            p.imageUrl,
+            p.type,
+            p.genre,
+            st.name,
+            MIN(CAST(sc.performanceDatetime AS date)),
+            MAX(CAST(sc.performanceDatetime AS date)),
+            p.adultOnly
+        )
+        FROM Schedule sc
+        JOIN sc.performance p
+        JOIN sc.stadium st
+        JOIN PerformanceStatistic ps ON ps.performance = p
+        GROUP BY p.id, p.name, p.imageUrl, p.type, p.genre, st.name, p.adultOnly, ps.hit
+        HAVING MAX(sc.performanceDatetime) >= CURRENT_TIMESTAMP
+        ORDER BY ps.hit DESC, MIN(sc.performanceDatetime) ASC
+    """)
+	Page<PerformanceSummaryResponse> findTop10Performances(Pageable pageable);
 }
