@@ -58,7 +58,7 @@ public class Reservation {
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
-	@Column(name = "status", nullable = false, columnDefinition = "reservation_status")
+	@Column(name = "status", nullable = false, columnDefinition = "ReservationStatus")
 	private ReservationStatus status = ReservationStatus.CREATED;
 
 	@CreationTimestamp

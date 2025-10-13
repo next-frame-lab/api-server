@@ -16,6 +16,8 @@ import wisoft.nextframe.schedulereservationticketing.exception.reservation.Reser
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatAlreadyLockedException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatNotDefinedException;
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.TotalPriceMismatchException;
+import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
+import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -49,6 +51,14 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
+	// 403 Forbidden - 공연 리뷰 작성 시, 예매 내역 없음
+	@ExceptionHandler(NoReservationFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleNoReservationFoundException(NoReservationFoundException ex) {
+		log.warn("handleNoReservationFound: {}", ex.getMessage());
+		ApiErrorResponse response = new ApiErrorResponse("FORBIDDEN");
+		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+	}
+
 	// 404 Not Found - 요청한 리소스를 찾을 수 없음
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handleEntityNotFound(
@@ -65,6 +75,14 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleSeatAlreadyLockedException(SeatAlreadyLockedException ex) {
 		log.warn("handleSeatAlreadyLocked: {}", ex.getMessage());
 		ApiErrorResponse response = new ApiErrorResponse("SEAT_ALREADY_LOCKED");
+		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+	}
+
+	// 409 Conflict - 이미 작성한 리뷰가 있음
+	@ExceptionHandler(DuplicateReviewException.class)
+	public ResponseEntity<ApiErrorResponse> handleDuplicateReviewException(DuplicateReviewException ex) {
+		log.warn("handleDuplicateReview: {}", ex.getMessage());
+		ApiErrorResponse response = new ApiErrorResponse("DUPLICATE_REVIEW");
 		return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 	}
 
