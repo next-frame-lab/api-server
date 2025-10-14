@@ -1,7 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.config;
 
-import static org.springframework.security.config.Customizer.*;
-
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -15,12 +13,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.common.filter.JwtAuthenticationFilter;
+import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticationFilter;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @Profile("!loadtest")
@@ -35,7 +35,6 @@ public class SecurityConfig {
 		http
 			// CSRF 보호 기능을 비활성화합니다.
 			.csrf(AbstractHttpConfigurer::disable)
-			.cors(withDefaults())
 
 			// 세션을 사용하지 않으므로, STATELESS(상태 비저장)으로 설정합니다(세션 대신 토큰을 사용함).
 			.sessionManagement(session ->
@@ -50,7 +49,9 @@ public class SecurityConfig {
 					"/api/v1/auth/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
-					"/swagger-ui.html").permitAll()
+					"/swagger-ui.html",
+					"/service1/**",
+					"/service2/**").permitAll()
 				// CORS preflight 요청 허용
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				// 그 외의 모든 요청은 인증된 사용자만 접근할 수 있도록 설정합니다.
@@ -63,19 +64,21 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		var configuration = new CorsConfiguration();
-		List<String> origins =
-			corsProperties.allowedOrigins() == null ? List.of() : corsProperties.allowedOrigins();
-
-		configuration.setAllowedOrigins(origins);
-		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-		configuration.setAllowCredentials(true);
-		configuration.setMaxAge(3600L);
-
+	public CorsFilter corsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
+		CorsConfiguration config = new CorsConfiguration();
+
+		List<String> origins = corsProperties.allowedOrigins();
+
+		log.info("CORS 허용 출처: {}", origins);
+		config.setAllowedOrigins(origins);
+
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+		config.setAllowCredentials(true);
+		config.setMaxAge(3600L);
+
+		source.registerCorsConfiguration("/**", config);
+		return new CorsFilter(source);
 	}
 }

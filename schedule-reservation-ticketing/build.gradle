@@ -33,10 +33,13 @@ dependencies {
     // Database
     runtimeOnly 'org.postgresql:postgresql'
 
-    // 유틸리티 (Mail, QR Code 등)
+    // 유틸리티 (Mail, QR Code, open api 등)
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.google.zxing:core:3.5.3'
     implementation 'com.google.zxing:javase:3.5.3'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
+
+
 
     // 개발 편의 도구 (Lombok)
     compileOnly 'org.projectlombok:lombok'
