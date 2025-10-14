@@ -20,7 +20,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
-import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLikeId;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
@@ -87,12 +86,7 @@ class ReviewRepositoryTest extends AbstractIntegrationTest {
 			.build());
 
 		// viewer가 review1에 좋아요를 누름
-		reviewLikeRepository.save(new ReviewLike(
-			new ReviewLikeId(review1.getId(), viewer.getId()),
-			review1,
-			viewer,
-			null
-		));
+		reviewLikeRepository.save(new ReviewLike(review1, viewer));
 
 		Pageable pageable = PageRequest.of(0, 10);
 
