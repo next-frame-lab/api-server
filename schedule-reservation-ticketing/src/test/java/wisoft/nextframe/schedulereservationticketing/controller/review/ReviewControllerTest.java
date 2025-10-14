@@ -22,6 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
 import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLikeId;
@@ -61,8 +62,11 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	private StadiumRepository stadiumRepository;
 	@Autowired
 	private ScheduleRepository scheduleRepository;
-	@Autowired
+ @Autowired
 	private ReservationRepository reservationRepository;
+
+	@Autowired
+	private JwtTokenProvider jwtTokenProvider;
 
 	@Test
 	@DisplayName("리뷰 생성 통합 테스트 - 성공 (201 CREATED)")
@@ -229,4 +233,171 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 			.andExpect(jsonPath("$.data.pagination.page").value(0));
 	}
 
+
+	@Test
+	@DisplayName("리뷰 수정 통합 테스트 - 성공 (200 OK)")
+	void updateReview_Success() throws Exception {
+		// given: 리뷰 작성자와 리뷰 생성
+		User author = userRepository.save(User.builder().name("작성자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Review review = reviewRepository.save(
+			Review.builder()
+				.performance(performance)
+				.user(author)
+				.star(BigDecimal.valueOf(3.0))
+				.content("old content")
+				.likeCount(0)
+				.build()
+		);
+
+		UUID reviewId = review.getId();
+		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
+		String token = jwtTokenProvider.generateAccessToken(author.getId());
+
+		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
+			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
+				BigDecimal.valueOf(4.5),
+				"new content"
+			);
+		String json = objectMapper.writeValueAsString(request);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId)
+				.header("Authorization", "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("SUCCESS"))
+			.andExpect(jsonPath("$.data.id").value(reviewId.toString()));
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 통합 테스트 - 권한 없음 (403 FORBIDDEN)")
+	void updateReview_Forbidden_WhenNotAuthor() throws Exception {
+		// given: 작성자와 다른 사용자, 리뷰 생성
+		User author = userRepository.save(User.builder().name("작성자").build());
+		User other = userRepository.save(User.builder().name("다른사용자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Review review = reviewRepository.save(
+			Review.builder()
+				.performance(performance)
+				.user(author)
+				.star(BigDecimal.valueOf(2.5))
+				.content("orig")
+				.likeCount(0)
+				.build()
+		);
+
+		UUID reviewId = review.getId();
+		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
+		String token = jwtTokenProvider.generateAccessToken(other.getId());
+
+		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
+			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
+				BigDecimal.valueOf(4.0),
+				"hacked"
+			);
+		String json = objectMapper.writeValueAsString(request);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId)
+				.header("Authorization", "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
+	}
+
+	@Test
+	@DisplayName("리뷰 수정 통합 테스트 - 대상 리뷰 없음 (404 NOT_FOUND)")
+	void updateReview_NotFound() throws Exception {
+		// given: 사용자만 생성하고 존재하지 않는 리뷰 ID 사용
+		User user = userRepository.save(User.builder().name("사용자").build());
+		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
+		String token = jwtTokenProvider.generateAccessToken(user.getId());
+
+		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
+			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
+				BigDecimal.valueOf(1.0),
+				"content"
+			);
+		String json = objectMapper.writeValueAsString(request);
+
+		UUID unknownId = UUID.randomUUID();
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", unknownId)
+				.header("Authorization", "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+	}
+
+	@Test
+	@DisplayName("리뷰 삭제 통합 테스트 - 성공 (204 NO_CONTENT)")
+	void deleteReview_Success() throws Exception {
+		// given: 리뷰 작성자와 리뷰 생성
+		User author = userRepository.save(User.builder().name("작성자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Review review = reviewRepository.save(
+			Review.builder()
+				.performance(performance)
+				.user(author)
+				.star(BigDecimal.valueOf(5.0))
+				.content("to be deleted")
+				.likeCount(0)
+				.build()
+		);
+
+		UUID reviewId = review.getId();
+		String token = jwtTokenProvider.generateAccessToken(author.getId());
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId)
+				.header("Authorization", "Bearer " + token))
+			.andExpect(status().isNoContent());
+	}
+
+	@Test
+	@DisplayName("리뷰 삭제 통합 테스트 - 권한 없음 (403 FORBIDDEN)")
+	void deleteReview_Forbidden_WhenNotAuthor() throws Exception {
+		// given: 작성자와 다른 사용자, 리뷰 생성
+		User author = userRepository.save(User.builder().name("작성자").build());
+		User other = userRepository.save(User.builder().name("다른사용자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Review review = reviewRepository.save(
+			Review.builder()
+				.performance(performance)
+				.user(author)
+				.star(BigDecimal.valueOf(2.0))
+				.content("not yours")
+				.likeCount(0)
+				.build()
+		);
+
+		UUID reviewId = review.getId();
+		String token = jwtTokenProvider.generateAccessToken(other.getId());
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId)
+				.header("Authorization", "Bearer " + token))
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
+	}
+
+	@Test
+	@DisplayName("리뷰 삭제 통합 테스트 - 대상 없음 (404 NOT_FOUND)")
+	void deleteReview_NotFound() throws Exception {
+		// given: 사용자만 생성하고 존재하지 않는 리뷰 ID 사용
+		User user = userRepository.save(User.builder().name("사용자").build());
+		String token = jwtTokenProvider.generateAccessToken(user.getId());
+		UUID unknownId = UUID.randomUUID();
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", unknownId)
+				.header("Authorization", "Bearer " + token))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+	}
 }
