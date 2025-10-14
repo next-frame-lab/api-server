@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.common.filter;
+package wisoft.nextframe.schedulereservationticketing.config.jwt;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 
 @Slf4j
 @Component
@@ -60,7 +59,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				log.debug("JWT 토큰이 유효합니다. userId: {}", userId);
 
 				// Spring Security 인증 객체 생성 및 컨텍스트에 저장
-				final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, java.util.Collections.emptyList());
+				final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null,
+					java.util.Collections.emptyList());
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 				log.info("사용자 인증 정보를 SecurityContext에 저장했습니다. userId: {}", userId);
 
@@ -76,7 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		filterChain.doFilter(request, response);
 	}
-
 
 	/**
 	 * HttpServletRequest에서 "Authorization" 헤더를 파싱하여 JWT 토큰을 추출하는 메서드
