@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewLikeResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateResponse;
@@ -85,5 +86,17 @@ public class ReviewController {
 		reviewService.deleteReview(reviewId, userId);
 
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@PostMapping("/reviews/{reviewId}/likes")
+	public ResponseEntity<ApiResponse<?>> toggleLike(
+		@PathVariable UUID reviewId,
+		@AuthenticationPrincipal UUID userId
+	) {
+		final ReviewLikeResponse reviewLikeResponse = reviewService.toggleReviewLike(reviewId, userId);
+
+		final ApiResponse<ReviewLikeResponse> response = ApiResponse.success(reviewLikeResponse);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

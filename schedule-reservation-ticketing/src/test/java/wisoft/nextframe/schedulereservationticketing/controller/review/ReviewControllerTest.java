@@ -23,19 +23,19 @@ import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
-import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
-import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
-import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLikeId;
-import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
+import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
+import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
@@ -62,7 +62,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	private StadiumRepository stadiumRepository;
 	@Autowired
 	private ScheduleRepository scheduleRepository;
- @Autowired
+	@Autowired
 	private ReservationRepository reservationRepository;
 
 	@Autowired
@@ -88,8 +88,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/performances/{performanceId}/reviews", performanceId)
-				.with(authentication(auth))
+		mockMvc.perform(post("/api/v1/performances/{performanceId}/reviews", performanceId).with(authentication(auth))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))
 			.andExpect(status().isCreated())
@@ -115,12 +114,9 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/performances/{performanceId}/reviews", performanceId)
-				.with(authentication(auth))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-			.andExpect(status().isForbidden())
-			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
+		mockMvc.perform(post("/api/v1/performances/{performanceId}/reviews", performanceId).with(authentication(auth))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json)).andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
 	}
 
 	@Test
@@ -153,14 +149,13 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 			Review.builder().performance(performance).user(author2).content("r6").likeCount(0).build()); // 가장 최신
 
 		// viewer가 최신 리뷰 r6에 좋아요를 눌렀다고 가정
-		reviewLikeRepository.save(new ReviewLike(new ReviewLikeId(r6.getId(), viewer.getId()), r6, viewer, null));
+		reviewLikeRepository.save(new ReviewLike(r6, viewer));
 
 		UUID performanceId = performance.getId();
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(viewer.getId(), null);
 
 		// when & then
-		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
-				.with(authentication(auth)))
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId).with(authentication(auth)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value("SUCCESS"))
 			// 기본 size=5
@@ -183,7 +178,6 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void getReviews_CustomPaginationParams() throws Exception {
 		// given
 		User user = userRepository.save(User.builder().name("사용자").build());
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("예술의전당").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("노트르담 드 파리").build());
 
 		User author = userRepository.save(User.builder().name("작성자").build());
@@ -197,8 +191,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
 
 		// when & then: page=1, size=3 이면 두 번째 페이지에 3건
-		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
-				.with(authentication(auth))
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId).with(authentication(auth))
 				.param("page", "1")
 				.param("size", "3"))
 			.andExpect(status().isOk())
@@ -223,8 +216,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
 
 		// when & then
-		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
-				.with(authentication(auth)))
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId).with(authentication(auth)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value("SUCCESS"))
 			.andExpect(jsonPath("$.data.reviews", org.hamcrest.Matchers.hasSize(0)))
@@ -233,37 +225,29 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 			.andExpect(jsonPath("$.data.pagination.page").value(0));
 	}
 
-
 	@Test
 	@DisplayName("리뷰 수정 통합 테스트 - 성공 (200 OK)")
 	void updateReview_Success() throws Exception {
 		// given: 리뷰 작성자와 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
-		Review review = reviewRepository.save(
-			Review.builder()
-				.performance(performance)
-				.user(author)
-				.star(BigDecimal.valueOf(3.0))
-				.content("old content")
-				.likeCount(0)
-				.build()
-		);
+		Review review = reviewRepository.save(Review.builder()
+			.performance(performance)
+			.user(author)
+			.star(BigDecimal.valueOf(3.0))
+			.content("old content")
+			.likeCount(0)
+			.build());
 
 		UUID reviewId = review.getId();
 		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
 		String token = jwtTokenProvider.generateAccessToken(author.getId());
 
-		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
-			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
-				BigDecimal.valueOf(4.5),
-				"new content"
-			);
+		ReviewUpdateRequest request = new ReviewUpdateRequest(BigDecimal.valueOf(4.5), "new content");
 		String json = objectMapper.writeValueAsString(request);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId)
-				.header("Authorization", "Bearer " + token)
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId).header("Authorization", "Bearer " + token)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json))
 			.andExpect(status().isOk())
@@ -278,34 +262,25 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		User author = userRepository.save(User.builder().name("작성자").build());
 		User other = userRepository.save(User.builder().name("다른사용자").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
-		Review review = reviewRepository.save(
-			Review.builder()
-				.performance(performance)
-				.user(author)
-				.star(BigDecimal.valueOf(2.5))
-				.content("orig")
-				.likeCount(0)
-				.build()
-		);
+		Review review = reviewRepository.save(Review.builder()
+			.performance(performance)
+			.user(author)
+			.star(BigDecimal.valueOf(2.5))
+			.content("orig")
+			.likeCount(0)
+			.build());
 
 		UUID reviewId = review.getId();
 		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
 		String token = jwtTokenProvider.generateAccessToken(other.getId());
 
-		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
-			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
-				BigDecimal.valueOf(4.0),
-				"hacked"
-			);
+		ReviewUpdateRequest request = new ReviewUpdateRequest(BigDecimal.valueOf(4.0), "hacked");
 		String json = objectMapper.writeValueAsString(request);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId)
-				.header("Authorization", "Bearer " + token)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-			.andExpect(status().isForbidden())
-			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", reviewId).header("Authorization", "Bearer " + token)
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json)).andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("FORBIDDEN"));
 	}
 
 	@Test
@@ -316,22 +291,15 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		// JWT 토큰 생성 (PATCH 요청은 인증 필요)
 		String token = jwtTokenProvider.generateAccessToken(user.getId());
 
-		wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest request =
-			new wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest(
-				BigDecimal.valueOf(1.0),
-				"content"
-			);
+		ReviewUpdateRequest request = new ReviewUpdateRequest(BigDecimal.valueOf(1.0), "content");
 		String json = objectMapper.writeValueAsString(request);
 
 		UUID unknownId = UUID.randomUUID();
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", unknownId)
-				.header("Authorization", "Bearer " + token)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(json))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+		mockMvc.perform(patch("/api/v1/reviews/{reviewId}", unknownId).header("Authorization", "Bearer " + token)
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(json)).andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
 	}
 
 	@Test
@@ -340,22 +308,19 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		// given: 리뷰 작성자와 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
-		Review review = reviewRepository.save(
-			Review.builder()
-				.performance(performance)
-				.user(author)
-				.star(BigDecimal.valueOf(5.0))
-				.content("to be deleted")
-				.likeCount(0)
-				.build()
-		);
+		Review review = reviewRepository.save(Review.builder()
+			.performance(performance)
+			.user(author)
+			.star(BigDecimal.valueOf(5.0))
+			.content("to be deleted")
+			.likeCount(0)
+			.build());
 
 		UUID reviewId = review.getId();
 		String token = jwtTokenProvider.generateAccessToken(author.getId());
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId)
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId).header("Authorization", "Bearer " + token))
 			.andExpect(status().isNoContent());
 	}
 
@@ -366,22 +331,19 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		User author = userRepository.save(User.builder().name("작성자").build());
 		User other = userRepository.save(User.builder().name("다른사용자").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
-		Review review = reviewRepository.save(
-			Review.builder()
-				.performance(performance)
-				.user(author)
-				.star(BigDecimal.valueOf(2.0))
-				.content("not yours")
-				.likeCount(0)
-				.build()
-		);
+		Review review = reviewRepository.save(Review.builder()
+			.performance(performance)
+			.user(author)
+			.star(BigDecimal.valueOf(2.0))
+			.content("not yours")
+			.likeCount(0)
+			.build());
 
 		UUID reviewId = review.getId();
 		String token = jwtTokenProvider.generateAccessToken(other.getId());
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId)
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", reviewId).header("Authorization", "Bearer " + token))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
 	}
@@ -395,7 +357,79 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		UUID unknownId = UUID.randomUUID();
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", unknownId)
+		mockMvc.perform(delete("/api/v1/reviews/{reviewId}", unknownId).header("Authorization", "Bearer " + token))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+	}
+
+	@Test
+	@DisplayName("리뷰 좋아요 토글 통합 테스트 - 처음 누르면 좋아요 상태가 된다 (200 OK)")
+	void toggleLike_FirstTime_LikeOn() throws Exception {
+		// given: 리뷰와 사용자 준비
+		User viewer = userRepository.save(User.builder().name("관람자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연A").build());
+		User author = userRepository.save(User.builder().name("작성자").build());
+		Review review = reviewRepository.save(
+			Review.builder().performance(performance).user(author).content("content").likeCount(0).build());
+
+		UUID reviewId = review.getId();
+		String token = jwtTokenProvider.generateAccessToken(viewer.getId());
+
+		// when & then
+		mockMvc.perform(post("/api/v1/reviews/{reviewId}/likes", reviewId).header("Authorization", "Bearer " + token))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("SUCCESS"))
+			.andExpect(jsonPath("$.data.likeStatus").value(true));
+
+		// DB 검증: likeCount 증가 및 ReviewLike 저장
+		Review updated = reviewRepository.findById(reviewId).orElseThrow();
+		org.junit.jupiter.api.Assertions.assertEquals(1, updated.getLikeCount());
+		org.junit.jupiter.api.Assertions.assertTrue(
+			reviewLikeRepository.findByReviewIdAndUserId(reviewId, viewer.getId()).isPresent());
+	}
+
+	@Test
+	@DisplayName("리뷰 좋아요 토글 통합 테스트 - 두 번 누르면 취소된다 (200 OK)")
+	void toggleLike_Twice_TurnsOff() throws Exception {
+		// given
+		User viewer = userRepository.save(User.builder().name("관람자").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연B").build());
+		User author = userRepository.save(User.builder().name("작성자").build());
+		Review review = reviewRepository.save(
+			Review.builder().performance(performance).user(author).content("c").likeCount(0).build());
+
+		UUID reviewId = review.getId();
+		String token = jwtTokenProvider.generateAccessToken(viewer.getId());
+
+		// 첫 번째 호출: 좋아요 ON
+		mockMvc.perform(post("/api/v1/reviews/{reviewId}/likes", reviewId)
+				.header("Authorization", "Bearer " + token))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.likeStatus").value(true));
+
+		// 두 번째 호출: 좋아요 OFF
+		mockMvc.perform(post("/api/v1/reviews/{reviewId}/likes", reviewId)
+				.header("Authorization", "Bearer " + token))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.likeStatus").value(false));
+
+		// DB 검증
+		Review updated = reviewRepository.findById(reviewId).orElseThrow();
+		org.junit.jupiter.api.Assertions.assertEquals(0, updated.getLikeCount());
+		org.junit.jupiter.api.Assertions.assertTrue(
+			reviewLikeRepository.findByReviewIdAndUserId(reviewId, viewer.getId()).isEmpty());
+	}
+
+	@Test
+	@DisplayName("리뷰 좋아요 토글 통합 테스트 - 대상 리뷰 없음 (404 NOT_FOUND)")
+	void toggleLike_NotFound() throws Exception {
+		// given: 사용자만 생성
+		User viewer = userRepository.save(User.builder().name("관람자").build());
+		UUID unknown = UUID.randomUUID();
+		String token = jwtTokenProvider.generateAccessToken(viewer.getId());
+
+		// when & then
+		mockMvc.perform(post("/api/v1/reviews/{reviewId}/likes", unknown)
 				.header("Authorization", "Bearer " + token))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.code").value("NOT_FOUND"));

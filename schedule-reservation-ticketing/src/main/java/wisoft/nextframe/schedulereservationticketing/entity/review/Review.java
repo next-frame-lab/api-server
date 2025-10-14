@@ -66,4 +66,12 @@ public class Review {
 		this.star = star;
 		this.content = content;
 	}
+
+	public void increaseLikeCount() {
+		this.likeCount++;
+	}
+
+	public void decreaseLikeCount() {
+		this.likeCount--;
+	}
 }

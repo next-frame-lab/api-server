@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.review;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -13,17 +14,20 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewItemResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewLikeResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
+import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
 import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
 import wisoft.nextframe.schedulereservationticketing.exception.review.ReviewPermissionDeniedException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
@@ -35,6 +39,7 @@ public class ReviewService {
 	private final UserRepository userRepository;
 	private final PerformanceRepository performanceRepository;
 	private final ReservationRepository reservationRepository;
+	private final ReviewLikeRepository reviewLikeRepository;
 
 	@Transactional
 	public ReviewCreateResponse createReview(UUID performanceId, UUID userId, ReviewCreateRequest request) {
@@ -108,6 +113,31 @@ public class ReviewService {
 
 		// 3. 권한 검증을 통과하면 리뷰를 물리적으로 삭제합니다.
 		reviewRepository.delete(review);
+	}
+
+	@Transactional
+	public ReviewLikeResponse toggleReviewLike(UUID reviewId, UUID userId) {
+		// 1. 필요한 엔티티들 조회
+		final Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+		final User user = userRepository.findById(userId)
+			.orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+		// 2. 기존 '좋아요' 존재 여부를 확인
+		Optional<ReviewLike> existingLike = reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId);
+
+		if (existingLike.isPresent()) {
+			// 3-1. 좋아요가 이미 존재하면 -> 취소 로직 실행
+			reviewLikeRepository.delete(existingLike.get());
+			review.decreaseLikeCount();
+			return new ReviewLikeResponse(false); // 최종 상태는 '좋아요 아님'
+		} else {
+			// 3-2. 좋아요가 없으면 -> 등록 로직 실행
+			final ReviewLike newLike = new ReviewLike(review, user);
+			reviewLikeRepository.save(newLike);
+			review.increaseLikeCount();
+			return new ReviewLikeResponse(true); // 최종 상태는 '좋아요'
+		}
 	}
 
 	private void validateReviewCreation(User user, Performance performance) {
