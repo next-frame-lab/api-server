@@ -61,4 +61,9 @@ public class Review {
 	@UpdateTimestamp
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
+
+	public void update(BigDecimal star, String content) {
+		this.star = star;
+		this.content = content;
+	}
 }

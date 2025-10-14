@@ -18,6 +18,7 @@ import wisoft.nextframe.schedulereservationticketing.exception.reservation.SeatN
 import wisoft.nextframe.schedulereservationticketing.exception.reservation.TotalPriceMismatchException;
 import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
 import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
+import wisoft.nextframe.schedulereservationticketing.exception.review.ReviewPermissionDeniedException;
 
 @Slf4j
 @RestControllerAdvice
@@ -55,6 +56,14 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(NoReservationFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handleNoReservationFoundException(NoReservationFoundException ex) {
 		log.warn("handleNoReservationFound: {}", ex.getMessage());
+		ApiErrorResponse response = new ApiErrorResponse("FORBIDDEN");
+		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+	}
+
+	// 403 Forbidden - 공연 리뷰 수정 시, 권한 없음
+	@ExceptionHandler(ReviewPermissionDeniedException.class)
+	public ResponseEntity<ApiErrorResponse> handleReviewPermissionDeniedException(ReviewPermissionDeniedException ex) {
+		log.warn("handleReviewPermissionDenied: {}", ex.getMessage());
 		ApiErrorResponse response = new ApiErrorResponse("FORBIDDEN");
 		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 	}

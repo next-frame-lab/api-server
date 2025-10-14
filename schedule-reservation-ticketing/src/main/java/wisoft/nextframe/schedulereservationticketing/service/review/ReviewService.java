@@ -14,11 +14,14 @@ import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequ
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewItemResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
 import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
+import wisoft.nextframe.schedulereservationticketing.exception.review.ReviewPermissionDeniedException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
@@ -26,7 +29,6 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
@@ -34,6 +36,7 @@ public class ReviewService {
 	private final PerformanceRepository performanceRepository;
 	private final ReservationRepository reservationRepository;
 
+	@Transactional
 	public ReviewCreateResponse createReview(UUID performanceId, UUID userId, ReviewCreateRequest request) {
 		// 1. 엔티티 조회
 		final User user = userRepository.findById(userId)
@@ -72,6 +75,39 @@ public class ReviewService {
 
 		// 3. 조회 결과를 최종 응답 DTO로 변환하여 반환
 		return new ReviewListResponse(reviewPage.getContent(), PaginationResponse.from(reviewPage));
+	}
+
+	@Transactional
+	public ReviewUpdateResponse updateReview(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
+		// 1. 리뷰가 존재하는지 확인
+		final Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+
+		// 2. 리뷰 작성자와 요청한 사용자가 동일한지 확인
+		if (!review.getUser().getId().equals(userId)) {
+			throw new ReviewPermissionDeniedException();
+		}
+
+		// 3. 리뷰 수정
+		review.update(request.star(), request.content());
+
+		// 4. 수정된 정보를 DTO로 변환하여 반환
+		return ReviewUpdateResponse.from(review);
+	}
+
+	@Transactional
+	public void deleteReview(UUID reviewId, UUID userId) {
+		// 1. 리뷰가 존재하는지 확인
+		final Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+
+		// 2. 권한을 검증합니다. (리뷰 작성자와 현재 로그인한 사용자가 동일한지 확인)
+		if (!review.getUser().getId().equals(userId)) {
+			throw new ReviewPermissionDeniedException();
+		}
+
+		// 3. 권한 검증을 통과하면 리뷰를 물리적으로 삭제합니다.
+		reviewRepository.delete(review);
 	}
 
 	private void validateReviewCreation(User user, Performance performance) {
