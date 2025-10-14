@@ -2,13 +2,18 @@ package wisoft.nextframe.schedulereservationticketing.service.review;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewItemResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
@@ -51,6 +56,22 @@ public class ReviewService {
 
 		// 4. 응답 DTO 변환 및 반환
 		return ReviewCreateResponse.from(savedReview);
+	}
+
+	public ReviewListResponse getReviewsByPerformanceId(UUID performanceId, UUID userId, Pageable pageable) {
+		// 1. 공연이 존재하는지 확인
+		final Performance performance = performanceRepository.findById(performanceId)
+			.orElseThrow(() -> new EntityNotFoundException("공연을 찾을 수 없습니다: " + performanceId));
+
+		// 2. 페이징된 리뷰 데이터를 조회
+		final Page<ReviewItemResponse> reviewPage = reviewRepository.findReviewsByPerformanceId(
+			performanceId,
+			userId,
+			pageable
+		);
+
+		// 3. 조회 결과를 최종 응답 DTO로 변환하여 반환
+		return new ReviewListResponse(reviewPage.getContent(), PaginationResponse.from(reviewPage));
 	}
 
 	private void validateReviewCreation(User user, Performance performance) {

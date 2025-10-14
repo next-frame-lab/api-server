@@ -22,6 +22,11 @@ import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
+import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
+import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLikeId;
+import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
@@ -36,6 +41,11 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 
 @AutoConfigureMockMvc
 class ReviewControllerTest extends AbstractIntegrationTest {
+
+	@Autowired
+	private ReviewRepository reviewRepository;
+	@Autowired
+	private ReviewLikeRepository reviewLikeRepository;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -61,7 +71,8 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		User user = userRepository.save(User.builder().name("홍길동").build());
 		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("대전예술의전당").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
-		Schedule schedule = scheduleRepository.save(new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+		Schedule schedule = scheduleRepository.save(
+			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
 		reservationRepository.save(Reservation.create(user, schedule, 10000));
 
 		UUID performanceId = performance.getId();
@@ -89,7 +100,8 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		User user = userRepository.save(User.builder().name("김철수").build());
 		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
 		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		Schedule schedule = scheduleRepository.save(new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+		Schedule schedule = scheduleRepository.save(
+			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
 
 		UUID performanceId = performance.getId();
 
@@ -106,4 +118,115 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("FORBIDDEN"));
 	}
+
+	@Test
+	@DisplayName("리뷰 목록 조회 통합 테스트 - 기본 페이지네이션 및 정렬, 좋아요 상태 포함 (200 OK)")
+	void getReviews_DefaultPagination_AndLikeStatus() throws Exception {
+		// given
+		User viewer = userRepository.save(User.builder().name("관람자").build());
+		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("세종문화회관").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("리어왕").build());
+		Schedule schedule = scheduleRepository.save(
+			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+		// 리뷰는 예매 여부와 무관하게 조회 가능하므로 예매는 필수 아님. 그래도 한 건 넣어둠
+		reservationRepository.save(Reservation.create(viewer, schedule, 12000));
+
+		// 작성자 2명 생성하고 6개의 리뷰 생성 (기본 size=5이므로 한 건은 다음 페이지)
+		User author1 = userRepository.save(User.builder().name("작성자1").build());
+		User author2 = userRepository.save(User.builder().name("작성자2").build());
+
+		Review r1 = reviewRepository.save(
+			Review.builder().performance(performance).user(author1).content("r1").likeCount(0).build());
+		Review r2 = reviewRepository.save(
+			Review.builder().performance(performance).user(author2).content("r2").likeCount(0).build());
+		Review r3 = reviewRepository.save(
+			Review.builder().performance(performance).user(author1).content("r3").likeCount(0).build());
+		Review r4 = reviewRepository.save(
+			Review.builder().performance(performance).user(author2).content("r4").likeCount(0).build());
+		Review r5 = reviewRepository.save(
+			Review.builder().performance(performance).user(author1).content("r5").likeCount(0).build());
+		Review r6 = reviewRepository.save(
+			Review.builder().performance(performance).user(author2).content("r6").likeCount(0).build()); // 가장 최신
+
+		// viewer가 최신 리뷰 r6에 좋아요를 눌렀다고 가정
+		reviewLikeRepository.save(new ReviewLike(new ReviewLikeId(r6.getId(), viewer.getId()), r6, viewer, null));
+
+		UUID performanceId = performance.getId();
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(viewer.getId(), null);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
+				.with(authentication(auth)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("SUCCESS"))
+			// 기본 size=5
+			.andExpect(jsonPath("$.data.reviews", org.hamcrest.Matchers.hasSize(5)))
+			// 정렬: createdAt DESC 이므로 가장 마지막에 저장한 r6가 첫 번째여야 함
+			.andExpect(jsonPath("$.data.reviews[0].id").value(r6.getId().toString()))
+			// 첫 번째 항목의 likeStatus 가 true (viewer가 좋아요)
+			.andExpect(jsonPath("$.data.reviews[0].likeStatus").value(true))
+			// 페이지네이션 기본값 확인
+			.andExpect(jsonPath("$.data.pagination.page").value(0))
+			.andExpect(jsonPath("$.data.pagination.size").value(5))
+			.andExpect(jsonPath("$.data.pagination.totalItems").value(6))
+			.andExpect(jsonPath("$.data.pagination.totalPages").value(2))
+			.andExpect(jsonPath("$.data.pagination.hasNext").value(true))
+			.andExpect(jsonPath("$.data.pagination.hasPrevious").value(false));
+	}
+
+	@Test
+	@DisplayName("리뷰 목록 조회 통합 테스트 - 페이지/사이즈 파라미터 반영 (200 OK)")
+	void getReviews_CustomPaginationParams() throws Exception {
+		// given
+		User user = userRepository.save(User.builder().name("사용자").build());
+		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("예술의전당").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("노트르담 드 파리").build());
+
+		User author = userRepository.save(User.builder().name("작성자").build());
+		// 7개 생성
+		for (int i = 1; i <= 7; i++) {
+			reviewRepository.save(
+				Review.builder().performance(performance).user(author).content("c" + i).likeCount(0).build());
+		}
+
+		UUID performanceId = performance.getId();
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
+
+		// when & then: page=1, size=3 이면 두 번째 페이지에 3건
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
+				.with(authentication(auth))
+				.param("page", "1")
+				.param("size", "3"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("SUCCESS"))
+			.andExpect(jsonPath("$.data.reviews", org.hamcrest.Matchers.hasSize(3)))
+			.andExpect(jsonPath("$.data.pagination.page").value(1))
+			.andExpect(jsonPath("$.data.pagination.size").value(3))
+			.andExpect(jsonPath("$.data.pagination.totalItems").value(7))
+			.andExpect(jsonPath("$.data.pagination.totalPages").value(3))
+			.andExpect(jsonPath("$.data.pagination.hasNext").value(true))
+			.andExpect(jsonPath("$.data.pagination.hasPrevious").value(true));
+	}
+
+	@Test
+	@DisplayName("리뷰 목록 조회 통합 테스트 - 리뷰가 없을 때 빈 목록과 0 카운트 반환 (200 OK)")
+	void getReviews_Empty() throws Exception {
+		// given
+		User user = userRepository.save(User.builder().name("게스트").build());
+		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("무대").build());
+
+		UUID performanceId = performance.getId();
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/performances/{performanceId}/reviews", performanceId)
+				.with(authentication(auth)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("SUCCESS"))
+			.andExpect(jsonPath("$.data.reviews", org.hamcrest.Matchers.hasSize(0)))
+			.andExpect(jsonPath("$.data.pagination.totalItems").value(0))
+			.andExpect(jsonPath("$.data.pagination.totalPages").value(0))
+			.andExpect(jsonPath("$.data.pagination.page").value(0));
+	}
+
 }
