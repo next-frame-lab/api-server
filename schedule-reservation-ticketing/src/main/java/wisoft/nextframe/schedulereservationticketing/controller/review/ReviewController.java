@@ -2,9 +2,13 @@ package wisoft.nextframe.schedulereservationticketing.controller.review;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewListResponse;
 import wisoft.nextframe.schedulereservationticketing.service.review.ReviewService;
 
 @RestController
@@ -36,5 +41,22 @@ public class ReviewController {
 		final ApiResponse<ReviewCreateResponse> response = ApiResponse.success(reviewCreateResponse);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@GetMapping("/{performanceId}/reviews")
+	public ResponseEntity<ApiResponse<?>> getReviews(
+		@PathVariable UUID performanceId,
+		@AuthenticationPrincipal UUID userId,
+		@PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		final ReviewListResponse reviewListResponse = reviewService.getReviewsByPerformanceId(
+			performanceId,
+			userId,
+			pageable
+		);
+
+		final ApiResponse<ReviewListResponse> response = ApiResponse.success(reviewListResponse);
+
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }
