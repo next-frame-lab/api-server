@@ -45,7 +45,7 @@ public class SecurityConfig {
 				// 모든 사용자가 접근 가능한 경로를 지정합니다.(인증이 필요없는 접근 경로)
 				.requestMatchers("/",
 					"/api/v1/performances/**",
-					"api/v1/tickets",
+					"/api/v1/tickets",
 					"/api/v1/auth/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
@@ -71,7 +71,7 @@ public class SecurityConfig {
 		List<String> origins = corsProperties.allowedOrigins();
 
 		log.info("CORS 허용 출처: {}", origins);
-		config.setAllowedOrigins(origins);
+		config.setAllowedOriginPatterns(origins);
 
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
