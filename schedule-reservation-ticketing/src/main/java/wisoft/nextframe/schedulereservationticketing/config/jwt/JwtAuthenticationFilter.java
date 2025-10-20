@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 
 @Slf4j
 @Component
@@ -55,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		if (StringUtils.hasText(token)) {
 			try {
 				if (!jwtTokenProvider.validateToken(token)) {
-					throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.");
+					throw new DomainException(ErrorCode.INVALID_TOKEN);
 				}
 				// 토큰 검증 및 사용자 ID 추출
 				final UUID userId = jwtTokenProvider.getUserIdFromToken(token);

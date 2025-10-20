@@ -37,7 +37,7 @@ out/
 .vscode/
 
 # Log Directory
-log
+**/log/
 
 # env file
 .env

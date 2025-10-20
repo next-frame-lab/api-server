@@ -8,8 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResponse;
@@ -22,9 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
-import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
-import wisoft.nextframe.schedulereservationticketing.exception.review.ReviewPermissionDeniedException;
+import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;
@@ -45,9 +43,9 @@ public class ReviewService {
 	public ReviewCreateResponse createReview(UUID performanceId, UUID userId, ReviewCreateRequest request) {
 		// 1. 엔티티 조회
 		final User user = userRepository.findById(userId)
-			.orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+			.orElseThrow(() -> new DomainException(ErrorCode.USER_NOT_FOUND));
 		final Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new EntityNotFoundException("공연을 찾을 수 없습니다: " + performanceId));
+			.orElseThrow(() -> new DomainException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
 		// 2. 리뷰 생성 가능 여부 검증
 		validateReviewCreation(user, performance);
@@ -68,8 +66,8 @@ public class ReviewService {
 
 	public ReviewListResponse getReviewsByPerformanceId(UUID performanceId, UUID userId, Pageable pageable) {
 		// 1. 공연이 존재하는지 확인
-		final Performance performance = performanceRepository.findById(performanceId)
-			.orElseThrow(() -> new EntityNotFoundException("공연을 찾을 수 없습니다: " + performanceId));
+		performanceRepository.findById(performanceId)
+			.orElseThrow(() -> new DomainException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
 		// 2. 페이징된 리뷰 데이터를 조회
 		final Page<ReviewItemResponse> reviewPage = reviewRepository.findReviewsByPerformanceId(
@@ -86,11 +84,11 @@ public class ReviewService {
 	public ReviewUpdateResponse updateReview(UUID reviewId, UUID userId, ReviewUpdateRequest request) {
 		// 1. 리뷰가 존재하는지 확인
 		final Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+			.orElseThrow(() -> new DomainException(ErrorCode.REVIEW_NOT_FOUND));
 
 		// 2. 리뷰 작성자와 요청한 사용자가 동일한지 확인
 		if (!review.getUser().getId().equals(userId)) {
-			throw new ReviewPermissionDeniedException();
+			throw new DomainException(ErrorCode.ACCESS_DENIED);
 		}
 
 		// 3. 리뷰 수정
@@ -104,11 +102,11 @@ public class ReviewService {
 	public void deleteReview(UUID reviewId, UUID userId) {
 		// 1. 리뷰가 존재하는지 확인
 		final Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+			.orElseThrow(() -> new DomainException(ErrorCode.REVIEW_NOT_FOUND));
 
 		// 2. 권한을 검증합니다. (리뷰 작성자와 현재 로그인한 사용자가 동일한지 확인)
 		if (!review.getUser().getId().equals(userId)) {
-			throw new ReviewPermissionDeniedException();
+			throw new DomainException(ErrorCode.ACCESS_DENIED);
 		}
 
 		// 3. 권한 검증을 통과하면 리뷰를 물리적으로 삭제합니다.
@@ -119,9 +117,9 @@ public class ReviewService {
 	public ReviewLikeResponse toggleReviewLike(UUID reviewId, UUID userId) {
 		// 1. 필요한 엔티티들 조회
 		final Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
+			.orElseThrow(() -> new DomainException(ErrorCode.REVIEW_NOT_FOUND));
 		final User user = userRepository.findById(userId)
-			.orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+			.orElseThrow(() -> new DomainException(ErrorCode.USER_NOT_FOUND));
 
 		// 2. 기존 '좋아요' 존재 여부를 확인
 		Optional<ReviewLike> existingLike = reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId);
@@ -143,12 +141,12 @@ public class ReviewService {
 	private void validateReviewCreation(User user, Performance performance) {
 		// 검증 1: 이미 리뷰를 작성했는지 확인
 		if (reviewRepository.existsByPerformanceAndUser(performance, user)) {
-			throw new DuplicateReviewException();
+			throw new DomainException(ErrorCode.REVIEW_ALREADY_EXISTS);
 		}
 
 		// 검증 2: 해당 공연을 예매했는지 확인
 		if (!reservationRepository.existsByUserAndPerformance(user, performance)) {
-			throw new NoReservationFoundException();
+			throw new DomainException(ErrorCode.ACCESS_DENIED);
 		}
 	}
 }

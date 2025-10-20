@@ -22,8 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateResp
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.review.DuplicateReviewException;
-import wisoft.nextframe.schedulereservationticketing.exception.review.NoReservationFoundException;
+import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewRepository;
@@ -100,8 +99,7 @@ class ReviewServiceTest {
 		given(reviewRepository.existsByPerformanceAndUser(testPerformance, testUser)).willReturn(true); // **중복 리뷰가 있다고 설정**
 
 		// when and then
-		// DuplicateReviewException 예외가 발생하는지 검증
-		assertThrows(DuplicateReviewException.class, () -> {
+		assertThrows(DomainException.class, () -> {
 			reviewService.createReview(performanceId, userId, request);
 		});
 
@@ -121,9 +119,8 @@ class ReviewServiceTest {
 		given(reviewRepository.existsByPerformanceAndUser(testPerformance, testUser)).willReturn(false); // 중복 리뷰 없음
 		given(reservationRepository.existsByUserAndPerformance(testUser, testPerformance)).willReturn(false); // **예매 내역이 없다고 설정**
 
-		// when & then
-		// NoReservationFoundException 예외가 발생하는지 검증
-		assertThrows(NoReservationFoundException.class, () -> {
+		// when and then
+		assertThrows(DomainException.class, () -> {
 			reviewService.createReview(performanceId, userId, request);
 		});
 

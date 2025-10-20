@@ -23,7 +23,6 @@ public class SeatStateService {
 
 	@Cacheable(cacheNames = "seatStates", key = "#scheduleId")
 	public SeatStateListResponse getSeatStates(UUID scheduleId) {
-		log.debug("DB에서 잠긴 좌석 조회 시작. scheduleId: {}", scheduleId);
 		// 1. 공연 일정(scheduleId)에 해당하는 잠긴(예약된) 좌석 엔티티 목록을 조회합니다.
 		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId);
 		log.debug("DB에서 잠긴 좌석 조회 완료. count: {}", seatStates.size());
