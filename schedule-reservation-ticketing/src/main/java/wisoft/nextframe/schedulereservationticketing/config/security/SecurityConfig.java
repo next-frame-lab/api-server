@@ -1,9 +1,10 @@
-package wisoft.nextframe.schedulereservationticketing.config;
+package wisoft.nextframe.schedulereservationticketing.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,17 +19,30 @@ import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticatio
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @Profile("!loadtest")
 @RequiredArgsConstructor
 public class SecurityConfig {
 
 	private final CorsProperties corsProperties;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private static final String[] PERMIT_URLS = {
+		"/",
+		"/api/v1/performances/**",
+		"/api/v1/tickets",
+		"/api/v1/auth/**",
+		"/v3/api-docs/**",
+		"/swagger-ui/**",
+		"/swagger-ui.html",
+		"/swagger-resources/**"
+	};
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			// CSRF 보호 기능을 비활성화합니다.
+			// CSRF 보호 기능을 비활성화
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(AbstractHttpConfigurer::disable)
 
@@ -36,7 +50,7 @@ public class SecurityConfig {
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-			// HTTP 요청에 대한 접근 권한을 설정합니다.
+			// HTTP 요청에 대한 접근 권한 설정
 			.authorizeHttpRequests(authorize -> authorize
 				// 모든 사용자가 접근 가능한 경로를 지정합니다.(인증이 필요없는 접근 경로)
 				.requestMatchers("/",
@@ -50,8 +64,15 @@ public class SecurityConfig {
 					"/service2/**").permitAll()
 				// CORS preflight 요청 허용
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				// 그 외의 모든 요청은 인증된 사용자만 접근할 수 있도록 설정합니다.
+				// 그 외의 모든 요청은 인증된 사용자만 접근할 수 있도록 설정
 				.anyRequest().authenticated()
+			);
+
+		http
+			// 예외 처리 설정
+			.exceptionHandling(exceptions -> exceptions
+				.authenticationEntryPoint(customAuthenticationEntryPoint)
+				.accessDeniedHandler(customAccessDeniedHandler)
 			);
 
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

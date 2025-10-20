@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.config;
+package wisoft.nextframe.schedulereservationticketing.config.security;
 
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
