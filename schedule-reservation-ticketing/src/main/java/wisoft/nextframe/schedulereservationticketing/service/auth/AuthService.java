@@ -6,14 +6,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.RefreshToken;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.auth.InvalidTokenException;
+import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.user.RefreshTokenRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
@@ -32,7 +32,7 @@ public class AuthService {
 		// 1. Refresh Token 유효성 검증
 		if (!jwtTokenProvider.validateToken(refreshTokenValue)) {
 			log.warn("유효하지 않은 Refresh Token으로 재발급 시도.");
-			throw new InvalidTokenException("유효하지 않은 Refresh Token입니다.");
+			throw new DomainException(ErrorCode.INVALID_TOKEN);
 		}
 
 		// 2. Refresh Token에서 사용자 ID 추출
@@ -42,18 +42,18 @@ public class AuthService {
 		final User user = userRepository.findById(userId)
 			.orElseThrow(() -> {
 				log.warn("토큰은 유효하지만 DB에 존재하지 않는 사용자. userId: {}", userId);
-				return new EntityNotFoundException("토큰에 해당하는 사용자를 찾을 수 없습니다.");
+				return new DomainException(ErrorCode.USER_NOT_FOUND);
 			});
 
 		// 3. DB에 저장된 Refresh Token과 일치하는지 확인
 		final RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
 			.orElseThrow(() -> {
 				log.warn("로그아웃 처리된 사용자의 토큰으로 재발급 시도. userId: {}", userId);
-				return new RuntimeException("로그아웃된 사용자입니다. 다시 로그인해주세요.");
+				return new DomainException(ErrorCode.LOGGED_OUT_USER);
 			});
 		if (!refreshToken.getTokenValue().equals(refreshTokenValue)) {
 			log.error("DB의 토큰과 불일치. 탈취 가능성 의심. userId: {}", userId);
-			throw new RuntimeException("토큰이 일치하지 않습니다. 비정상적인 접근입니다.");
+			throw new DomainException(ErrorCode.TOKEN_MISMATCH);
 		}
 
 		// 4. 새로운 Access Token 생성

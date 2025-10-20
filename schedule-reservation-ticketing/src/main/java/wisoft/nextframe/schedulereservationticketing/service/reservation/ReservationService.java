@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
@@ -16,7 +17,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservat
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.TotalPriceMismatchException;
+import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
@@ -34,8 +35,6 @@ public class ReservationService {
 	@CacheEvict(cacheNames = "seatStates", key = "#request.scheduleId")
 	@Transactional
 	public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
-		log.debug("좌석 예매 서비스 시작. userId: {}, scheduleId: {}", userId, request.scheduleId());
-
 		// 1. 예매에 필요한 데이터를 준비합니다.
 		final ReservationContext context = dataProvider.provide(userId, request);
 		final Performance performance = context.performance();
@@ -57,7 +56,7 @@ public class ReservationService {
 			// 4-1. 금액 불일치 시 WARN 로그 (문제 해결의 핵심 단서)
 			log.warn("요청 금액 불일치. userId: {}, scheduleId: {}, clientAmount: {}, serverAmount: {}",
 				userId, request.scheduleId(), request.totalAmount(), calculatedTotalPrice);
-			throw new TotalPriceMismatchException("요청된 금액과 계산된 금액이 일치하지 않습니다.");
+			throw new DomainException(ErrorCode.TOTAL_PRICE_MISMATCH);
 		}
 		log.debug("요청 금액 검증 통과.");
 

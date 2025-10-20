@@ -31,10 +31,8 @@ public class ReservationController {
 		@AuthenticationPrincipal UUID userId,
 		@Valid @RequestBody ReservationRequest request
 	) {
-		log.info("좌석 예매 요청. userId: {}, scheduleId: {}, seats: {}", userId, request.scheduleId(), request.seatIds());
 		final ReservationResponse reservationResponse = reservationService.reserveSeat(userId, request);
 
-		log.info("좌석 예매 성공. reservationId: {}, userId: {}", reservationResponse.reservationId(), userId);
 		final ApiResponse<ReservationResponse> response = ApiResponse.success(reservationResponse);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);

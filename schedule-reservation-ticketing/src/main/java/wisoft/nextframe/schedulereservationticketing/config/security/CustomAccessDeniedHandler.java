@@ -12,7 +12,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.common.response.ApiErrorResponse;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 	public void handle(HttpServletRequest request, HttpServletResponse response,
 		AccessDeniedException accessDeniedException) throws IOException, ServletException {
 		// 응답 내용 생성
-		final ApiErrorResponse apiErrorResponse = new ApiErrorResponse("FORBIDDEN");
+		final ApiResponse<?> apiErrorResponse = ApiResponse.error(ErrorCode.ACCESS_DENIED);
 
 		// HTTP 상태 코드 설정
 		response.setStatus(HttpServletResponse.SC_FORBIDDEN);

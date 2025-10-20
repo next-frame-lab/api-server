@@ -11,7 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.common.response.ApiErrorResponse;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException authException) throws IOException {
 		// 응답 내용 생성
-		final ApiErrorResponse apiErrorResponse = new ApiErrorResponse("UNAUTHORIZED");
+		final ApiResponse<?> apiErrorResponse = ApiResponse.error(ErrorCode.AUTHENTICATION_FAILED);
 
 		// HTTP 상태 코드 설정
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
