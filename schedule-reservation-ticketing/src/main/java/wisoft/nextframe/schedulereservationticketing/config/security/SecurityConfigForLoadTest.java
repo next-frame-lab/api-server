@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.config;
+package wisoft.nextframe.schedulereservationticketing.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
