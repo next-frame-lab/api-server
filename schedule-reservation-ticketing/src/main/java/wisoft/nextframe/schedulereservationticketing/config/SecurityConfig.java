@@ -1,7 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.config;
 
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -12,9 +10,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +30,7 @@ public class SecurityConfig {
 		http
 			// CSRF 보호 기능을 비활성화합니다.
 			.csrf(AbstractHttpConfigurer::disable)
+			.cors(AbstractHttpConfigurer::disable)
 
 			// 세션을 사용하지 않으므로, STATELESS(상태 비저장)으로 설정합니다(세션 대신 토큰을 사용함).
 			.sessionManagement(session ->
@@ -63,22 +59,4 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	@Bean
-	public CorsFilter corsFilter() {
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		CorsConfiguration config = new CorsConfiguration();
-
-		List<String> origins = corsProperties.allowedOrigins();
-
-		log.info("CORS 허용 출처: {}", origins);
-		config.setAllowedOriginPatterns(origins);
-
-		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-		config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-		config.setAllowCredentials(true);
-		config.setMaxAge(3600L);
-
-		source.registerCorsConfiguration("/**", config);
-		return new CorsFilter(source);
-	}
 }
