@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.ticketing.TicketInfoResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.ticketing.Ticket;
-import wisoft.nextframe.schedulereservationticketing.exception.reservation.ReservationException;
-import wisoft.nextframe.schedulereservationticketing.exception.ticketing.AlreadyIssuedException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.ticketing.TicketRepository;
 
@@ -32,12 +32,12 @@ public class TicketService {
 	public Ticket issueByReservation(UUID reservationId) {
 		// 1. Reservation 조회
 		Reservation reservation = reservationRepository.findById(reservationId)
-			.orElseThrow(() -> new ReservationException("없는 예약 ID 입니다. reservationId=" + reservationId));
+			.orElseThrow(() -> new DomainException(ErrorCode.RESERVATION_NOT_FOUND));
 
 		// 2. 중복 발급 체크
 		ticketRepository.findByReservationId(reservation.getId())
 			.ifPresent(existing -> {
-				throw new AlreadyIssuedException(reservationId);
+				throw new DomainException(ErrorCode.TICKET_ALREADY_ISSUED);
 			});
 
 		// 3. 티켓 발급
@@ -45,7 +45,7 @@ public class TicketService {
 		ticketRepository.saveAndFlush(ticket);
 
 		TicketInfoResponse ticketInfo = ticketRepository.findTicketInfoById(ticket.getId())
-			.orElseThrow(() -> new IllegalStateException("티켓 정보 조회 실패. ticketId=" + ticket.getId()));
+			.orElseThrow(() -> new DomainException(ErrorCode.TICKET_NOT_FOUND));
 
 		ticketSender.send(ticketInfo, reservation.getUser().getEmail());
 

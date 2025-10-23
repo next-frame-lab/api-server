@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.typeconverter.DurationMinutesConverter;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 
 @Getter
 @Builder

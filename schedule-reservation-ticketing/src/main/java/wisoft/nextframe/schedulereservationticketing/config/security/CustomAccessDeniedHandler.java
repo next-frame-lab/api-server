@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response,
-		AccessDeniedException accessDeniedException) throws IOException, ServletException {
+		AccessDeniedException accessDeniedException) throws IOException {
 		// 응답 내용 생성
 		final ApiResponse<?> apiErrorResponse = ApiResponse.error(ErrorCode.ACCESS_DENIED);
 
