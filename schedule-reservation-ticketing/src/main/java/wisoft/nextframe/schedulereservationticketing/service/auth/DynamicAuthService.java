@@ -6,8 +6,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
@@ -31,14 +32,13 @@ public class DynamicAuthService {
 		}
 
 		// 3. 인증 정보가 없거나, Principal이 UUID 타입이 아니면(즉, 익명 사용자) -> 접근 불가 (false)
-		if (authentication == null || !(authentication.getPrincipal() instanceof UUID)) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof UUID userId)) {
 			return false;
 		}
 
-		// 4. 이제 안심하고 UUID로 캐스팅합니다.
-		final UUID userId = (UUID)authentication.getPrincipal();
+		// 4. UUID로 캐스팅합니다.
 		final User user = userRepository.findById(userId)
-			.orElseThrow(() -> new EntityNotFoundException("인증 정보에 해당하는 사용자를 찾을 수 없습니다: " + userId));
+			.orElseThrow(() -> new DomainException(ErrorCode.USER_NOT_FOUND));
 
 		return user.isAdult();
 	}

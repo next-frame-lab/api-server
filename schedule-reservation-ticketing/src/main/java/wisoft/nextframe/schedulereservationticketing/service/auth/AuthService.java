@@ -13,7 +13,7 @@ import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider
 import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.RefreshToken;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.user.RefreshTokenRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 

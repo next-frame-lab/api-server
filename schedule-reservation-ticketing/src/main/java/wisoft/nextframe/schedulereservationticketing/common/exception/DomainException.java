@@ -1,7 +1,6 @@
-package wisoft.nextframe.schedulereservationticketing.exception;
+package wisoft.nextframe.schedulereservationticketing.common.exception;
 
 import lombok.Getter;
-import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 
 @Getter
 public class DomainException extends RuntimeException {

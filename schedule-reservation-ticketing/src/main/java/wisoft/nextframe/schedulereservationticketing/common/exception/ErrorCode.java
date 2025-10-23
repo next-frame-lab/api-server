@@ -34,10 +34,24 @@ public enum ErrorCode {
 	TOTAL_PRICE_MISMATCH(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청한 금액과 계산된 금액이 일치하지 않습니다."),
 	SEAT_NOT_DEFINED(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청한 좌석 중 일부를 찾을 수 없습니다."),
 	PERFORMANCE_SCHEDULE_MISMATCH(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "공연과 공연 일정 정보가 일치하지 않습니다."),
+	RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 예약 정보를 찾을 수 없습니다."),
 
-	// Review(추가 예정)
+	// Review
 	REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 리뷰을 찾을 수 없습니다."),
-	REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "CONFLICT", "이미 리뷰를 작성했습니다.");
+	REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "CONFLICT", "이미 리뷰를 작성했습니다."),
+
+	// Ticketing
+	TICKET_ALREADY_ISSUED(HttpStatus.CONFLICT, "CONFLICT", "이미 발급된 티켓입니다."),
+	TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 티켓을 찾을 수 없습니다."),
+	PAYMENT_NOT_COMPLETED(HttpStatus.CONFLICT, "CONFLICT", "결제 완료된 상태가 아닐 경우, 티켓을 발급할 수 없습니다."),
+
+	// OAuth
+	FAILED_TO_RECEIVE_KAKAO_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
+		"카카오 서버로부터 토큰 응답을 받지 못했습니다."),
+	MISSING_KAKAO_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
+		"카카오 토큰 응답에 access token이 없습니다."),
+	FAILED_TO_GET_KAKAO_USER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
+		"카카오 사용자 정보를 받아오는데 실패했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

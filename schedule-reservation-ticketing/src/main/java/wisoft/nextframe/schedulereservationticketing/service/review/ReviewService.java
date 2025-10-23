@@ -22,7 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
 import wisoft.nextframe.schedulereservationticketing.entity.review.ReviewLike;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.review.ReviewLikeRepository;

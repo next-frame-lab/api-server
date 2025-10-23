@@ -12,7 +12,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.performance.Performa
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;

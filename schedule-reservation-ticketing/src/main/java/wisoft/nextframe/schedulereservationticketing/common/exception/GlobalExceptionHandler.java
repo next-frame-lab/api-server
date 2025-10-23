@@ -10,7 +10,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
 
 @Slf4j
 @RestControllerAdvice
@@ -37,7 +36,7 @@ public class GlobalExceptionHandler {
 	// 도메인 관련 예외를 처리
 	@ExceptionHandler(DomainException.class)
 	protected ResponseEntity<ApiResponse<?>> handleDomainException(DomainException ex) {
-		log.warn("BusinessException: {}", ex.getMessage());
+		log.warn("DomainException: {}", ex.getMessage());
 		final ErrorCode errorCode = ex.getErrorCode();
 		final ApiResponse<?> response = ApiResponse.error(errorCode);
 		return new ResponseEntity<>(response, errorCode.getHttpStatus());

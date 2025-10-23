@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatdefinition.SeatDefinitionListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 

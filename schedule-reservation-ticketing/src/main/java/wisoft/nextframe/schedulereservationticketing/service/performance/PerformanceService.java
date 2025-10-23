@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.performance;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,12 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceStatisticRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 
 @Slf4j
@@ -33,16 +36,17 @@ public class PerformanceService {
 	private final PerformanceRepository performanceRepository;
 	private final ScheduleRepository scheduleRepository;
 	private final PerformancePricingRepository performancePricingRepository;
+	private final PerformanceStatisticRepository performanceStatisticRepository;
 
 	public PerformanceDetailResponse getPerformanceDetail(UUID performanceId) {
-		// 1. 공연(Performance)를 조회합니다.
+		// 1. 공연(Performance) 조회
 		final Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> {
 			log.warn("존재하지 않는 공연 정보 조회 시도. performanceId: {}", performanceId);
 			return new DomainException(ErrorCode.PERFORMANCE_NOT_FOUND);
 		});
 		log.debug("공연 정보 조회 완료. performanceId: {}", performanceId);
 
-		// 2. 공연(Performance)에 해당하는 공연일정(Schedule)을 조회합니다.
+		// 2. 공연일정(Schedule) 조회
 		final List<Schedule> schedules = scheduleRepository.findByPerformanceId(performanceId);
 		if (schedules.isEmpty()) {
 			log.warn("공연은 존재하지만, 일정이 없는 경우. performanceId: {}", performanceId);
@@ -50,13 +54,19 @@ public class PerformanceService {
 		}
 		log.debug("공연 일정 조회 완료. 찾은 일정 수: {}", schedules.size());
 
-		// 3. 좌석의 섹션별 가격(SeatSectionPrice) 정보를 조회합니다.
+		// 3. 좌석 섹션 가격(SeatSectionPrice) 조회
 		final UUID stadiumId = schedules.getFirst().getStadium().getId();
 		log.debug("공연장 좌석 가격 조회 시작. stadiumId: {}", stadiumId);
 		final List<SeatSectionPriceResponse> seatSectionPrices = performancePricingRepository.findSeatSectionPrices(
 			performanceId, stadiumId);
 
-		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices);
+		// 4. 공연 통계(PerformanceStatistic) 조회
+		final PerformanceStatistic performanceStatistic = performanceStatisticRepository.findById(performanceId)
+			// 통계 정보가 없는 경우, 기본값(별점 0)으로 처리
+			.orElse(PerformanceStatistic.builder().averageStar(BigDecimal.ZERO).build());
+		log.debug("공연 통계 정보 조회 완료. averageStar: {}", performanceStatistic.getAverageStar());
+
+		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices, performanceStatistic);
 	}
 
 	public PerformanceListResponse getPerformanceList(Pageable pageable) {
