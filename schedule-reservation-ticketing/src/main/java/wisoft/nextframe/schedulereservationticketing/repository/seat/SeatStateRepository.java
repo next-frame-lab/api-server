@@ -21,7 +21,7 @@ public interface SeatStateRepository extends JpaRepository<SeatState, SeatStateI
 	 * @param seatIds 좌석 ID 목록
 	 * @return 잠금이 적용된 SeatState 엔티티 목록
 	 */
-	@Lock(LockModeType.PESSIMISTIC_FORCE_INCREMENT)
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT ss FROM SeatState ss WHERE ss.id.scheduleId = :scheduleId AND ss.id.seatId IN :seatIds")
 	List<SeatState> findAndLockByScheduleIdAndSeatIds(
 		@Param("scheduleId") UUID scheduleId,
