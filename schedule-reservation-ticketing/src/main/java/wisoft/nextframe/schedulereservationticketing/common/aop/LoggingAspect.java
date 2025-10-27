@@ -1,7 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.common.aop;
 
-import java.util.Arrays;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -33,7 +31,7 @@ public class LoggingAspect {
 		final String methodName = joinPoint.getSignature().getName();
 		final Object[] args = joinPoint.getArgs();
 
-		log.info("==> Method: {}.{}() | Args: {}", className, methodName, Arrays.toString(args));
+		log.info("==> Method: {}.{}()", className, methodName);
 
 		// 원래 메소드 실행
 		long startTime = System.currentTimeMillis();
@@ -42,7 +40,7 @@ public class LoggingAspect {
 		long executionTime = endTime - startTime;
 
 		// 메소드 실행 후 로그
-		log.info("<== Method: {}.{}() | Result: {} | Execution Time: {}ms", className, methodName, result, executionTime);
+		log.info("<== Method: {}.{}() | Execution Time: {}ms", className, methodName, executionTime);
 
 		return result;
 	}
