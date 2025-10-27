@@ -21,6 +21,7 @@ public enum ErrorCode {
 	AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "유효한 인증 정보가 없습니다."),
 	LOGGED_OUT_USER(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "로그아웃된 사용자입니다. 다시 로그인해주세요."),
 	TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "토큰이 일치하지 않습니다. 비정상적인 접근입니다."),
+	EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "만료된 Refresh Token입니다."),
 
 
 	// Performance and Stadium
