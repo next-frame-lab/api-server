@@ -24,10 +24,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException authException) throws IOException {
 		// 응답 내용 생성
-		final ApiResponse<?> apiErrorResponse = ApiResponse.error(ErrorCode.AUTHENTICATION_FAILED);
+		final ApiResponse<?> apiErrorResponse = ApiResponse.error(ErrorCode.INVALID_TOKEN);
 
 		// HTTP 상태 코드 설정
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Status Code 401
 
 		// 응답의 Content-Type과 인코딩 설정
 		response.setContentType("application/json");
