@@ -2,13 +2,12 @@ package wisoft.nextframe.schedulereservationticketing.service.auth;
 
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
-import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
@@ -38,7 +37,7 @@ public class DynamicAuthService {
 
 		// 4. UUID로 캐스팅합니다.
 		final User user = userRepository.findById(userId)
-			.orElseThrow(() -> new DomainException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccessDeniedException("사용자 정보를 찾을 수 없어 인가 처리를 진행할 수 없습니다."));
 
 		return user.isAdult();
 	}
