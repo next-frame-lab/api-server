@@ -1,6 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -10,12 +9,11 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.RefreshToken;
-import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.user.RefreshTokenRepository;
 
 @Slf4j
@@ -63,32 +61,6 @@ public class AuthService {
 		log.info("Access Token 재발급 성공. userId: {}", userId);
 
 		return new TokenRefreshResponse(newAccessToken);
-	}
-
-	/**
-	 * Refresh Token을 DB에 저장하거나 이미 존재하면 업데이트합니다.
-	 * (OAuthService로부터 이동)
-	 * @param user 사용자 엔티티
-	 * @param tokenValue 저장할 리프레시 토큰 값
-	 * @param expiresAt 토큰 만료 시간
-	 */
-	@Transactional
-	public void saveOrUpdateRefreshToken(User user, String tokenValue, LocalDateTime expiresAt) {
-		refreshTokenRepository.findByUser(user)
-			.ifPresentOrElse(
-				refreshToken -> {
-					log.debug("Refresh Token 업데이트. userId: {}", user.getId());
-					refreshToken.updateTokenValue(tokenValue, expiresAt);
-				},
-				() -> {
-					log.debug("신규 Refresh Token 저장. userId: {}", user.getId());
-					refreshTokenRepository.save(RefreshToken.builder()
-						.user(user)                 // 어떤 사용자의 토큰인지
-						.tokenValue(tokenValue)     // 실제 토큰 값
-						.expiresAt(expiresAt)       // 토큰 만료 시간
-						.build());
-				}
-			);
 	}
 }
 

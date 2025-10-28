@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh;
+package wisoft.nextframe.schedulereservationticketing.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
