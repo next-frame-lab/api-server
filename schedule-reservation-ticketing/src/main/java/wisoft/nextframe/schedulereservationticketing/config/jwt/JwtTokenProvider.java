@@ -9,8 +9,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -66,17 +64,6 @@ public class JwtTokenProvider {
 			.toLocalDateTime();
 	}
 
-	// JWT 토큰의 유효성을 검증하는 메서드
-	public boolean validateToken(String token) {
-		try {
-			parseClaims(token);
-			return true;
-		} catch (JwtException | IllegalArgumentException e) {
-			log.warn("유효하지 않거나 만료된 JWT 토큰입니다. reason: {}", e.getMessage());
-			return false;
-		}
-	}
-
 	// JWT 토큰에서 사용자 ID (UUID)를 추출하는 메서드
 	public UUID getUserIdFromToken(String token) {
 		log.debug("토큰에서 사용자 ID 추출 시도.");
@@ -87,15 +74,10 @@ public class JwtTokenProvider {
 
 	// 토큰 파싱 헬퍼 메서드
 	private Claims parseClaims(String accessToken) {
-		try {
 			return Jwts.parserBuilder()
 				.setSigningKey(key)
 				.build()
 				.parseClaimsJws(accessToken)
 				.getBody();
-		} catch (ExpiredJwtException e) {
-			// 만료된 토큰이어도 Claims를 반환해줄 수 있도록 처리
-			return e.getClaims();
-		}
 	}
 }
