@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshRequest;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.tokenrefresh.TokenRefreshResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
 import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 

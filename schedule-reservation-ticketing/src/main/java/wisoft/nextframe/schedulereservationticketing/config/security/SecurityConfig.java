@@ -66,7 +66,7 @@ public class SecurityConfig {
 				.authenticationEntryPoint(customAuthenticationEntryPoint)
 				.accessDeniedHandler(customAccessDeniedHandler))
 
-			// 인증 필더 적용
+			// 인증 필터 적용
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.build();
 	}
