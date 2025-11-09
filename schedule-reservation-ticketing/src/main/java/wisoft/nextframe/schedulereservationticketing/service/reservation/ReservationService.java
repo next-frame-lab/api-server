@@ -3,12 +3,11 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
@@ -17,23 +16,17 @@ import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservat
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
-import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class ReservationService {
 
-	private final SeatStateRepository seatStateRepository;
-	private final ReservationRepository reservationRepository;
 	private final PriceCalculator priceCalculator;
-	private final ReservationFactory reservationFactory;
 	private final ReservationDataProvider dataProvider;
 
-	@CacheEvict(cacheNames = "seatStates", key = "#request.scheduleId")
-	@Transactional
+	private final ReservationTransactionService reservationTransactionService;
+
 	public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
 		// 1. 예매에 필요한 데이터를 준비합니다.
 		final ReservationContext context = dataProvider.provide(userId, request);
@@ -60,15 +53,15 @@ public class ReservationService {
 		}
 		log.debug("요청 금액 검증 통과.");
 
-		// 5. 예매 좌석에 대한 검증 및 잠금 처리를 합니다.
-		log.debug("좌석 잠금 처리 시작. seats: {}", seats.stream().map(SeatDefinition::getId).toList());
-		schedule.lockSeatsForReservation(seats, seatStateRepository);
-		log.debug("좌석 잠금 처리 성공.");
-
-		// 6. 예매 정보를 생성 및 저장합니다.
-		final Reservation reservation = reservationFactory.create(user, schedule, seats, calculatedTotalPrice);
-		reservationRepository.save(reservation);
-		log.debug("예매 정보 저장 완료. reservationId: {}", reservation.getId());
+		// 5. 예매 좌석 잠금 처리, 예매 진행
+		log.debug("좌석 잠금 및 예매 정보 저장 트랜잭션 시작...");
+		final Reservation reservation = reservationTransactionService.executeReservation(
+			schedule,
+			seats,
+			user,
+			calculatedTotalPrice
+		);
+		log.debug("트랜잭션 완료. reservationId: {}", reservation.getId());
 
 		// 7. 응답 DTO 생성 및 반환합니다.
 		return ReservationResponse.from(reservation, performance, schedule, seats);
