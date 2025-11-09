@@ -68,20 +68,16 @@ public class Schedule {
 			.map(SeatDefinition::getId)
 			.toList();
 
-		// 2. 좌석을 조회함과 동시에 잠급니다.
-		final List<SeatState> seatStates = seatStateRepository.findAndLockByScheduleIdAndSeatIds(this.id, seatIds);
+		// 2. 좌석을 조회합니다.
+		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndSeatIds(this.id, seatIds);
 
 		// 3. 요청한 모든 좌석이 존재하는지 확인합니다.
 		if (seatStates.size() != seatIds.size()) {
 			throw new DomainException(ErrorCode.SEAT_NOT_DEFINED);
 		}
 
-		// 4. 이미 잠겨 있는 좌석이 있는지 확인합니다.
+		// 4. 좌석을 잠금 처리합니다.
 		for (final SeatState seatState : seatStates) {
-			if (seatState.getIsLocked()) {
-				throw new DomainException(ErrorCode.SEAT_ALREADY_LOCKED);
-			}
-			// 5. 좌석 상태를 잠금으로 변경합니다.
 			seatState.lock();
 		}
 	}

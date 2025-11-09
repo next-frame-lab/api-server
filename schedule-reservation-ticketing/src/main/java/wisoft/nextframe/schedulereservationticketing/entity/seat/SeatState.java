@@ -8,11 +8,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 
@@ -40,7 +43,14 @@ public class SeatState {
 	@Column(name = "is_locked", nullable = false)
 	private Boolean isLocked;
 
+	@Version
+	@Column(name = "version")
+	private Long version;
+
 	public void lock() {
+		if (this.isLocked) {
+			throw new DomainException(ErrorCode.SEAT_ALREADY_LOCKED);
+		}
 		this.isLocked = true;
 	}
 }

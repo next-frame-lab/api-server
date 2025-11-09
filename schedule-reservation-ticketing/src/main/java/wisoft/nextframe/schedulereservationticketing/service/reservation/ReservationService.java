@@ -3,6 +3,7 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class ReservationService {
 	private final PriceCalculator priceCalculator;
 	private final ReservationDataProvider dataProvider;
 
-	private final ReservationTransactionService reservationTransactionService;
+	private final ReservationExecutor reservationExecutor;
 
 	public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
 		// 1. 예매에 필요한 데이터를 준비합니다.
@@ -53,15 +54,23 @@ public class ReservationService {
 		}
 		log.debug("요청 금액 검증 통과.");
 
+
 		// 5. 예매 좌석 잠금 처리, 예매 진행
-		log.debug("좌석 잠금 및 예매 정보 저장 트랜잭션 시작...");
-		final Reservation reservation = reservationTransactionService.executeReservation(
-			schedule,
-			seats,
-			user,
-			calculatedTotalPrice
-		);
-		log.debug("트랜잭션 완료. reservationId: {}", reservation.getId());
+		final Reservation reservation;
+		try {
+			log.debug("좌석 잠금 및 예매 정보 저장 트랜잭션 시작...");
+			reservation = reservationExecutor.executeReservation(
+				schedule,
+				seats,
+				user,
+				calculatedTotalPrice
+			);
+			log.debug("트랜잭션 완료. reservationId: {}", reservation.getId());
+		} catch (OptimisticLockingFailureException ex) {
+			log.warn("좌석 선점 경합 발생 (Optimistic Lock Failed). userId: {}, scheduleId: {}, seats: {}",
+				userId, schedule.getId(), seats.stream().map(SeatDefinition::getId).toList());
+			throw new DomainException(ErrorCode.SEAT_ALREADY_LOCKED);
+		}
 
 		// 7. 응답 DTO 생성 및 반환합니다.
 		return ReservationResponse.from(reservation, performance, schedule, seats);
