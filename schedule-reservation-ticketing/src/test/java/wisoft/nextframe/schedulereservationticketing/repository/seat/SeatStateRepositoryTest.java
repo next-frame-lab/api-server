@@ -2,8 +2,8 @@ package wisoft.nextframe.schedulereservationticketing.repository.seat;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -11,11 +11,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -33,109 +32,112 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumS
 class SeatStateRepositoryTest extends AbstractIntegrationTest {
 
 	@Autowired
-	private EntityManager entityManager;
-	@Autowired
 	private SeatStateRepository seatStateRepository;
 	@Autowired
 	private ScheduleRepository scheduleRepository;
 	@Autowired
-	private SeatDefinitionRepository seatDefinitionRepository;
-	@Autowired
-	private PerformanceRepository performanceRepository;
-	@Autowired
 	private StadiumSectionRepository stadiumSectionRepository;
 	@Autowired
+	private SeatDefinitionRepository seatDefinitionRepository;
+	@Autowired
 	private StadiumRepository stadiumRepository;
+	@Autowired
+	private PerformanceRepository performanceRepository;
 
-	private Schedule savedSchedule;
-	private SeatDefinition savedSeat1;
-	private SeatDefinition savedSeat2;
+	private Schedule schedule;
+	private SeatDefinition seat1;
+	private SeatDefinition seat2;
+	private SeatDefinition seat3;
 
 	@BeforeEach
 	void setUp() {
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().build());
+		// 기본 데이터 저장 (참조 무결성 보장)
+		Stadium savedStadium = stadiumRepository.save(new StadiumBuilder().build());
+		Performance savedPerformance = performanceRepository.save(new PerformanceBuilder().build());
+		StadiumSection stadiumSection = stadiumSectionRepository.save(
+			new StadiumSectionBuilder().withStadium(savedStadium).build());
+		schedule = scheduleRepository.save(
+			new ScheduleBuilder()
+				.withStadium(savedStadium)
+				.withPerformance(savedPerformance)
+				.build()
+		);
 
-		Performance performance = performanceRepository.save(new PerformanceBuilder().build());
+		// 좌석 정의 3개 생성
+		seat1 = seatDefinitionRepository.save(
+			SeatDefinition.builder()
+				.id(UUID.randomUUID())
+				.rowNo(1)
+				.columnNo(1)
+				.stadiumSection(stadiumSection)
+				.build()
+		);
+		seat2 = seatDefinitionRepository.save(
+			SeatDefinition.builder()
+				.id(UUID.randomUUID())
+				.rowNo(1)
+				.columnNo(2)
+				.stadiumSection(stadiumSection)
+				.build()
+		);
+		seat3 = seatDefinitionRepository.save(
+			SeatDefinition.builder()
+				.id(UUID.randomUUID())
+				.rowNo(1)
+				.columnNo(3)
+				.stadiumSection(stadiumSection)
+				.build()
+		);
 
-		StadiumSection section = stadiumSectionRepository.save(
-			StadiumSection.builder().id(UUID.randomUUID()).stadium(stadium).section("A").build());
-
-		savedSchedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
-
-		savedSeat1 = seatDefinitionRepository.save(
-			SeatDefinition.builder().id(UUID.randomUUID()).stadiumSection(section).rowNo(1).columnNo(1).build());
-
-		savedSeat2 = seatDefinitionRepository.save(
-			SeatDefinition.builder().id(UUID.randomUUID()).stadiumSection(section).rowNo(1).columnNo(2).build());
-
-		// given: 테스트에 사용할 좌석 상태를 미리 저장
-		SeatState unlockedSeatState1 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat1.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat1)
+		// 좌석 상태 생성 및 저장
+		SeatState ss1 = SeatState.builder()
+			.id(SeatStateId.builder().scheduleId(schedule.getId()).seatId(seat1.getId()).build())
+			.schedule(schedule)
+			.seat(seat1)
 			.isLocked(false)
 			.build();
-		seatStateRepository.save(unlockedSeatState1);
-
-		SeatState unlockedSeatState2 = SeatState.builder()
-			.id(new SeatStateId(savedSchedule.getId(), savedSeat2.getId()))
-			.schedule(savedSchedule)
-			.seat(savedSeat2)
-			.isLocked(false)
+		SeatState ss2 = SeatState.builder()
+			.id(SeatStateId.builder().scheduleId(schedule.getId()).seatId(seat2.getId()).build())
+			.schedule(schedule)
+			.seat(seat2)
+			.isLocked(true)
 			.build();
-		seatStateRepository.save(unlockedSeatState2);
-	}
-
-	@Test
-	@DisplayName("성공: 새로운 좌석 상태를 저장하고 복합키로 조회하면 성공한다")
-	void saveAndFindById_Success() {
-		// given
-		SeatStateId seatStateId = SeatStateId.builder()
-			.scheduleId(savedSchedule.getId())
-			.seatId(savedSeat1.getId())
-			.build();
-
-		SeatState newSeatState = SeatState.builder()
-			.id(seatStateId)
-			.schedule(savedSchedule)
-			.seat(savedSeat1)
+		SeatState ss3 = SeatState.builder()
+			.id(SeatStateId.builder().scheduleId(schedule.getId()).seatId(seat3.getId()).build())
+			.schedule(schedule)
+			.seat(seat3)
 			.isLocked(true)
 			.build();
 
-		// when
-		seatStateRepository.save(newSeatState);
-		Optional<SeatState> foundSeatStateOptional = seatStateRepository.findById(seatStateId);
-
-		// then
-		assertThat(foundSeatStateOptional).isPresent();
-
-		SeatState foundSeatState = foundSeatStateOptional.get();
-		assertThat(foundSeatState.getId()).isEqualTo(seatStateId);
-		assertThat(foundSeatState.getIsLocked()).isTrue();
-		assertThat(foundSeatState.getSchedule().getId()).isEqualTo(savedSchedule.getId());
-		assertThat(foundSeatState.getSeat().getId()).isEqualTo(savedSeat1.getId());
+		seatStateRepository.saveAll(Arrays.asList(ss1, ss2, ss3));
 	}
 
 	@Test
-	@DisplayName("성공: 요청한 좌석들을 비관적 락을 걸어 정상적으로 조회한다")
-	void findAndLockByScheduleIdAndSeatIds_Success() {
-		// when: 새로운 메서드를 호출하여 좌석 상태를 조회 (이때 락이 걸림)
-		List<SeatState> lockedSeats = seatStateRepository.findAndLockByScheduleIdAndSeatIds(
-			savedSchedule.getId(),
-			List.of(savedSeat1.getId(), savedSeat2.getId())
+	@DisplayName("findByScheduleIdAndSeatIds: 스케줄과 좌석 ID 목록으로 SeatState를 조회한다")
+	void findByScheduleIdAndSeatIds_returnsMatchingSeatStates() {
+		// when
+		List<SeatState> found = seatStateRepository.findByScheduleIdAndSeatIds(
+			schedule.getId(), List.of(seat1.getId(), seat3.getId())
 		);
 
 		// then
-		// 1. 요청한 좌석들이 정확하게 조회되었는지 확인
-		assertThat(lockedSeats).hasSize(2);
-		assertThat(lockedSeats).extracting(seatState -> seatState.getId().getSeatId())
-			.containsExactlyInAnyOrder(savedSeat1.getId(), savedSeat2.getId());
+		assertThat(found)
+			.hasSize(2)
+			.extracting(ss -> ss.getId().getSeatId())
+			.containsExactlyInAnyOrder(seat1.getId(), seat3.getId());
+	}
 
-		// 2. 조회된 엔티티에 PESSIMISTIC_WRITE 락이 걸려있는지 확인
-		for (SeatState seat : lockedSeats) {
-			LockModeType lockMode = entityManager.getLockMode(seat);
-			assertThat(lockMode).isEqualTo(LockModeType.PESSIMISTIC_FORCE_INCREMENT);
-		}
+	@Test
+	@DisplayName("findByScheduleIdAndIsLockedTrue: 해당 스케줄에서 잠겨 있는 좌석만 조회한다")
+	void findByScheduleIdAndIsLockedTrue_returnsOnlyLockedSeats() {
+		// when
+		List<SeatState> locked = seatStateRepository.findByScheduleIdAndIsLockedTrue(schedule.getId());
+
+		// then
+		assertThat(locked)
+			.hasSize(2)
+			.allMatch(SeatState::getIsLocked)
+			.extracting(ss -> ss.getId().getSeatId())
+			.containsExactlyInAnyOrder(seat2.getId(), seat3.getId());
 	}
 }
