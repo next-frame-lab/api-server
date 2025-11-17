@@ -29,8 +29,10 @@ public class User {
 	@Column(name = "id", columnDefinition = "uuid", updatable = false, nullable = false)
 	private UUID id;
 
+	@Column(nullable = false)
 	private String name;
 
+	@Column(nullable = false)
 	private String email;
 
 	@Column(name = "birth_date")
@@ -39,14 +41,8 @@ public class User {
 	@Column(name = "phone_number")
 	private String phoneNumber;
 
-	@Column(name = "face_id")
-	private String faceId;
-
 	@Column(name = "image_url")
 	private String imageUrl;
-
-	@Column(name = "provider")
-	private String provider;
 
 	public boolean isAdult() {
 		return Period.between(birthDate, LocalDate.now()).getYears() >= 19;

@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,14 +9,20 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthUserInfo;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.user.SocialAccount;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+import wisoft.nextframe.schedulereservationticketing.repository.user.SocialAccountRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 /**
- * OAuth 인증 후, 실제 비즈니스 로직을 처리하는 서비스 클래스
- * 조회/가입 및 내부 JWT 토큰 발급 처리
+ * OAuth 인증이 완료된 사용자 정보를 기반으로
+ * 실제 로그인/회원 처리와 토큰 발급을 담당하는 서비스입니다.
+ *
+ * - 소셜 계정 및 사용자 조회/생성
+ * - 내부 JWT(Access / Refresh Token) 발급
+ * - Refresh Token 저장 및 교체
  */
 @Slf4j
 @Service
@@ -23,21 +30,22 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 public class OAuthSigninService {
 
 	private final UserRepository userRepository;
+	private final SocialAccountRepository socialAccountRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 
 	@Transactional
-	SigninResponse processUserSignin(String provider, KakaoUserInfoResponse userInfo) {
+	public SigninResponse processUserSignin(OAuthUserInfo userInfo) {
 		// 사용자 정보로 DB에서 회원을 찾거나, 없으면 새로 가입
-		final User user = saveOrUpdateUser(userInfo, provider);
+		final User user = findOrCreateUser(userInfo);
 
-		// 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성
+		// 서비스 자체 토큰(Refresh, Access Token) 발급
 		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
-		final TokenInfo refreshTokenInfo = jwtTokenProvider.generateRefreshToken(user.getId());
+		final JwtTokenProvider.TokenInfo refreshTokenInfo = jwtTokenProvider.generateRefreshToken(user.getId());
 		log.debug("내부 JWT 생성 완료. userId: {}", user.getId());
 
 		// Refresh Token 저장
-		refreshTokenService.saveOrUpdateRefreshToken(
+		refreshTokenService.replaceRefreshToken(
 			user,
 			refreshTokenInfo.tokenValue(),
 			refreshTokenInfo.expiresAt()
@@ -53,24 +61,47 @@ public class OAuthSigninService {
 		);
 	}
 
-	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo, String provider) {
-		final String email = userInfo.getKakaoAccount().getEmail();
-		final String nickname = userInfo.getKakaoAccount().getProfile().getNickname();
-		final String imageUrl = userInfo.getKakaoAccount().getProfile().getProfileImageUrl();
+	private User findOrCreateUser(OAuthUserInfo userInfo) {
+		String provider = userInfo.provider();
+		String providerUserId = userInfo.providerUserId();
 
-		return userRepository.findByEmailAndProvider(email, provider)
-			.map(user -> {
-				log.info("기존 회원 로그인. email: {}", email);
-				return user.updateProfile(nickname, imageUrl);
-			}) // 이미 존재하면 프로필 업데이트
+		// 1. 소셜 계정이 이미 존재하는 경우
+		Optional<SocialAccount> socialAccountOptional =
+			socialAccountRepository.findByProviderAndProviderUserId(
+				provider,
+				providerUserId
+			);
+		if (socialAccountOptional.isPresent()) {
+			log.info("기존 소셜 계정 로그인. provider={}, providerUserId={}", provider, providerUserId);
+			User user = socialAccountOptional.get().getUser();
+			user.updateProfile(userInfo.name(), userInfo.imageUrl());
+			return user;
+		}
+
+		// 2. 소셜 계정은 없지만, 동일 이메일의 User가 존재하는 경우
+		User user = userRepository.findByEmail(userInfo.email())
 			.orElseGet(() -> {
-				log.info("신규 회원 가입. email: {}", email);
-				return userRepository.save(User.builder() // 없으면 새로 생성하여 저장
-					.email(email)
-					.name(nickname)
-					.imageUrl(imageUrl)
-					.provider(provider)
-					.birthDate(LocalDate.of(1998, 4, 7))
-					.build());});
+				log.info("신규 회원 가입. email={}", userInfo.email());
+				return userRepository.save(
+					User.builder()
+						.email(userInfo.email())
+						.name(userInfo.name())
+						.imageUrl(userInfo.imageUrl())
+						.birthDate(LocalDate.of(1998, 4, 7)) // 소셜 제공자에 따라 추후 보완
+						.build()
+				);
+			});
+
+		// 3. 새로운 SocialAccount 생성 및 연동
+		log.info("소셜 계정 연동. provider={}, providerUserId={}, userId={}", provider, providerUserId, user.getId());
+		socialAccountRepository.save(
+			SocialAccount.builder()
+				.provider(provider)
+				.providerUserId(providerUserId)
+				.user(user)
+				.build()
+		);
+
+		return user;
 	}
 }

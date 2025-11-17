@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
-import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
+import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthFacade;
 
 @Slf4j
 @RestController
@@ -23,12 +23,12 @@ import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-	private final OAuthService oAuthService;
+	private final OAuthFacade oAuthFacade;
 	private final AuthService authService;
 
 	@PostMapping("/signin")
-	public ResponseEntity<ApiResponse<?>> signin(@RequestBody KaKaoSigninRequest request) {
-		final SigninResponse signinResponse = oAuthService.kakaoSignin(request.provider() ,request.authCode());
+	public ResponseEntity<ApiResponse<?>> signin(@RequestBody OAuthSigninRequest request) {
+		final SigninResponse signinResponse = oAuthFacade.signin(request.provider(), request.authCode());
 
 		final ApiResponse<SigninResponse> response = ApiResponse.success(signinResponse);
 
@@ -42,5 +42,12 @@ public class AuthController {
 		final ApiResponse<TokenRefreshResponse> response = ApiResponse.success(tokenRefreshResponse);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout() {
+		authService.logout();
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

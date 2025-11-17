@@ -23,7 +23,6 @@ public enum ErrorCode {
 	TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "토큰이 일치하지 않습니다. 비정상적인 접근입니다."),
 	EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "만료된 Refresh Token입니다."),
 
-
 	// Performance and Stadium
 	PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 공연을 찾을 수 없습니다."),
 	SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 공연 일정을 찾을 수 없습니다."),
@@ -47,12 +46,17 @@ public enum ErrorCode {
 	PAYMENT_NOT_COMPLETED(HttpStatus.CONFLICT, "CONFLICT", "결제 완료된 상태가 아닐 경우, 티켓을 발급할 수 없습니다."),
 
 	// OAuth
+	INVALID_KAKAO_AUTH_CODE(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "인가 코드가 잘못되었습니다."),
 	FAILED_TO_RECEIVE_KAKAO_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
 		"카카오 서버로부터 토큰 응답을 받지 못했습니다."),
 	MISSING_KAKAO_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
 		"카카오 토큰 응답에 access token이 없습니다."),
 	FAILED_TO_GET_KAKAO_USER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
-		"카카오 사용자 정보를 받아오는데 실패했습니다.");
+		"카카오 사용자 정보를 받아오는데 실패했습니다."),
+	KAKAO_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
+		"카카오 인증 서버에 문제가 있습니다."),
+	UNSUPPORTED_PROVIDER(HttpStatus.BAD_REQUEST, "BAD_REQUEST",
+		"해당 인증서비스는 지원하지 않습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

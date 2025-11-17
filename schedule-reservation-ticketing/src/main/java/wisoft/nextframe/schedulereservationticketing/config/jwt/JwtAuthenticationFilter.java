@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.config.jwt;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -47,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 					userId,
 					null,
-					java.util.Collections.emptyList()
+					Collections.emptyList()
 				);
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);

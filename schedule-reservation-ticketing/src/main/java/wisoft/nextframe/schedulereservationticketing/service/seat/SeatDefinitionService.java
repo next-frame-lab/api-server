@@ -6,13 +6,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatdefinition.SeatDefinitionListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.SeatDefinitionRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 
@@ -29,7 +28,6 @@ public class SeatDefinitionService {
 	 *
 	 * @param stadiumId 공연장 ID
 	 * @return 좌석 정보 DTO 리스트
-	 * @throws EntityNotFoundException 해당 ID의 공연장이 존재하지 않을 경우 발생
 	 */
 	@Transactional(readOnly = true)
 	public SeatDefinitionListResponse getSeatDefinitions(UUID stadiumId) {
