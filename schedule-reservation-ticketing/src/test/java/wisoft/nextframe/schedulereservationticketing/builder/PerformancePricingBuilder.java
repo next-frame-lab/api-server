@@ -7,8 +7,8 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSecti
 
 public class PerformancePricingBuilder {
 
-	private Schedule schedule = new ScheduleBuilder().build();
-	private StadiumSection stadiumSection = new StadiumSectionBuilder().build();
+	private Schedule schedule = ScheduleBuilder.builder().build();
+	private StadiumSection stadiumSection = StadiumSectionBuilder.builder().build();
 	private Integer price = 120000;
 
 	public PerformancePricingBuilder withSchedule(Schedule schedule) {

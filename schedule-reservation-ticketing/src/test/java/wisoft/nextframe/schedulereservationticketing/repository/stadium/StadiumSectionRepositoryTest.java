@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.config.IntegrationTestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
 
-class StadiumSectionRepositoryTest extends AbstractIntegrationTest {
+class StadiumSectionRepositoryTest extends IntegrationTestContainersConfig {
 
 	@Autowired
 	private StadiumSectionRepository stadiumSectionRepository;
@@ -29,7 +29,7 @@ class StadiumSectionRepositoryTest extends AbstractIntegrationTest {
 
 	@BeforeEach
 	void setUp() {
-		final Stadium stadium = new StadiumBuilder().build();
+		final Stadium stadium = StadiumBuilder.builder().build();
 		savedStadium = stadiumRepository.save(stadium);
 	}
 

@@ -4,64 +4,104 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.PerformancePricingBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.common.exception.GlobalExceptionHandler;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.StadiumResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
+import wisoft.nextframe.schedulereservationticketing.service.auth.DynamicAuthService;
+import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
-@AutoConfigureMockMvc
-class PerformanceControllerTest extends AbstractIntegrationTest {
+@WebMvcTest(value = PerformanceController.class,
+	excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+		classes = {
+			wisoft.nextframe.schedulereservationticketing.config.security.SecurityConfig.class,
+			wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticationFilter.class
+		})
+)
+@Import(GlobalExceptionHandler.class)
+class PerformanceControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
-	private PerformanceRepository performanceRepository;
+	private PerformanceService performanceService;
+
 	@Autowired
-	private StadiumRepository stadiumRepository;
-	@Autowired
-	private StadiumSectionRepository stadiumSectionRepository;
-	@Autowired
-	private ScheduleRepository scheduleRepository;
-	@Autowired
-	private PerformancePricingRepository performancePricingRepository;
+	private DynamicAuthService dynamicAuthService;
+
+	@TestConfiguration
+	static class TestConfig {
+		@Bean
+		PerformanceService performanceService() {
+			return Mockito.mock(PerformanceService.class);
+		}
+
+		@Bean(name = "dynamicAuthService")
+		DynamicAuthService dynamicAuthService() {
+			return Mockito.mock(DynamicAuthService.class);
+		}
+	}
+
+	@BeforeEach
+	void setUp() {
+		Mockito.reset(performanceService, dynamicAuthService);
+	}
 
 	@Test
-	@DisplayName("공연 상세 조회 통합 테스트 - 성공 (200 OK)")
+	@DisplayName("공연 상세 조회 테스트 - 성공 (200 OK)")
 	@WithMockUser
 	void getPerformanceDetail_Success() throws Exception {
 		// given
-		final Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
-		final StadiumSection section = stadiumSectionRepository.save(
-			new StadiumSectionBuilder().withStadium(stadium).build());
-		final Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		final Schedule schedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
-		performancePricingRepository.save(new PerformancePricingBuilder().withSchedule(schedule).withStadiumSection(section).build());
-		final UUID performanceId = performance.getId();
+		final UUID performanceId = UUID.randomUUID();
+
+		Mockito.when(dynamicAuthService.canViewPerformanceDetail(Mockito.eq(performanceId), Mockito.any()))
+			.thenReturn(true);
+
+		PerformanceDetailResponse detail = PerformanceDetailResponse.builder()
+			.id(performanceId)
+			.imageUrl("https://example.com/image.jpg")
+			.name("오페라의 유령")
+			.type("MUSICAL")
+			.genre("DRAMA")
+			.averageStar(new BigDecimal("4.5"))
+			.runningTime(150)
+			.description("설명")
+			.adultOnly(false)
+			.ticketOpenTime(LocalDateTime.now().minusDays(10))
+			.ticketCloseTime(LocalDateTime.now().plusDays(10))
+			.stadium(StadiumResponse.builder().id(UUID.randomUUID()).name("부산문화회관").address("주소").build())
+			.performanceSchedules(List.of())
+			.seatSectionPrices(List.of())
+			.build();
+
+		Mockito.when(performanceService.getPerformanceDetail(performanceId)).thenReturn(detail);
 
 		// when & then
 		mockMvc.perform(get("/api/v1/performances/{id}", performanceId)
@@ -74,11 +114,17 @@ class PerformanceControllerTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("공연 상세 조회 통합 테스트 - 실패 (존재하지 않는 ID, 404 NOT FOUND)")
+	@DisplayName("공연 상세 조회 테스트 - 실패 (존재하지 않는 ID, 404 NOT FOUND)")
 	@WithMockUser
 	void getPerformanceDetail_NotFound() throws Exception {
 		// given
 		final UUID notExistId = UUID.randomUUID();
+
+		Mockito.when(dynamicAuthService.canViewPerformanceDetail(Mockito.eq(notExistId), Mockito.any()))
+			.thenReturn(true);
+
+		Mockito.when(performanceService.getPerformanceDetail(notExistId))
+			.thenThrow(new DomainException(ErrorCode.PERFORMANCE_NOT_FOUND));
 
 		// when & then
 		mockMvc.perform(get("/api/v1/performances/{id}", notExistId)
@@ -87,34 +133,38 @@ class PerformanceControllerTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("공연 목록 조회 통합 테스트 - 성공 (200 OK)")
+	@DisplayName("공연 목록 조회 - 성공 (200 OK)")
+	@WithMockUser
 	void getPerformances_Success() throws Exception {
 		// given
-		LocalDateTime now = LocalDateTime.now();
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("대전예술의전당").build());
+		UUID id = UUID.randomUUID();
+		PerformanceSummaryResponse summary = new PerformanceSummaryResponse(
+			id,
+			"햄릿",
+			"https://example.com/image2.jpg",
+			wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType.CLASSIC,
+			wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre.PLAY,
+			"대전예술의전당",
+			Date.valueOf(LocalDate.of(2025, 9, 1)),
+			Date.valueOf(LocalDate.of(2025, 9, 30)),
+			false
+		);
 
-		// 시나리오 1: 예매 가능한 공연 (결과에 포함되어야 함)
-		Performance reservablePerf = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(reservablePerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(10)).withTicketCloseTime(now.plusDays(10))
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 1).atStartOfDay()).build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(reservablePerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(10)).withTicketCloseTime(now.plusDays(10))
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 30).atStartOfDay()).build());
+		PaginationResponse pagination = PaginationResponse.builder()
+			.page(0)
+			.size(10)
+			.totalItems(1)
+			.totalPages(1)
+			.hasNext(false)
+			.hasPrevious(false)
+			.build();
 
-		// 시나리오 2: 예매 시작 전 공연 (결과에 포함되면 안 됨)
-		Performance notYetOpenPerf = performanceRepository.save(new PerformanceBuilder().withName("캣츠").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(notYetOpenPerf).withStadium(stadium)
-			.withTicketOpenTime(now.plusDays(1)).withTicketCloseTime(now.plusDays(20)).build());
+		PerformanceListResponse listResponse = PerformanceListResponse.builder()
+			.performances(List.of(summary))
+			.pagination(pagination)
+			.build();
 
-		// 시나리오 3: 예매 마감된 공연 (결과에 포함되면 안 됨)
-		Performance closedPerf = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(closedPerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(20)).withTicketCloseTime(now.minusDays(1)).build());
+		Mockito.when(performanceService.getPerformanceList(Mockito.any())).thenReturn(listResponse);
 
 		// when and then
 		mockMvc.perform(get("/api/v1/performances")

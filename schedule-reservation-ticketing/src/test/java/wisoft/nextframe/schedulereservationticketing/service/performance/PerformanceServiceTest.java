@@ -62,7 +62,7 @@ class PerformanceServiceTest {
 		final UUID stadiumId = UUID.randomUUID();
 
 		// 1. 테스트용 엔티티 준비
-		final Performance performance = new PerformanceBuilder()
+		final Performance performance = PerformanceBuilder.builder()
 			.withId(performanceId)
 			.withName("오페라의 유령")
 			.build();
@@ -74,12 +74,12 @@ class PerformanceServiceTest {
 			.updatedAt(LocalDateTime.now())
 			.build();
 
-		final Stadium stadium = new StadiumBuilder()
+		final Stadium stadium = StadiumBuilder.builder()
 			.withId(stadiumId)
 			.build();
 
 		final List<Schedule> schedules = List.of(
-			new ScheduleBuilder()
+			ScheduleBuilder.builder()
 				.withPerformance(performance)
 				.withStadium(stadium) // Stadium 정보 추가
 				.build()
