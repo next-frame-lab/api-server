@@ -13,9 +13,6 @@ import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatStateId;
 public interface SeatStateRepository extends JpaRepository<SeatState, SeatStateId> {
 
 	/**
-	 * [수정됨] 비관적 락(@Lock) 어노테이션을 완전히 제거합니다.
-	 * 이 메서드는 이제 단순 조회(SELECT)만 수행합니다.
-	 *
 	 * @param scheduleId 스케줄 ID
 	 * @param seatIds 좌석 ID 목록
 	 * @return 조회된 SeatState 엔티티 목록

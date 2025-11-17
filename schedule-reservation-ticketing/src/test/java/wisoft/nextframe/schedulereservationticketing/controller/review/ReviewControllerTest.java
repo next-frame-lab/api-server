@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.config.IntegrationTestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
@@ -41,7 +41,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumR
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 @AutoConfigureMockMvc
-class ReviewControllerTest extends AbstractIntegrationTest {
+class ReviewControllerTest extends IntegrationTestContainersConfig {
 
 	@Autowired
 	private ReviewRepository reviewRepository;
@@ -73,10 +73,10 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void createReview_Success() throws Exception {
 		// given: 사용자, 공연, 일정, 예매 데이터 준비
 		User user = userRepository.save(User.builder().name("홍길동").build());
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("대전예술의전당").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
+		Stadium stadium = stadiumRepository.save(StadiumBuilder.builder().withName("대전예술의전당").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("햄릿").build());
 		Schedule schedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+			ScheduleBuilder.builder().withPerformance(performance).withStadium(stadium).build());
 		reservationRepository.save(Reservation.create(user, schedule, 10000));
 
 		UUID performanceId = performance.getId();
@@ -101,10 +101,10 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void createReview_Forbidden_WhenNoReservation() throws Exception {
 		// given: 사용자, 공연, 일정만 존재 (예매 없음)
 		User user = userRepository.save(User.builder().name("김철수").build());
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
+		Stadium stadium = stadiumRepository.save(StadiumBuilder.builder().withName("부산문화회관").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("오페라의 유령").build());
 		Schedule schedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+			ScheduleBuilder.builder().withPerformance(performance).withStadium(stadium).build());
 
 		UUID performanceId = performance.getId();
 
@@ -124,10 +124,10 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void getReviews_DefaultPagination_AndLikeStatus() throws Exception {
 		// given
 		User viewer = userRepository.save(User.builder().name("관람자").build());
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("세종문화회관").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("리어왕").build());
+		Stadium stadium = stadiumRepository.save(StadiumBuilder.builder().withName("세종문화회관").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("리어왕").build());
 		Schedule schedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
+			ScheduleBuilder.builder().withPerformance(performance).withStadium(stadium).build());
 		// 리뷰는 예매 여부와 무관하게 조회 가능하므로 예매는 필수 아님. 그래도 한 건 넣어둠
 		reservationRepository.save(Reservation.create(viewer, schedule, 12000));
 
@@ -178,7 +178,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void getReviews_CustomPaginationParams() throws Exception {
 		// given
 		User user = userRepository.save(User.builder().name("사용자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("노트르담 드 파리").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("노트르담 드 파리").build());
 
 		User author = userRepository.save(User.builder().name("작성자").build());
 		// 7개 생성
@@ -210,7 +210,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void getReviews_Empty() throws Exception {
 		// given
 		User user = userRepository.save(User.builder().name("게스트").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("무대").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("무대").build());
 
 		UUID performanceId = performance.getId();
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null);
@@ -230,7 +230,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void updateReview_Success() throws Exception {
 		// given: 리뷰 작성자와 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연").build());
 		Review review = reviewRepository.save(Review.builder()
 			.performance(performance)
 			.user(author)
@@ -261,7 +261,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		// given: 작성자와 다른 사용자, 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
 		User other = userRepository.save(User.builder().name("다른사용자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연").build());
 		Review review = reviewRepository.save(Review.builder()
 			.performance(performance)
 			.user(author)
@@ -307,7 +307,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void deleteReview_Success() throws Exception {
 		// given: 리뷰 작성자와 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연").build());
 		Review review = reviewRepository.save(Review.builder()
 			.performance(performance)
 			.user(author)
@@ -330,7 +330,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 		// given: 작성자와 다른 사용자, 리뷰 생성
 		User author = userRepository.save(User.builder().name("작성자").build());
 		User other = userRepository.save(User.builder().name("다른사용자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연").build());
 		Review review = reviewRepository.save(Review.builder()
 			.performance(performance)
 			.user(author)
@@ -367,7 +367,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void toggleLike_FirstTime_LikeOn() throws Exception {
 		// given: 리뷰와 사용자 준비
 		User viewer = userRepository.save(User.builder().name("관람자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연A").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연A").build());
 		User author = userRepository.save(User.builder().name("작성자").build());
 		Review review = reviewRepository.save(
 			Review.builder().performance(performance).user(author).content("content").likeCount(0).build());
@@ -393,7 +393,7 @@ class ReviewControllerTest extends AbstractIntegrationTest {
 	void toggleLike_Twice_TurnsOff() throws Exception {
 		// given
 		User viewer = userRepository.save(User.builder().name("관람자").build());
-		Performance performance = performanceRepository.save(new PerformanceBuilder().withName("공연B").build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().withName("공연B").build());
 		User author = userRepository.save(User.builder().name("작성자").build());
 		Review review = reviewRepository.save(
 			Review.builder().performance(performance).user(author).content("c").likeCount(0).build());

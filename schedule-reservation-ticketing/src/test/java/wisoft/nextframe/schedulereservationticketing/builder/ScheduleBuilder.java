@@ -3,18 +3,25 @@ package wisoft.nextframe.schedulereservationticketing.builder;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ScheduleBuilder {
 
 	private UUID id = UUID.randomUUID();
-	private Performance performance = new PerformanceBuilder().build();
-	private Stadium stadium = new StadiumBuilder().build();
-	private LocalDateTime performanceDatetime = LocalDateTime.of(2025, 10, 26, 19, 30);
-	private LocalDateTime ticketOpenTime = performanceDatetime.minusWeeks(2); // 공연 2주 전
-	private LocalDateTime ticketCloseTime = performanceDatetime.minusHours(1); // 공연 1시간 전
+	private Performance performance;
+	private Stadium stadium;
+	private LocalDateTime performanceDatetime = LocalDateTime.now().plusDays(20);
+	private LocalDateTime ticketOpenTime = LocalDateTime.now().minusDays(10);
+	private LocalDateTime ticketCloseTime = LocalDateTime.now().plusDays(10);
+
+	public static ScheduleBuilder builder() {
+		return new ScheduleBuilder();
+	}
 
 	public ScheduleBuilder withId(UUID id) {
 		this.id = id;

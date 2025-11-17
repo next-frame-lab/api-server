@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-public abstract class AbstractIntegrationTest implements PostgresSQLContainerInitializer {
+public abstract class IntegrationTestContainersConfig implements PostgresSQLContainerInitializer {
 
 	/**
 	 * Testcontainers에 의해 동적으로 시작된 PostgreSQL 컨테이너 접속 정보를

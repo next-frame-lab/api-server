@@ -34,11 +34,11 @@ class PriceCalculatorTest {
 	@DisplayName("좌석들의 총 가격을 정확히 계산한다")
 	void calculateTotalPrice_Success() {
 		// given
-		final Schedule schedule = new ScheduleBuilder().withId(UUID.randomUUID()).build();
+		final Schedule schedule = ScheduleBuilder.builder().withId(UUID.randomUUID()).build();
 
-		final StadiumSection sectionA = new StadiumSectionBuilder().withId(UUID.randomUUID()).build();
-		final StadiumSection sectionB = new StadiumSectionBuilder().withId(UUID.randomUUID()).build();
-		final StadiumSection sectionC = new StadiumSectionBuilder().withId(UUID.randomUUID()).build();
+		final StadiumSection sectionA = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
+		final StadiumSection sectionB = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
+		final StadiumSection sectionC = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
 
 		final SeatDefinition seatA = createSeat(sectionA);
 		final SeatDefinition seatB = createSeat(sectionB);

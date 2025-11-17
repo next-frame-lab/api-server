@@ -9,10 +9,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
+import wisoft.nextframe.schedulereservationticketing.config.IntegrationTestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
 
-class StadiumRepositoryTest extends AbstractIntegrationTest {
+class StadiumRepositoryTest extends IntegrationTestContainersConfig {
 
 	@Autowired
 	private StadiumRepository stadiumRepository;

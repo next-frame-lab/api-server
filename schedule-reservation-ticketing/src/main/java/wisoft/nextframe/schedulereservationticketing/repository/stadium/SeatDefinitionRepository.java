@@ -31,5 +31,4 @@ public interface SeatDefinitionRepository extends JpaRepository<SeatDefinition, 
 	 */
 	@Query("SELECT sd FROM SeatDefinition sd JOIN FETCH sd.stadiumSection WHERE sd.id IN :seatIds")
 	List<SeatDefinition> findWithStadiumSectionByIdIn(@Param("seatIds") List<UUID> seatIds);
-
 }

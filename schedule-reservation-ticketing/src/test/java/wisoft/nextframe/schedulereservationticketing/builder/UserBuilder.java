@@ -1,0 +1,64 @@
+package wisoft.nextframe.schedulereservationticketing.builder;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.entity.user.User;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class UserBuilder {
+
+	private UUID id = null;
+	private String name = "테스트 사용자";
+	private String email = "test@example.com";
+	private LocalDate birthDate = LocalDate.of(1990, 1, 1);
+	private String phoneNumber = "010-1234-5678";
+	private String faceId = "test_face_id";
+	private String imageUrl = "https://example.com/test_image.jpg";
+	private String provider = "kakao";
+
+	public static UserBuilder builder() {
+		return new UserBuilder();
+	}
+
+	public UserBuilder withName(String name) {
+		this.name = name;
+		return this;
+	}
+
+	public UserBuilder withEmail(String email) {
+		this.email = email;
+		return this;
+	}
+
+	public UserBuilder withBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+		return this;
+	}
+
+	public UserBuilder withPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+		return this;
+	}
+
+	public UserBuilder withFaceId(String faceId) {
+		this.faceId = faceId;
+		return this;
+	}
+
+	public UserBuilder withImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+		return this;
+	}
+
+	public UserBuilder withProvider(String provider) {
+		this.provider = provider;
+		return this;
+	}
+
+	public User build() {
+		return new User(id, name, email, birthDate, phoneNumber, faceId, imageUrl, provider);
+	}
+}
