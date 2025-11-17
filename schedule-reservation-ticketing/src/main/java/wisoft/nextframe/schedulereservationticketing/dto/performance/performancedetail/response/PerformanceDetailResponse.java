@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.Builder;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 
 @Builder
 public record PerformanceDetailResponse(

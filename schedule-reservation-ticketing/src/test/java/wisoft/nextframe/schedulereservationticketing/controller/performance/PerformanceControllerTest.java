@@ -1,130 +1,186 @@
 package wisoft.nextframe.schedulereservationticketing.controller.performance;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.PerformancePricingBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.AbstractIntegrationTest;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.StadiumSection;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
-import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticationFilter;
+import wisoft.nextframe.schedulereservationticketing.config.security.SecurityConfig;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.StadiumResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
+import wisoft.nextframe.schedulereservationticketing.service.auth.DynamicAuthService;
+import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
-@AutoConfigureMockMvc
-class PerformanceControllerTest extends AbstractIntegrationTest {
+@WebMvcTest(value = PerformanceController.class,
+	excludeFilters = @ComponentScan.Filter(
+		type = FilterType.ASSIGNABLE_TYPE,
+		classes = {SecurityConfig.class, JwtAuthenticationFilter.class}
+	)
+)
+class PerformanceControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
-	@Autowired
-	private PerformanceRepository performanceRepository;
-	@Autowired
-	private StadiumRepository stadiumRepository;
-	@Autowired
-	private StadiumSectionRepository stadiumSectionRepository;
-	@Autowired
-	private ScheduleRepository scheduleRepository;
-	@Autowired
-	private PerformancePricingRepository performancePricingRepository;
+	@MockitoBean
+	private PerformanceService performanceService;
 
-	@Test
-	@DisplayName("공연 상세 조회 통합 테스트 - 성공 (200 OK)")
-	@WithMockUser
-	void getPerformanceDetail_Success() throws Exception {
-		// given
-		final Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("부산문화회관").build());
-		final StadiumSection section = stadiumSectionRepository.save(
-			new StadiumSectionBuilder().withStadium(stadium).build());
-		final Performance performance = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		final Schedule schedule = scheduleRepository.save(
-			new ScheduleBuilder().withPerformance(performance).withStadium(stadium).build());
-		performancePricingRepository.save(new PerformancePricingBuilder().withSchedule(schedule).withStadiumSection(section).build());
-		final UUID performanceId = performance.getId();
+	@MockitoBean
+	private DynamicAuthService dynamicAuthService;
 
-		// when & then
-		mockMvc.perform(get("/api/v1/performances/{id}", performanceId)
-				.accept(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.code").value("SUCCESS"))
-			.andExpect(jsonPath("$.data.id").value(performanceId.toString()))
-			.andExpect(jsonPath("$.data.name").value("오페라의 유령"))
-			.andExpect(jsonPath("$.data.stadium.name").value("부산문화회관"));
+	@Nested
+	@DisplayName("공연 상세 조회 테스트")
+	class getPerformanceDetailTest {
+
+		@Test
+		@DisplayName("공연 상세 조회 테스트 - 성공 (200 OK)")
+		@WithMockUser
+		void getPerformanceDetail_success() throws Exception {
+			// given
+			UUID performanceId = UUID.randomUUID();
+			String performanceName = "오페라의 유령";
+			String stadiumName = "부산문화회관";
+
+			when(dynamicAuthService.canViewPerformanceDetail(eq(performanceId), any()))
+				.thenReturn(true);
+
+			PerformanceDetailResponse response = createMockPerformanceDetailResponse(
+				performanceId,
+				performanceName,
+				stadiumName
+			);
+
+			when(performanceService.getPerformanceDetail(performanceId)).thenReturn(response);
+
+			// when and then
+			mockMvc.perform(get("/api/v1/performances/{id}", performanceId)
+					.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.code").value("SUCCESS"))
+				.andExpect(jsonPath("$.data.id").value(performanceId.toString()))
+				.andExpect(jsonPath("$.data.name").value("오페라의 유령"))
+				.andExpect(jsonPath("$.data.stadium.name").value("부산문화회관"));
+		}
+
+		@Test
+		@DisplayName("공연 상세 조회 테스트 - 실패 (존재하지 않는 ID, 404 NOT FOUND)")
+		@WithMockUser
+		void getPerformanceDetail_notFound() throws Exception {
+			// given
+			final UUID notExistId = UUID.randomUUID();
+
+			when(dynamicAuthService.canViewPerformanceDetail(eq(notExistId), any()))
+				.thenReturn(true);
+
+			when(performanceService.getPerformanceDetail(notExistId))
+				.thenThrow(new DomainException(ErrorCode.PERFORMANCE_NOT_FOUND));
+
+			// when and then
+			mockMvc.perform(get("/api/v1/performances/{id}", notExistId)
+					.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+		}
+
+		private static PerformanceDetailResponse createMockPerformanceDetailResponse(
+			UUID performanceId,
+			String performanceName,
+			String stadiumName
+		) {
+			return PerformanceDetailResponse.builder()
+				.id(performanceId)
+				.imageUrl("https://example.com/image.jpg")
+				.name(performanceName)
+				.type("MUSICAL")
+				.genre("DRAMA")
+				.averageStar(new BigDecimal("4.5"))
+				.runningTime(150)
+				.description("설명")
+				.adultOnly(false)
+				.ticketOpenTime(LocalDateTime.now().minusDays(10))
+				.ticketCloseTime(LocalDateTime.now().plusDays(10))
+				.stadium(StadiumResponse.builder().id(UUID.randomUUID()).name(stadiumName).address("주소").build())
+				.performanceSchedules(List.of())
+				.seatSectionPrices(List.of())
+				.build();
+		}
 	}
 
-	@Test
-	@DisplayName("공연 상세 조회 통합 테스트 - 실패 (존재하지 않는 ID, 404 NOT FOUND)")
-	@WithMockUser
-	void getPerformanceDetail_NotFound() throws Exception {
-		// given
-		final UUID notExistId = UUID.randomUUID();
+	@Nested
+	@DisplayName("공연 목록 조회 테스트")
+	class getPerformancesTest {
 
-		// when & then
-		mockMvc.perform(get("/api/v1/performances/{id}", notExistId)
-				.accept(MediaType.APPLICATION_JSON))
-			.andExpect(status().isNotFound());
-	}
+		@Test
+		@DisplayName("공연 목록 조회 - 성공 (200 OK)")
+		@WithMockUser
+		void getPerformances_Success() throws Exception {
+			// given
+			UUID id = UUID.randomUUID();
+			PerformanceSummaryResponse summary = new PerformanceSummaryResponse(
+				id,
+				"햄릿",
+				"https://example.com/image2.jpg",
+				PerformanceType.CLASSIC,
+				PerformanceGenre.PLAY,
+				"대전예술의전당",
+				Date.valueOf(LocalDate.of(2025, 9, 1)),
+				Date.valueOf(LocalDate.of(2025, 9, 30)),
+				false
+			);
 
-	@Test
-	@DisplayName("공연 목록 조회 통합 테스트 - 성공 (200 OK)")
-	void getPerformances_Success() throws Exception {
-		// given
-		LocalDateTime now = LocalDateTime.now();
-		Stadium stadium = stadiumRepository.save(new StadiumBuilder().withName("대전예술의전당").build());
+			PaginationResponse pagination = PaginationResponse.builder()
+				.page(0)
+				.size(10)
+				.totalItems(1)
+				.totalPages(1)
+				.hasNext(false)
+				.hasPrevious(false)
+				.build();
 
-		// 시나리오 1: 예매 가능한 공연 (결과에 포함되어야 함)
-		Performance reservablePerf = performanceRepository.save(new PerformanceBuilder().withName("햄릿").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(reservablePerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(10)).withTicketCloseTime(now.plusDays(10))
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 1).atStartOfDay()).build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(reservablePerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(10)).withTicketCloseTime(now.plusDays(10))
-			.withPerformanceDatetime(LocalDate.of(2025, 9, 30).atStartOfDay()).build());
+			PerformanceListResponse listResponse = PerformanceListResponse.builder()
+				.performances(List.of(summary))
+				.pagination(pagination)
+				.build();
 
-		// 시나리오 2: 예매 시작 전 공연 (결과에 포함되면 안 됨)
-		Performance notYetOpenPerf = performanceRepository.save(new PerformanceBuilder().withName("캣츠").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(notYetOpenPerf).withStadium(stadium)
-			.withTicketOpenTime(now.plusDays(1)).withTicketCloseTime(now.plusDays(20)).build());
+			when(performanceService.getPerformanceList(any())).thenReturn(listResponse);
 
-		// 시나리오 3: 예매 마감된 공연 (결과에 포함되면 안 됨)
-		Performance closedPerf = performanceRepository.save(new PerformanceBuilder().withName("오페라의 유령").build());
-		scheduleRepository.save(new ScheduleBuilder()
-			.withPerformance(closedPerf).withStadium(stadium)
-			.withTicketOpenTime(now.minusDays(20)).withTicketCloseTime(now.minusDays(1)).build());
-
-		// when and then
-		mockMvc.perform(get("/api/v1/performances")
-				.param("page", "0").param("size", "10")
-				.accept(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.pagination.totalItems").value(1))
-			.andExpect(jsonPath("$.data.performances", hasSize(1)))
-			.andExpect(jsonPath("$.data.performances[0].name").value("햄릿"))
-			.andExpect(jsonPath("$.data.performances[0].startDate").value("2025-09-01"))
-			.andExpect(jsonPath("$.data.performances[0].endDate").value("2025-09-30"));
+			// when and then
+			mockMvc.perform(get("/api/v1/performances")
+					.param("page", "0").param("size", "10")
+					.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.pagination.totalItems").value(1))
+				.andExpect(jsonPath("$.data.performances", hasSize(1)))
+				.andExpect(jsonPath("$.data.performances[0].name").value("햄릿"))
+				.andExpect(jsonPath("$.data.performances[0].startDate").value("2025-09-01"))
+				.andExpect(jsonPath("$.data.performances[0].endDate").value("2025-09-30"));
+		}
 	}
 }

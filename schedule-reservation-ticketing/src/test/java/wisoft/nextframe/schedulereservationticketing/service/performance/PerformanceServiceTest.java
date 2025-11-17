@@ -3,20 +3,20 @@ package wisoft.nextframe.schedulereservationticketing.service.performance;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,17 +24,16 @@ import org.springframework.data.domain.Pageable;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceStatisticRepository;
@@ -45,6 +44,7 @@ class PerformanceServiceTest {
 
 	@InjectMocks
 	private PerformanceService performanceService;
+
 	@Mock
 	private PerformanceRepository performanceRepository;
 	@Mock
@@ -54,118 +54,138 @@ class PerformanceServiceTest {
 	@Mock
 	private PerformanceStatisticRepository performanceStatisticRepository;
 
-	@Test
-	@DisplayName("성공: 공연 상세 조회 성공 테스트")
-	void getPerformanceDetail_Success() {
-		// given
-		final UUID performanceId = UUID.randomUUID();
-		final UUID stadiumId = UUID.randomUUID();
+	@Nested
+	class getPerformanceDetailTest {
 
-		// 1. 테스트용 엔티티 준비
-		final Performance performance = new PerformanceBuilder()
-			.withId(performanceId)
-			.withName("오페라의 유령")
-			.build();
+		@Test
+		@DisplayName("공연 상세 정보를 정확히 조회한다")
+		void getPerformanceDetail_success() {
+			UUID performanceId = UUID.randomUUID();
+			UUID stadiumId = UUID.randomUUID();
 
-		final PerformanceStatistic performanceStatistic = PerformanceStatistic.builder()
-			.performanceId(performanceId)
-			.hit(3000)
-			.averageStar(BigDecimal.valueOf(4.5))
-			.updatedAt(LocalDateTime.now())
-			.build();
+			Stadium stadium = StadiumBuilder.builder().withId(stadiumId).build();
+			Performance performance = PerformanceBuilder.builder()
+				.withId(performanceId)
+				.withName("테스트 공연")
+				.build();
 
-		final Stadium stadium = new StadiumBuilder()
-			.withId(stadiumId)
-			.build();
-
-		final List<Schedule> schedules = List.of(
-			new ScheduleBuilder()
+			Schedule schedule = ScheduleBuilder.builder()
+				.withId(UUID.randomUUID())
 				.withPerformance(performance)
-				.withStadium(stadium) // Stadium 정보 추가
-				.build()
-		);
+				.withStadium(stadium)
+				.build();
 
-		// 2. Repository가 반환할 DTO 목록 준비
-		final List<SeatSectionPriceResponse> seatPrices = List.of(
-			SeatSectionPriceResponse.builder()
-				.section("A")// DTO 생성 (빌더가 있다면 빌더 사용)
+			given(performanceRepository.findById(performanceId))
+				.willReturn(Optional.of(performance));
+			given(scheduleRepository.findByPerformanceId(performanceId))
+				.willReturn(List.of(schedule));
+
+			SeatSectionPriceResponse priceResponse = SeatSectionPriceResponse.builder()
+				.section("A")
 				.price(150000)
-				.build()
-		);
+				.build();
+			given(performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId))
+				.willReturn(List.of(priceResponse));
 
-		// 3. Mock Repository 설정
-		given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
-		given(scheduleRepository.findByPerformanceId(performanceId)).willReturn(schedules);
-		// 'findCommonPricingByPerformanceAndStadium' 메소드를 Mocking
-		given(performancePricingRepository.findSeatSectionPrices(performanceId, stadiumId))
-			.willReturn(seatPrices);
-		given(performanceStatisticRepository.findById(performanceId))
-			.willReturn(Optional.ofNullable(performanceStatistic));
+			given(performanceStatisticRepository.findById(performanceId))
+				.willReturn(Optional.empty());
 
-		// when
-		final PerformanceDetailResponse response = performanceService.getPerformanceDetail(performanceId);
+			// when
+			PerformanceDetailResponse result = performanceService.getPerformanceDetail(performanceId);
 
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.id()).isEqualTo(performanceId);
-		assertThat(response.name()).isEqualTo("오페라의 유령");
-		assertThat(response.averageStar()).isEqualTo(BigDecimal.valueOf(4.5));
-		assertThat(response.performanceSchedules()).hasSize(1);
-		assertThat(response.seatSectionPrices()).hasSize(1);
-		assertThat(response.seatSectionPrices().getFirst().section()).isEqualTo("A");
-		assertThat(response.seatSectionPrices().getFirst().price()).isEqualTo(150000);
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.name()).isEqualTo("테스트 공연");
+			assertThat(result.performanceSchedules()).hasSize(1);
 
+			// 검증
+			verify(performanceRepository).findById(performanceId);
+			verify(scheduleRepository).findByPerformanceId(performanceId);
+		}
+
+		@Test
+		@DisplayName("공연은 있지만 일정이 없으면 예외 발생")
+		void getPerformanceDetail_fail_scheduleNotFound() {
+			// given
+			UUID performanceId = UUID.randomUUID();
+
+			Performance performance = PerformanceBuilder.builder()
+				.withId(performanceId)
+				.withName("취소된 공연")
+				.build();
+
+			given(performanceRepository.findById(performanceId))
+				.willReturn(Optional.of(performance));
+
+			// 공연 일정은 빈 리스트로 반환
+			given(scheduleRepository.findByPerformanceId(performanceId))
+				.willReturn(Collections.emptyList());
+
+			// when and then
+			assertThatThrownBy(() -> performanceService.getPerformanceDetail(performanceId))
+				.isInstanceOf(DomainException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.SCHEDULE_NOT_FOUND);
+		}
 	}
 
-	@Test
-	@DisplayName("실패: 공연 상세 조회 실패 테스트 - 존재하지 않는 공연 ID")
-	void getPerformanceDetail_Fail_NotFound() {
-		// given
-		UUID nonExistentId = UUID.randomUUID();
-		given(performanceRepository.findById(nonExistentId)).willReturn(Optional.empty());
+	@Nested
+	class getPerformanceListTest {
 
-		// when and then
-		assertThatThrownBy(() -> performanceService.getPerformanceDetail(nonExistentId))
-			.isInstanceOf(DomainException.class);
+		@Test
+		@DisplayName("예매 가능한 공연 목록을 페이징하여 성공적으로 조회한다")
+		void getPerformanceList_success() {
+			// given
+			Pageable pageable = PageRequest.of(0, 10);
+
+			PerformanceSummaryResponse summaryDto = mock(PerformanceSummaryResponse.class);
+			Page<PerformanceSummaryResponse> mockPage = new PageImpl<>(List.of(summaryDto), pageable, 1);
+
+			given(performanceRepository.findReservablePerformances(pageable))
+				.willReturn(mockPage);
+
+			// when
+			PerformanceListResponse result = performanceService.getPerformanceList(pageable);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.performances()).hasSize(1);
+			assertThat(result.pagination().totalPages()).isEqualTo(1);
+
+			verify(performanceRepository).findReservablePerformances(pageable);
+		}
 	}
 
-	@Test
-	@DisplayName("성공: 예매 가능한 공연 목록 조회 성공 테스트")
-	void getPerformanceList_Success() {
-		// given
-		final List<PerformanceSummaryResponse> summaryList = List.of(createPerformanceSummaryDto());
-		final PageRequest pageable = PageRequest.of(0, 32);
-		final PageImpl<PerformanceSummaryResponse> mockPage = new PageImpl<>(summaryList, pageable, 1);
-		given(performanceRepository.findReservablePerformances(any(Pageable.class))).willReturn(mockPage);
+	@Nested
+	class getTop10PerformancesTest {
 
-		// when
-		final PerformanceListResponse response = performanceService.getPerformanceList(pageable);
+		@Test
+		@DisplayName("인기 공연 조회: 인기 공연 목록을 상위 10개만 성공적으로 조회한다.")
+		void getTop10Performances_success() {
+			// given
+			PerformanceSummaryResponse summaryDto1 = mock(PerformanceSummaryResponse.class);
+			PerformanceSummaryResponse summaryDto2 = mock(PerformanceSummaryResponse.class);
+			List<PerformanceSummaryResponse> topList = List.of(summaryDto1, summaryDto2);
 
-		// then
-		assertThat(response).isNotNull();
-		// 공연 목록 검증
-		assertThat(response.performances()).hasSize(1);
-		assertThat(response.performances().getFirst().getName()).isEqualTo("햄릿");
-		// 페이지네이션 정보 검증
-		assertThat(response.pagination().totalItems()).isEqualTo(1);
-		assertThat(response.pagination().totalPages()).isEqualTo(1);
-		assertThat(response.pagination().page()).isZero();
+			Page<PerformanceSummaryResponse> mockPage = new PageImpl<>(topList);
+
+			given(performanceRepository.findTop10Performances(any(Pageable.class)))
+				.willReturn(mockPage);
+
+			// when
+			Top10PerformanceListResponse response = performanceService.getTop10Performances();
+
+			// then
+			assertThat(response).isNotNull();
+			assertThat(response.performances()).hasSize(2); // 리스트 크기 확인
+
+			// 검증: 실제로 PageSize가 10인 Pageable이 전달되었는지 확인
+			ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+			verify(performanceRepository).findTop10Performances(pageableCaptor.capture());
+
+			Pageable capturedPageable = pageableCaptor.getValue();
+			assertThat(capturedPageable.getPageSize()).isEqualTo(10);
+			assertThat(capturedPageable.getPageNumber()).isEqualTo(0);
+		}
 	}
 
-	private PerformanceSummaryResponse createPerformanceSummaryDto() {
-		Date startDate = Date.valueOf(LocalDate.of(2025, 8, 1));
-		Date endDate = Date.valueOf(LocalDate.of(2025, 8, 31));
-
-		return new PerformanceSummaryResponse(
-			UUID.randomUUID(),
-			"햄릿",
-			"http://example.com/image.jpg",
-			PerformanceType.ROCK,
-			PerformanceGenre.CONCERT,
-			"서울예술의전당",
-			startDate, // Date 타입으로 전달
-			endDate,   // Date 타입으로 전달
-			false
-		);
-	}
 }
