@@ -4,16 +4,23 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PerformanceStatisticBuilder {
 
-	private UUID performanceId; // 선택: 필요 시 직접 지정
-	private Performance performance; // 보통 이 경로 사용
+	private UUID performanceId = null;
 	private Integer hit = 0;
 	private BigDecimal averageStar = BigDecimal.ZERO;
 	private LocalDateTime updatedAt = LocalDateTime.now();
+	private Performance performance;
+
+	public static PerformanceStatisticBuilder builder() {
+		return new PerformanceStatisticBuilder();
+	}
 
 	public PerformanceStatisticBuilder withPerformance(Performance performance) {
 		this.performance = performance;
@@ -30,29 +37,17 @@ public class PerformanceStatisticBuilder {
 		return this;
 	}
 
-	public PerformanceStatisticBuilder withAverageStar(BigDecimal star) {
-		this.averageStar = star;
+	public PerformanceStatisticBuilder withAverageStar(BigDecimal averageStar) {
+		this.averageStar = averageStar;
 		return this;
 	}
 
-	public PerformanceStatisticBuilder withUpdatedAt(LocalDateTime t) {
-		this.updatedAt = t;
+	public PerformanceStatisticBuilder withUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
 		return this;
 	}
 
 	public PerformanceStatistic build() {
-		PerformanceStatistic.PerformanceStatisticBuilder b = PerformanceStatistic.builder()
-			.hit(hit)
-			.averageStar(averageStar)
-			.updatedAt(updatedAt);
-
-		if (performance != null) {
-			b.performance(performance);
-		}
-		if (performanceId != null) {
-			b.performanceId(performanceId);
-		}
-
-		return b.build();
+		return new PerformanceStatistic(performanceId, hit, averageStar, updatedAt, performance);
 	}
 }

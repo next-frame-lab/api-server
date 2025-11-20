@@ -34,6 +34,8 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PaginationResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre;
+import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType;
 import wisoft.nextframe.schedulereservationticketing.service.auth.DynamicAuthService;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
@@ -142,8 +144,8 @@ class PerformanceControllerTest {
 			id,
 			"햄릿",
 			"https://example.com/image2.jpg",
-			wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceType.CLASSIC,
-			wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceGenre.PLAY,
+			PerformanceType.CLASSIC,
+			PerformanceGenre.PLAY,
 			"대전예술의전당",
 			Date.valueOf(LocalDate.of(2025, 9, 1)),
 			Date.valueOf(LocalDate.of(2025, 9, 30)),
