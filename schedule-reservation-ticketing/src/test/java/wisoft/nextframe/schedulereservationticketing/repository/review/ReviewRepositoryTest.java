@@ -21,8 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ReviewBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.UserBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.DataJpaTestContainersConfig;
-import wisoft.nextframe.schedulereservationticketing.config.DbConfig;
+import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewItemResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
@@ -32,8 +31,8 @@ import wisoft.nextframe.schedulereservationticketing.repository.performance.Perf
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 @DataJpaTest
-@Import({DbConfig.class, DataJpaTestContainersConfig.class})
 @ActiveProfiles("test")
+@Import(TestContainersConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ReviewRepositoryTest {
 

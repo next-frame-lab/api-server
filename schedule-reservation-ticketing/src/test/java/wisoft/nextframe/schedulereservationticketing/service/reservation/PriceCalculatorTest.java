@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
+import wisoft.nextframe.schedulereservationticketing.builder.SeatDefinitionBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformancePricing;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
@@ -36,9 +37,9 @@ class PriceCalculatorTest {
 		// given
 		final Schedule schedule = ScheduleBuilder.builder().withId(UUID.randomUUID()).build();
 
-		final StadiumSection sectionA = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
-		final StadiumSection sectionB = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
-		final StadiumSection sectionC = StadiumSectionBuilder.builder().withId(UUID.randomUUID()).build();
+		final StadiumSection sectionA = StadiumSectionBuilder.builder().build();
+		final StadiumSection sectionB = StadiumSectionBuilder.builder().build();
+		final StadiumSection sectionC = StadiumSectionBuilder.builder().build();
 
 		final SeatDefinition seatA = createSeat(sectionA);
 		final SeatDefinition seatB = createSeat(sectionB);
@@ -65,11 +66,8 @@ class PriceCalculatorTest {
 	}
 
 	private SeatDefinition createSeat(StadiumSection section) {
-		return SeatDefinition.builder()
-			.id(UUID.randomUUID())
-			.rowNo(1)
-			.columnNo(1)
-			.stadiumSection(section)
+		return SeatDefinitionBuilder.builder()
+			.withStadiumSection(section)
 			.build();
 	}
 

@@ -12,16 +12,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.IntegrationTestContainersConfig;
+import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewCreateRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewUpdateRequest;
@@ -41,7 +45,11 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumR
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 @AutoConfigureMockMvc
-class ReviewControllerTest extends IntegrationTestContainersConfig {
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@Import(TestContainersConfig.class)
+class ReviewControllerTest {
 
 	@Autowired
 	private ReviewRepository reviewRepository;

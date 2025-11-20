@@ -13,7 +13,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 public class OAuthService {
 
 	private final KakaoApiClient kakaoApiClient;
-	private final OAuthSigninService oAuthSiginService;
+	private final OAuthSigninService oAuthSigninService;
 
 	public SigninResponse kakaoSignin(String provider, String authCode) {
 		log.debug("카카오 Access Token 요청 시작.");
@@ -22,6 +22,6 @@ public class OAuthService {
 		final KakaoUserInfoResponse userInfo = kakaoApiClient.getKakaoUserInfo(kakaoAccessToken);
 		log.debug("카카오 사용자 정보 수신 완료. email: {}", userInfo.getKakaoAccount().getEmail());
 
-		return oAuthSiginService.processUserSignin(provider, userInfo);
+		return oAuthSigninService.processUserSignin(provider, userInfo);
 	}
 }

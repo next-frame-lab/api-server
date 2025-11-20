@@ -22,8 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.SeatDefinitionBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.DataJpaTestContainersConfig;
-import wisoft.nextframe.schedulereservationticketing.config.DbConfig;
+import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
@@ -32,8 +31,8 @@ import wisoft.nextframe.schedulereservationticketing.repository.performance.Perf
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 
 @DataJpaTest
-@Import({DbConfig.class, DataJpaTestContainersConfig.class})
 @ActiveProfiles("test")
+@Import(TestContainersConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SeatDefinitionRepositoryTest {
 
@@ -49,38 +48,35 @@ class SeatDefinitionRepositoryTest {
 	private ScheduleRepository scheduleRepository;
 
 	private Stadium targetStadium;
-	private Stadium otherStadium;
 	private List<SeatDefinition> expectedSeats;
 
 	private SeatDefinition seat_A_1_1;
 	private SeatDefinition seat_A_1_2;
-	private SeatDefinition seat_A_2_1;
 	private SeatDefinition seat_B_1_1;
-	private SeatDefinition seat_B_1_2;
 
 	@BeforeEach
 	void setUp() {
-		targetStadium = stadiumRepository.save(StadiumBuilder.builder().build());
-		otherStadium = stadiumRepository.save(StadiumBuilder.builder().build());
+		targetStadium = stadiumRepository.save(StadiumBuilder.builder().withName("공연장1").build());
+		Stadium otherStadium = stadiumRepository.save(StadiumBuilder.builder().withName("공연장2").build());
 
-		final Performance performance = performanceRepository.save(PerformanceBuilder.builder().build());
+		Performance performance = performanceRepository.save(PerformanceBuilder.builder().build());
 		scheduleRepository.save(ScheduleBuilder.builder().withStadium(targetStadium).withPerformance(performance).build());
 
-		final StadiumSection sectionA = stadiumSectionRepository.save(
+		StadiumSection sectionA = stadiumSectionRepository.save(
 			StadiumSectionBuilder.builder().withStadium(targetStadium).withSectionName("A").build());
-		final StadiumSection sectionB = stadiumSectionRepository.save(
+		StadiumSection sectionB = stadiumSectionRepository.save(
 			StadiumSectionBuilder.builder().withStadium(targetStadium).withSectionName("B").build());
 
-		final StadiumSection sectionC_Other = stadiumSectionRepository.save(
+		StadiumSection sectionC_Other = stadiumSectionRepository.save(
 			StadiumSectionBuilder.builder().withStadium(otherStadium).withSectionName("C").build());
 
 		seat_A_1_2 = seatDefinitionRepository.save(
 			SeatDefinitionBuilder.builder().withStadiumSection(sectionA).withRowNo(1).withColumnNo(2).build());
-		seat_A_2_1 = seatDefinitionRepository.save(
+		SeatDefinition seat_A_2_1 = seatDefinitionRepository.save(
 			SeatDefinitionBuilder.builder().withStadiumSection(sectionA).withRowNo(2).withColumnNo(1).build());
 		seat_B_1_1 = seatDefinitionRepository.save(
 			SeatDefinitionBuilder.builder().withStadiumSection(sectionB).withRowNo(1).withColumnNo(1).build());
-		seat_B_1_2 = seatDefinitionRepository.save(
+		SeatDefinition seat_B_1_2 = seatDefinitionRepository.save(
 			SeatDefinitionBuilder.builder().withStadiumSection(sectionB).withRowNo(1).withColumnNo(2).build());
 		seat_A_1_1 = seatDefinitionRepository.save(
 			SeatDefinitionBuilder.builder().withStadiumSection(sectionA).withRowNo(1).withColumnNo(1).build());
@@ -106,10 +102,10 @@ class SeatDefinitionRepositoryTest {
 		@DisplayName("특정 공연장 ID로 모든 좌석 정보를 구역, 행, 열 순으로 오름차순 정렬하여 조회한다")
 		void findAllByStadiumIdWithSorting_SuccessAndOrderCheck() {
 			// given
-			final UUID stadiumId = targetStadium.getId();
+			UUID stadiumId = targetStadium.getId();
 
 			// when
-			final List<SeatDefinition> resultList = seatDefinitionRepository.findAllByStadiumIdWithSorting(stadiumId);
+			List<SeatDefinition> resultList = seatDefinitionRepository.findAllByStadiumIdWithSorting(stadiumId);
 
 			// then
 			// 조회된 결과의 크기가 공연장의 속한 좌석의 수와 일치하는지 검증
@@ -133,10 +129,10 @@ class SeatDefinitionRepositoryTest {
 		@DisplayName("존재하지 않은 공연장 ID로 조회 시, 빈 목록을 반환한다")
 		void findAllByStadiumIdWithSorting_NotFound() {
 			// given
-			final UUID nonExistentStadiumId = UUID.randomUUID();
+			UUID nonExistentStadiumId = UUID.randomUUID();
 
 			// when
-			final List<SeatDefinition> resultList = seatDefinitionRepository.findAllByStadiumIdWithSorting(
+			List<SeatDefinition> resultList = seatDefinitionRepository.findAllByStadiumIdWithSorting(
 				nonExistentStadiumId);
 
 			// then
@@ -151,17 +147,17 @@ class SeatDefinitionRepositoryTest {
 		@DisplayName("여러 좌석 ID에 해당하는 좌석 정보를 조회한다")
 		void findWithStadiumSectionByIdIn_SuccessAndFetchJoinCheck() {
 			// given
-			final List<UUID> targetSeatIds = List.of(seat_A_1_1.getId(), seat_B_1_1.getId());
+			List<UUID> targetSeatIds = List.of(seat_A_1_1.getId(), seat_B_1_1.getId());
 
 			// when
-			final List<SeatDefinition> resultList = seatDefinitionRepository.findWithStadiumSectionByIdIn(targetSeatIds);
+			List<SeatDefinition> resultList = seatDefinitionRepository.findWithStadiumSectionByIdIn(targetSeatIds);
 
 			// then
 			// 결과 크기 검증
 			assertThat(resultList).hasSize(2);
 
 			// 반환된 ID 목록 검증
-			final List<UUID> resultIds = resultList.stream().map(SeatDefinition::getId).toList();
+			List<UUID> resultIds = resultList.stream().map(SeatDefinition::getId).toList();
 			assertThat(resultIds).containsExactlyElementsOf(targetSeatIds);
 		}
 
@@ -169,11 +165,11 @@ class SeatDefinitionRepositoryTest {
 		@DisplayName("요청된 좌석 ID 목록에 존재하지 않는 ID가 포함되어도 존재하는 좌석만 조회된다")
 		void findWithStadiumSectionByIdIn_PartialMatch() {
 			// given
-			final UUID nonExistentId = UUID.randomUUID();
-			final List<UUID> targetSeatIds = List.of(seat_A_1_2.getId(), nonExistentId);
+			UUID nonExistentId = UUID.randomUUID();
+			List<UUID> targetSeatIds = List.of(seat_A_1_2.getId(), nonExistentId);
 
 			// when
-			final List<SeatDefinition> resultList = seatDefinitionRepository.findWithStadiumSectionByIdIn(targetSeatIds);
+			List<SeatDefinition> resultList = seatDefinitionRepository.findWithStadiumSectionByIdIn(targetSeatIds);
 
 			// then
 			// 결과 크기는 존재하는 좌석 수인 1개여야 한다.

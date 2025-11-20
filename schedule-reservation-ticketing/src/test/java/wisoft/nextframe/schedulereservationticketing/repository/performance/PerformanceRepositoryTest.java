@@ -22,8 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.PerformanceStatisticBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.DataJpaTestContainersConfig;
-import wisoft.nextframe.schedulereservationticketing.config.DbConfig;
+import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
@@ -31,8 +30,8 @@ import wisoft.nextframe.schedulereservationticketing.repository.schedule.Schedul
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumRepository;
 
 @DataJpaTest
-@Import({DbConfig.class, DataJpaTestContainersConfig.class})
 @ActiveProfiles("test")
+@Import(TestContainersConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class PerformanceRepositoryTest {
 
@@ -208,7 +207,7 @@ class PerformanceRepositoryTest {
 			);
 
 			performanceStatisticRepository.save(
-				new PerformanceStatisticBuilder()
+				PerformanceStatisticBuilder.builder()
 					.withPerformance(performance)
 					.withHit(hit)
 					.build()

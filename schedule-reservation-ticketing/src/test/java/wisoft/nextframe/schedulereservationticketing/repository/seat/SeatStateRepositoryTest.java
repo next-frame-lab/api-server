@@ -23,8 +23,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.SeatDefinitionBuild
 import wisoft.nextframe.schedulereservationticketing.builder.SeatStateBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumSectionBuilder;
-import wisoft.nextframe.schedulereservationticketing.config.DataJpaTestContainersConfig;
-import wisoft.nextframe.schedulereservationticketing.config.DbConfig;
+import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
@@ -38,8 +37,8 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumR
 import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumSectionRepository;
 
 @DataJpaTest
-@Import({DbConfig.class, DataJpaTestContainersConfig.class})
 @ActiveProfiles("test")
+@Import(TestContainersConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SeatStateRepositoryTest {
 
