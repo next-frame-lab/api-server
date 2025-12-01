@@ -176,7 +176,7 @@ class SeatDefinitionRepositoryTest {
 			assertThat(resultList).hasSize(1);
 
 			// 반환된 좌석의 ID는 존재하는 ID와 일치해야 한다.
-			assertThat(resultList.get(0).getId()).isEqualTo(seat_A_1_2.getId());
+			assertThat(resultList.getFirst().getId()).isEqualTo(seat_A_1_2.getId());
 		}
 	}
 }

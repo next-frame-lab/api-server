@@ -26,11 +26,6 @@ public class ReviewBuilder {
 		return new ReviewBuilder();
 	}
 
-	public ReviewBuilder withId(UUID id) {
-		this.id = id;
-		return this;
-	}
-
 	public ReviewBuilder withPerformance(Performance performance) {
 		this.performance = performance;
 		return this;
@@ -38,31 +33,6 @@ public class ReviewBuilder {
 
 	public ReviewBuilder withUser(User user) {
 		this.user = user;
-		return this;
-	}
-
-	public ReviewBuilder withContent(String content) {
-		this.content = content;
-		return this;
-	}
-
-	public ReviewBuilder withStar(BigDecimal star) {
-		this.star = star;
-		return this;
-	}
-
-	public ReviewBuilder withLikeCount(Integer likeCount) {
-		this.likeCount = likeCount;
-		return this;
-	}
-
-	public ReviewBuilder withCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-		return this;
-	}
-
-	public ReviewBuilder withUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
 		return this;
 	}
 

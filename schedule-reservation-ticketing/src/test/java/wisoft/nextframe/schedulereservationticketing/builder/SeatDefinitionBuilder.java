@@ -19,11 +19,6 @@ public class SeatDefinitionBuilder {
 		return new SeatDefinitionBuilder();
 	}
 
-	public SeatDefinitionBuilder withId(UUID id) {
-		this.id = id;
-		return this;
-	}
-
 	public SeatDefinitionBuilder withRowNo(Integer rowNo) {
 		this.rowNo = rowNo;
 		return this;

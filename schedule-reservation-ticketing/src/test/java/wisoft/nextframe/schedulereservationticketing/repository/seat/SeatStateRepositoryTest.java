@@ -60,9 +60,6 @@ class SeatStateRepositoryTest {
 	private SeatDefinition seat1;
 	private SeatDefinition seat2;
 
-	private SeatState seatState1;
-	private SeatState seatState2;
-
 	@BeforeEach
 	void setUp() {
 		Stadium stadium = stadiumRepository.save(StadiumBuilder.builder().build());
@@ -87,7 +84,7 @@ class SeatStateRepositoryTest {
 				.build()
 		);
 
-		seatState1 = seatStateRepository.save(
+		seatStateRepository.save(
 			SeatStateBuilder.builder()
 				.withScheduleId(schedule.getId())
 				.withSeatId(seat1.getId())
@@ -96,7 +93,7 @@ class SeatStateRepositoryTest {
 				.withIsLocked(false)
 				.build()
 		);
-		seatState2 = seatStateRepository.save(
+		seatStateRepository.save(
 			SeatStateBuilder.builder()
 				.withScheduleId(schedule.getId())
 				.withSeatId(seat2.getId())

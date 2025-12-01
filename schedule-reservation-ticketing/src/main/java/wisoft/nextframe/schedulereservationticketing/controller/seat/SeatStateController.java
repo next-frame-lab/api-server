@@ -19,7 +19,7 @@ import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateServi
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/schedules")
-public class SeatController {
+public class SeatStateController {
 
 	private final SeatStateService seatStateService;
 

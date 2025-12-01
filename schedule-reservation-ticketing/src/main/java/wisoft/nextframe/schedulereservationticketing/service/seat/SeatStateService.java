@@ -9,8 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
+import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @Slf4j
@@ -20,9 +23,13 @@ import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRe
 public class SeatStateService {
 	
 	private final SeatStateRepository seatStateRepository;
+	private final ScheduleRepository scheduleRepository;
 
 	@Cacheable(cacheNames = "seatStates", key = "#scheduleId")
 	public SeatStateListResponse getSeatStates(UUID scheduleId) {
+		scheduleRepository.findById(scheduleId)
+			.orElseThrow(() -> new DomainException(ErrorCode.SCHEDULE_NOT_FOUND));
+
 		// 1. 공연 일정(scheduleId)에 해당하는 잠긴(예약된) 좌석 엔티티 목록을 조회합니다.
 		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId);
 		log.debug("DB에서 잠긴 좌석 조회 완료. count: {}", seatStates.size());

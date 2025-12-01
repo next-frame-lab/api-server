@@ -28,33 +28,8 @@ public class UserBuilder {
 		return this;
 	}
 
-	public UserBuilder withEmail(String email) {
-		this.email = email;
-		return this;
-	}
-
 	public UserBuilder withBirthDate(LocalDate birthDate) {
 		this.birthDate = birthDate;
-		return this;
-	}
-
-	public UserBuilder withPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-		return this;
-	}
-
-	public UserBuilder withFaceId(String faceId) {
-		this.faceId = faceId;
-		return this;
-	}
-
-	public UserBuilder withImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
-		return this;
-	}
-
-	public UserBuilder withProvider(String provider) {
-		this.provider = provider;
 		return this;
 	}
 
