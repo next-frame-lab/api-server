@@ -27,23 +27,8 @@ public class PerformanceStatisticBuilder {
 		return this;
 	}
 
-	public PerformanceStatisticBuilder withPerformanceId(UUID id) {
-		this.performanceId = id;
-		return this;
-	}
-
 	public PerformanceStatisticBuilder withHit(int hit) {
 		this.hit = hit;
-		return this;
-	}
-
-	public PerformanceStatisticBuilder withAverageStar(BigDecimal averageStar) {
-		this.averageStar = averageStar;
-		return this;
-	}
-
-	public PerformanceStatisticBuilder withUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
 		return this;
 	}
 

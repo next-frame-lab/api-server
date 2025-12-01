@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,20 +14,19 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import wisoft.nextframe.schedulereservationticketing.builder.SeatStateBuilder;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
+import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
+import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @SpringBootTest(classes = {
 	SeatStateService.class,
-	SeatStateServiceTest.TestConfig.class,
 	CacheAutoConfiguration.class
 })
 @EnableCaching
@@ -35,17 +35,11 @@ public class SeatStateServiceTest {
 	@Autowired
 	private SeatStateService seatStateService;
 
-	@Autowired
+	@MockitoBean
 	private SeatStateRepository seatStateRepository;
 
-	@TestConfiguration
-	static class TestConfig {
-		@Bean
-		@Primary
-		public SeatStateRepository seatStateRepository() {
-			return Mockito.mock(SeatStateRepository.class);
-		}
-	}
+	@MockitoBean
+	private ScheduleRepository scheduleRepository;
 
 	@Nested
 	class getSeatStatesTest {
@@ -62,6 +56,10 @@ public class SeatStateServiceTest {
 				.withIsLocked(true)
 				.withSeat(mockSeatDefinition)
 				.build();
+
+			Schedule mockSchedule = Mockito.mock(Schedule.class);
+			given(scheduleRepository.findById(scheduleId))
+				.willReturn(Optional.of(mockSchedule));
 
 			given(seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId))
 				.willReturn(List.of(seatState));

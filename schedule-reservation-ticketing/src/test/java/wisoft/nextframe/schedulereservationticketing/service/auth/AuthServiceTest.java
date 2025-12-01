@@ -136,7 +136,7 @@ class AuthServiceTest {
 		given(jwtTokenProvider.getUserIdFromToken(expiredToken))
 			.willThrow(expiredException);
 
-		// when & then
+		// when and then
 		assertThatThrownBy(() -> authService.reissueToken(expiredToken))
 			.isInstanceOf(DomainException.class)
 			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.EXPIRED_REFRESH_TOKEN);

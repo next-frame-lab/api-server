@@ -84,7 +84,6 @@ class ReviewServiceTest {
 				.createdAt(LocalDateTime.now())
 				.build();
 
-			// Mock 객체들의 행동을 정의
 			given(userRepository.findById(userId)).willReturn(Optional.of(user));
 			given(performanceRepository.findById(performanceId)).willReturn(Optional.of(performance));
 			given(reviewRepository.existsByPerformanceAndUser(performance, user)).willReturn(false); // 중복 리뷰 없음

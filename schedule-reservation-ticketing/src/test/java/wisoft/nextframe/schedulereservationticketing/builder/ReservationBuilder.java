@@ -28,11 +28,6 @@ public class ReservationBuilder {
 		return new ReservationBuilder();
 	}
 
-	public ReservationBuilder withId(UUID id) {
-		this.id = id;
-		return this;
-	}
-
 	public ReservationBuilder withUser(User user) {
 		this.user = user;
 		return this;
@@ -43,21 +38,7 @@ public class ReservationBuilder {
 		return this;
 	}
 
-	public ReservationBuilder withTotalPrice(Integer totalPrice) {
-		this.totalPrice = totalPrice;
-		return this;
-	}
-
-	public ReservationBuilder withStatus(ReservationStatus status) {
-		this.status = status;
-		return this;
-	}
-
 	public Reservation build() {
-		if (user == null || schedule == null) {
-			throw new IllegalStateException("User and Schedule are required for ReservationBuilder.");
-		}
-
 		return new Reservation(id, user, schedule, totalPrice, status, reservedAt, reservationSeats);
 	}
 }

@@ -23,11 +23,6 @@ public class StadiumSectionBuilder {
 		return this;
 	}
 
-	public StadiumSectionBuilder withId(UUID id) {
-		this.id = id;
-		return this;
-	}
-
 	public StadiumSectionBuilder withSectionName(String section) {
 		this.section = section;
 		return this;

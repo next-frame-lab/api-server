@@ -163,7 +163,7 @@ class ReservationServiceTest {
 			given(reservationExecutor.executeReservation(any(), any(), any(), anyInt()))
 				.willThrow(new OptimisticLockingFailureException("Mock Concurrency Error"));
 
-			// when & then
+			// when and then
 			assertThatThrownBy(() -> reservationService.reserveSeat(userId, request))
 				.isInstanceOf(DomainException.class)
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.SEAT_ALREADY_LOCKED);

@@ -3,6 +3,7 @@ package wisoft.nextframe.schedulereservationticketing.service.auth;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -10,6 +11,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoTokenResponse;
@@ -18,6 +20,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoRespo
 /**
  * 카카오 인증 서버 및 API 서버와 통신을 전담하는 클래스
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class KakaoApiClient {
@@ -46,6 +49,15 @@ public class KakaoApiClient {
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 			.body(body)
 			.retrieve()
+			.onStatus(HttpStatusCode::is5xxServerError, (request, responseObj) -> {
+				log.error("Kakao Server Error: {}", new String(responseObj.getBody().readAllBytes()));
+				throw new DomainException(ErrorCode.KAKAO_SERVER_ERROR); // 502 Bad Gateway
+			})
+			.onStatus(HttpStatusCode::is4xxClientError, (request, responseObj) -> {
+				String errorBody = new String(responseObj.getBody().readAllBytes());
+				log.warn("Kakao Client Error: {}", errorBody);
+				throw new DomainException(ErrorCode.INVALID_KAKAO_AUTH_CODE);
+			})
 			.body(KakaoTokenResponse.class);
 
 		if (response == null) {
