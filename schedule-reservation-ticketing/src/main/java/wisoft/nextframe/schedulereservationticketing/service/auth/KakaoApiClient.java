@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
@@ -50,11 +51,11 @@ public class KakaoApiClient {
 			.body(body)
 			.retrieve()
 			.onStatus(HttpStatusCode::is5xxServerError, (request, responseObj) -> {
-				log.error("Kakao Server Error: {}", new String(responseObj.getBody().readAllBytes()));
+				log.error("Kakao Server Error: {}", new String(responseObj.getBody().readAllBytes(), StandardCharsets.UTF_8));
 				throw new DomainException(ErrorCode.KAKAO_SERVER_ERROR); // 502 Bad Gateway
 			})
 			.onStatus(HttpStatusCode::is4xxClientError, (request, responseObj) -> {
-				String errorBody = new String(responseObj.getBody().readAllBytes());
+				String errorBody = new String(responseObj.getBody().readAllBytes(), StandardCharsets.UTF_8);
 				log.warn("Kakao Client Error: {}", errorBody);
 				throw new DomainException(ErrorCode.INVALID_KAKAO_AUTH_CODE);
 			})

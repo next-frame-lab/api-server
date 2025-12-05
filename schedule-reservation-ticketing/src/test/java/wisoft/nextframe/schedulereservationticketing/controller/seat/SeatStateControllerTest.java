@@ -24,7 +24,7 @@ import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticatio
 import wisoft.nextframe.schedulereservationticketing.config.security.SecurityConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateResponse;
-import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
+import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateFacade;
 
 @WebMvcTest(value = SeatStateController.class,
 	excludeFilters = @ComponentScan.Filter(
@@ -39,7 +39,7 @@ class SeatStateControllerTest {
 	private MockMvc mockMvc;
 
 	@MockitoBean
-	private SeatStateService seatStateService;
+	private SeatStateFacade seatStateFacade;
 
 	@Test
 	@DisplayName("좌석 상태 조회 성공: 200 OK와 좌석 리스트를 반환한다")
@@ -54,7 +54,7 @@ class SeatStateControllerTest {
 
 		SeatStateListResponse response = new SeatStateListResponse(List.of(seat1, seat2));
 
-		given(seatStateService.getSeatStates(scheduleId))
+		given(seatStateFacade.getSeatStates(scheduleId))
 			.willReturn(response);
 
 		// when and then
@@ -92,7 +92,7 @@ class SeatStateControllerTest {
 		// given
 		UUID notFoundScheduleId = UUID.randomUUID();
 
-		given(seatStateService.getSeatStates(notFoundScheduleId))
+		given(seatStateFacade.getSeatStates(notFoundScheduleId))
 			.willThrow(new DomainException(ErrorCode.SCHEDULE_NOT_FOUND));
 
 		// when and then
