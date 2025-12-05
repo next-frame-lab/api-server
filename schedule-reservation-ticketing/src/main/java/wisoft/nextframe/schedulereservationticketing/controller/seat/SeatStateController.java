@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
-import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
+import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateFacade;
 
 @Slf4j
 @RestController
@@ -21,11 +21,11 @@ import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateServi
 @RequestMapping("/api/v1/schedules")
 public class SeatStateController {
 
-	private final SeatStateService seatStateService;
+	private final SeatStateFacade seatStateFacade;
 
 	@GetMapping("/{scheduleId}/seat-states")
 	public ResponseEntity<ApiResponse<?>> getLockedSeats(@PathVariable UUID scheduleId) {
-		final SeatStateListResponse data = seatStateService.getSeatStates(scheduleId);
+		final SeatStateListResponse data = seatStateFacade.getSeatStates(scheduleId);
 
 		final ApiResponse<SeatStateListResponse> response = ApiResponse.success(data);
 
