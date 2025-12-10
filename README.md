@@ -9,8 +9,6 @@
 >
 > NextFrame은 사용자가 원하는 공연의 일정과 좌석을 선택하고 결제하여 QR 티켓을 발급받는 예매 플랫폼입니다.
 
----
-
 ## 📝 Table of Contents
 1. [Links](#-links)
 2. [Project Overview](#-project-overview)
@@ -23,13 +21,9 @@
     - [3. DB 커넥션 고갈 해결 및 트랜잭션 범위 최소화](#3-db-커넥션-고갈-해결-및-트랜잭션-범위-최소화)
 7. [Collaboration Rules](#-collaboration-rules-ground-rules)
 
----
-
 ## 🔗 Links
 - **Service URL:** [https://nextframe.wisoft.dev/](https://nextframe.wisoft.dev/)
 - **API Documentation:** [Swagger UI Docs](https://next-frame-lab.github.io/swagger-ui-docs/)
-
----
 
 ## 📅 Project Overview
 ### 기획 배경
@@ -39,22 +33,17 @@
 *   소셜 로그인, 공연 검색/목록/상세 조회, 좌석 선택 및 예매
 *   결제, QR 티켓 발급, 리뷰 작성(좋아요)
 
----
-
 ## 👥 Team Members
 | 이름 | Role | GitHub | 담당 역할 |
 |:---:|:---:|:---:|:---|
 | **김민서** | Team Leader <br> Backend | [@git-mesome](https://github.com/git-mesome) | • **좌석 결제 및 환불 프로세스 구현**<br>• 티켓(QR 코드) 발급 시스템<br>• 공연 검색 기능 고도화 (QueryDSL)<br>• DB/배포/모니터링 환경 구축 및 DB 설계 |
 | **안진표** | Team Member <br> Backend | [@Jinpyo-An](https://github.com/Jinpyo-An) | • **공연 좌석 및 예매 프로세스 구현**<br>• 소셜 로그인(OAuth2) 및 JWT 인증/인가<br>• 공연 검색 및 리뷰(좋아요) 기능<br>• 배포 환경 구축 및 API 설계 |
 
----
-
 ## 🛠 Tech Stack
-
 ### Backend
 *   **Language:** Java 21
 *   **Framework:** Spring Boot 3.5.4
-*   **Test:** JUnit 5
+*   **Test:** JUnit5, Mockito
 *   **ORM:** JPA, QueryDSL
 
 ### Database
@@ -64,23 +53,33 @@
 *   **Server:** On-Premise
 *   **Virtualization:** Docker
 *   **CI/CD:** GitHub Actions
-*   **Web Server:** Nginx
+*   **Web Server(Reverse Proxy):** Nginx
 
 ### Collaboration Tools
-*   Discord, Notion, Swagger UI
-
----
+*   Git, Discord, Notion, Swagger UI
 
 ## 📐 System Architecture & ERD
 > 현재 아키텍처와 DB 설계도는 지속적으로 고도화 중입니다.
 
 ### System Architecture
-*(이미지 첨부 예정)*
+<details>
+<summary><b>👉 시스템 아키텍처 구성도 펼쳐보기</b></summary>
+<br>
+
+![System Architecture](images/service_architecture.png)
+
+</details>
+
+<br>
 
 ### ERD (Entity Relationship Diagram)
-*(이미지 첨부 예정)*
+<details>
+<summary><b>👉 ERD (DB 설계도) 펼쳐보기</b></summary>
+<br>
 
----
+![NextFrame ERD](images/DB_diagram.png)
+
+</details>
 
 ## 🔥 Trouble Shooting (Performance & Issue)
 
@@ -157,8 +156,6 @@ DB I/O 부하를 줄이고 객체 생성 자체를 최소화하기 위해 **캐�
 
 * **비동기 아키텍처 전환:** 대기열 큐(Queue) 및 비동기(Async) 처리를 도입하여 사용자 요청과 DB 처리를 분리
 * **인프라 확장:** 늘어나는 트래픽을 감당하기 위한 **DB 서버 증설(Scale-out) 및 이중화** 구성
-
----
 
 ## 🤝 Collaboration Rules (Ground Rules)
 NextFrame 팀은 명확한 규칙을 통해 코드 품질을 유지하고 협업 효율을 높입니다.
