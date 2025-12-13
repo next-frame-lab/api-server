@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
+import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
@@ -35,11 +37,21 @@ public class ReservationExecutor {
 		User user,
 		int calculatedTotalPrice
 	) {
-		// 5. 예매 좌석에 대한 검증 및 잠금 처리를 합니다.
-		// (이 로직은 이제 트랜잭션 안에서 수행됩니다.)
-		schedule.lockSeatsForReservation(seats, seatStateRepository);
+		// 1. 선택한 좌석의 아이디 목록 추출
+		final List<UUID> seatIds = seats.stream()
+			.map(SeatDefinition::getId)
+			.toList();
 
-		// 6. 예매 정보를 생성 및 저장합니다.
+		// 2. 스케줄에 해당하는 공연 좌석 상태 목록을 조회
+		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndSeatIds(
+			schedule.getId(),
+			seatIds
+		);
+
+		// 3. 좌석 잠금 수행(Schedule 엔티티)
+		schedule.lockSeatsForReservation(seatStates, seats.size());
+
+		// 4. 예매 정보를 생성 및 저장
 		final Reservation reservation = reservationFactory.create(user, schedule, seats, calculatedTotalPrice);
 		reservationRepository.save(reservation);
 
