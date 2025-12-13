@@ -17,13 +17,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
-import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @Getter
 @Builder
@@ -62,21 +60,13 @@ public class Schedule {
 	@Column(name = "ticket_close_time")
 	private LocalDateTime ticketCloseTime;
 
-	public void lockSeatsForReservation(List<SeatDefinition> seats, SeatStateRepository seatStateRepository) {
-		// 1. 좌석 ID 목록을 추출합니다.
-		final List<UUID> seatIds = seats.stream()
-			.map(SeatDefinition::getId)
-			.toList();
-
-		// 2. 좌석을 조회합니다.
-		final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndSeatIds(this.id, seatIds);
-
-		// 3. 요청한 모든 좌석이 존재하는지 확인합니다.
-		if (seatStates.size() != seatIds.size()) {
+	public void lockSeatsForReservation(List<SeatState> seatStates, int seatSize) {
+		// 1. 좌석이 존재하는지 확인
+		if (seatStates.size() != seatSize) {
 			throw new DomainException(ErrorCode.SEAT_NOT_DEFINED);
 		}
 
-		// 4. 좌석을 잠금 처리합니다.
+		// 2. 좌석 잠금 처리(SeatState 엔티티)
 		for (final SeatState seatState : seatStates) {
 			seatState.lock();
 		}
