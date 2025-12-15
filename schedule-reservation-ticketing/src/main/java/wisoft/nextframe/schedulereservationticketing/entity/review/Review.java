@@ -52,6 +52,7 @@ public class Review {
 	private BigDecimal star;
 
 	@Column(name = "like_count")
+	@Builder.Default
 	private Integer likeCount = 0;
 
 	@CreationTimestamp
