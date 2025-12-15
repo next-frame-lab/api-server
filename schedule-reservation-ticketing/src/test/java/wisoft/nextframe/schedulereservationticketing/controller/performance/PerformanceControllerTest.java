@@ -65,9 +65,9 @@ class PerformanceControllerTest {
 		@WithMockUser
 		void getPerformanceDetail_success() throws Exception {
 			// given
-			 UUID performanceId = UUID.randomUUID();
-			 String performanceName = "오페라의 유령";
-			 String stadiumName = "부산문화회관";
+			UUID performanceId = UUID.randomUUID();
+			String performanceName = "오페라의 유령";
+			String stadiumName = "부산문화회관";
 
 			when(dynamicAuthService.canViewPerformanceDetail(eq(performanceId), any()))
 				.thenReturn(true);

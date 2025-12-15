@@ -16,22 +16,21 @@ public class SeatStateBuilder {
 	private UUID seatId;
 	private Schedule schedule;
 	private SeatDefinition seat;
-	private Boolean isLocked = false;
-	private Long version = null;
+ private Boolean isLocked = false;
 
 	public static SeatStateBuilder builder() {
 		return new SeatStateBuilder();
 	}
 
-	public SeatState build() {
-		// 복합 키 생성
-		SeatStateId id = SeatStateId.builder()
-			.scheduleId(scheduleId)
-			.seatId(seatId)
-			.build();
+ public SeatState build() {
+        // 복합 키 생성
+        SeatStateId id = SeatStateId.builder()
+            .scheduleId(scheduleId)
+            .seatId(seatId)
+            .build();
 
-		return new SeatState(id, schedule, seat, isLocked, version);
-	}
+        return new SeatState(id, schedule, seat, isLocked);
+    }
 
 	public SeatStateBuilder withScheduleId(UUID scheduleId) {
 		this.scheduleId = scheduleId;

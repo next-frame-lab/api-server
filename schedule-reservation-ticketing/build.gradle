@@ -13,6 +13,10 @@ java {
     }
 }
 
+ext {
+    set('testcontainersVersion', "1.19.8")
+}
+
 repositories {
     mavenCentral()
 }
@@ -23,6 +27,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
 
     // Security & JWT
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -43,8 +51,6 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.3'
     implementation 'com.google.zxing:javase:3.5.3'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
-
-
 
     // 개발 편의 도구 (Lombok)
     compileOnly 'org.projectlombok:lombok'

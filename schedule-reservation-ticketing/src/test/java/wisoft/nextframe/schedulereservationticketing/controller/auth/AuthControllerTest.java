@@ -31,10 +31,10 @@ import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
 import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 
 @WebMvcTest(value = AuthController.class,
-	excludeFilters = @ComponentScan.Filter(
-		type = FilterType.ASSIGNABLE_TYPE,
-		classes = {SecurityConfig.class, JwtAuthenticationFilter.class}
-	)
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = {SecurityConfig.class, JwtAuthenticationFilter.class}
+    )
 )
 @WithMockUser
 class AuthControllerTest {
