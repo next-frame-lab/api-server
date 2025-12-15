@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.common.aop;
+package wisoft.nextframe.schedulereservationticketing.common.aop.log;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
