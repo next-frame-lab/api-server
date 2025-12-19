@@ -7,8 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class ReservationService {
 
@@ -37,12 +36,17 @@ public class ReservationService {
      * 동시성 이슈를 방지하기 위해 Redisson 분산 락을 사용하여,
      * 동일한 좌석에 대해 한 번에 하나의 요청만 처리되도록 보장합니다.
      */
-    @CacheEvict(cacheNames = "seatStates", key = "#request.scheduleId")
     public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
         // 1. 예약에 필요한 데이터 준비
         final ReservationContext context = dataProvider.provide(userId, request);
 
-        // 2. 락 객체 생성 및 데드락(Deadlock) 방지
+        // 2. 데드락(Deadlock) 방지를 위해 좌석 ID를 정렬하여 락(Lock) 객체 생성
+        // 여러 좌석을 동시에 예약할 때, 여러 요청이 서로 다른 순서로 락을 획득하려고 하면 데드락이 발생할 수 있습니다.
+        // 예를 들어, 요청 A가 [seat1, seat2] 순서로, 요청 B가 [seat2, seat1] 순서로 락을 획득하려 한다고 가정해봅시다.
+        // 요청 A가 seat1 락을 획득하고, 동시에 요청 B가 seat2 락을 획득하면,
+        // 서로 상대방이 점유한 락을 무한정 기다리는 '교착 상태(데드락)'에 빠지게 됩니다.
+        // .sorted()를 통해 좌석 ID를 항상 일관된 순서(오름차순)로 정렬함으로써,
+        // 모든 요청이 같은 순서로 락을 획득하도록 강제하여 데드락을 원천적으로 방지합니다.
         List<RLock> locks = request.seatIds().stream()
             .sorted()
             .map(seatId -> redissonClient.getLock(generateSeatLockKey(request.scheduleId(), seatId)))
@@ -54,13 +58,13 @@ public class ReservationService {
         boolean isLockAcquired = false;
         try {
             // 4. 락 획득
-            isLockAcquired = multiLock.tryLock(5, 3, TimeUnit.SECONDS);
+            isLockAcquired = multiLock.tryLock(5, 10, TimeUnit.SECONDS);
 
             if (!isLockAcquired) {
                 log.warn("좌석 예매 락 획득 실패. userId: {}, request: {}", userId, request);
                 throw new DomainException(ErrorCode.SEAT_ALREADY_LOCKED);
             }
-            log.info("Get lock success for seats: {}", request.seatIds());
+            log.info("좌석 락 획득: {}", request.seatIds());
 
             // 5. 예매 관련 검증
             validateReservation(context, request);
@@ -75,8 +79,12 @@ public class ReservationService {
         } finally {
             // 7. 락 해제
             if (isLockAcquired) {
-                multiLock.unlock();
-                log.info("Unlock success for seats: {}", request.seatIds());
+                try {
+                    multiLock.unlock();
+                    log.info("좌석 락 해제: {}", request.seatIds());
+                } catch (Exception e) {
+                    log.error("Redis 락 해제 중 예외 발생. seats: {}", request.seatIds(), e);
+                }
             }
         }
     }
