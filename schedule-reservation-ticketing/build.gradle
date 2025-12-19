@@ -13,10 +13,6 @@ java {
     }
 }
 
-ext {
-    set('testcontainersVersion', "1.19.8")
-}
-
 repositories {
     mavenCentral()
 }
@@ -62,6 +58,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
 
     // Testcontainers
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'

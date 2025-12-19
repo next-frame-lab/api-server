@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import wisoft.nextframe.schedulereservationticketing.builder.SeatStateBuilder;
+import wisoft.nextframe.schedulereservationticketing.config.TestCacheConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
@@ -25,11 +25,8 @@ import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefiniti
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
-@SpringBootTest(classes = {
-	SeatStateService.class,
-	CacheAutoConfiguration.class
-})
-@EnableCaching
+@SpringBootTest(classes = {SeatStateService.class})
+@Import(TestCacheConfig.class)
 public class SeatStateServiceTest {
 
 	@Autowired

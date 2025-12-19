@@ -3,7 +3,8 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRe
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
+@Component
 public class ReservationExecutor {
 
     private final SeatStateRepository seatStateRepository;
@@ -28,6 +29,7 @@ public class ReservationExecutor {
     private final ReservationFactory reservationFactory;
 
     @Transactional
+    @CacheEvict(cacheNames = "seatStates", key = "#context.schedule.id")
     public ReservationResponse reserve(ReservationContext context, int totalAmount) {
         final Performance performance = context.performance();
         final User user = context.user();
