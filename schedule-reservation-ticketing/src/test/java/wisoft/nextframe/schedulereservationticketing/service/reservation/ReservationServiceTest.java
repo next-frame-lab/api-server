@@ -1,6 +1,8 @@
 package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.util.List;
@@ -23,10 +25,6 @@ import wisoft.nextframe.schedulereservationticketing.common.exception.DomainExce
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
-import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
-import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
-import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
@@ -41,50 +39,39 @@ class ReservationServiceTest {
 	private RedissonClient redissonClient;
 
 	@Mock
-	private ReservationDataProvider dataProvider;
-
-	@Mock
-	private PriceCalculator priceCalculator;
-
-	@Mock
-	private RLock rLock; // 개별 좌석 락 Mock
+	private RLock rLock;
 
 	@Test
-	@DisplayName("정상적인 예매 요청 시 예매가 성공하고 락이 해제된다")
+	@DisplayName("정상적인 예매 요청 시 락을 획득하고 Executor를 호출한 뒤 락을 해제한다")
 	void reserveSeat_success() {
 		// given
 		UUID userId = UUID.randomUUID();
 		UUID scheduleId = UUID.randomUUID();
+		UUID performanceId = UUID.randomUUID();
 		UUID seatId = UUID.randomUUID();
 		int totalAmount = 10000;
 
 		ReservationRequest request = new ReservationRequest(
-			UUID.randomUUID(), scheduleId, List.of(seatId), 0L, totalAmount
+			performanceId, scheduleId, List.of(seatId), 0L, totalAmount
 		);
-
-		// Context Mocking
-		Performance mockPerformance = mock(Performance.class); // 내부 로직 격리를 위해 Mock 사용
-		ReservationContext context = new ReservationContext(
-			mock(User.class), mock(Schedule.class), mockPerformance, List.of(mock(SeatDefinition.class))
-		);
-
-		given(dataProvider.provide(userId, request)).willReturn(context);
-		given(priceCalculator.calculateTotalPrice(any(), any())).willReturn(totalAmount);
 
 		// Redisson Mocking
 		given(redissonClient.getLock(anyString())).willReturn(rLock);
 
-		// 결과 Mocking
+		// Executor 결과 Mocking
 		ReservationResponse expectedResponse = ReservationResponse.builder()
 			.reservationId(UUID.randomUUID())
 			.totalAmount(totalAmount)
 			.build();
-		given(reservationExecutor.reserve(context, totalAmount)).willReturn(expectedResponse);
+
+		// 변경된 Executor 시그니처에 맞춰 Stubbing
+		given(reservationExecutor.reserve(userId, scheduleId, performanceId, List.of(seatId), totalAmount))
+			.willReturn(expectedResponse);
 
 		// new RedissonMultiLock() 생성자 가로채기
 		try (MockedConstruction<RedissonMultiLock> mockedLock = mockConstruction(RedissonMultiLock.class,
-			(mock, context1) -> {
-				// tryLock이 true를 반환하도록 설정
+			(mock, context) -> {
+				// tryLock 성공 설정
 				given(mock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).willReturn(true);
 			})) {
 
@@ -94,11 +81,9 @@ class ReservationServiceTest {
 			// then
 			assertThat(response).isEqualTo(expectedResponse);
 
-			// 1. 비즈니스 검증 통과 확인
-			verify(mockPerformance).verifyAgeLimit(any());
-			// 2. 예매 실행 확인
-			verify(reservationExecutor).reserve(context, totalAmount);
-			// 3. 락 해제(unlock) 호출 확인 (mockedLock.constructed().get(0)은 생성된 첫 번째 Mock 객체)
+			// 1. Executor가 올바른 파라미터로 호출되었는지 검증
+			verify(reservationExecutor).reserve(userId, scheduleId, performanceId, List.of(seatId), totalAmount);
+			// 2. 락 해제(unlock) 호출 확인
 			verify(mockedLock.constructed().getFirst()).unlock();
 		}
 	}
@@ -108,15 +93,13 @@ class ReservationServiceTest {
 	void reserveSeat_fail_lock_acquisition() {
 		// given
 		UUID userId = UUID.randomUUID();
-		UUID seatId = UUID.randomUUID();
 		ReservationRequest request = new ReservationRequest(
-			UUID.randomUUID(), UUID.randomUUID(), List.of(seatId), 0L, 10000
+			UUID.randomUUID(), UUID.randomUUID(), List.of(UUID.randomUUID()), 0L, 10000
 		);
 
-		given(dataProvider.provide(any(), any())).willReturn(mock(ReservationContext.class));
 		given(redissonClient.getLock(anyString())).willReturn(rLock);
 
-		// 생성자 가로채기: tryLock 실패 설정
+		// tryLock 실패 설정
 		try (MockedConstruction<RedissonMultiLock> mockedLock = mockConstruction(RedissonMultiLock.class,
 			(mock, context) -> {
 				given(mock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).willReturn(false);
@@ -128,9 +111,9 @@ class ReservationServiceTest {
 				.extracting("errorCode")
 				.isEqualTo(ErrorCode.SEAT_ALREADY_LOCKED);
 
-			// Verify: 예매 로직은 실행되지 않아야 함
-			verify(reservationExecutor, never()).reserve(any(), anyInt());
-			// Verify: 획득 실패했으므로 unlock도 호출되지 않아야 함
+			// Verify: Executor 실행 안 됨
+			verify(reservationExecutor, never()).reserve(any(), any(), any(), anyList(), anyInt());
+			// Verify: unlock 호출 안 됨
 			verify(mockedLock.constructed().getFirst(), never()).unlock();
 		}
 	}
@@ -140,8 +123,7 @@ class ReservationServiceTest {
 	void reserveSeat_verify_lock_order() {
 		// given
 		UUID scheduleId = UUID.randomUUID();
-		// ID 순서가 섞여서 들어온다고 가정 (UUID 문자열 비교로 정렬됨)
-		// UUID 정렬 순서를 확실히 하기 위해 문자열로 생성
+		// ID 순서가 섞여서 들어온다고 가정
 		UUID seat1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
 		UUID seat2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
@@ -150,22 +132,10 @@ class ReservationServiceTest {
 			UUID.randomUUID(), scheduleId, List.of(seat2, seat1), 0L, 10000
 		);
 
-		Performance mockPerformance = mock(Performance.class);
-		User mockUser = mock(User.class);
-		Schedule mockSchedule = mock(Schedule.class);
-
-		ReservationContext context = new ReservationContext(
-			mockUser, mockSchedule, mockPerformance, List.of(mock(SeatDefinition.class))
-		);
-
-		given(dataProvider.provide(any(), any())).willReturn(context);
 		given(redissonClient.getLock(anyString())).willReturn(rLock);
 
-		// 가격 검증 통과를 위해 Stubbing (안하면 가격 불일치 예외 발생)
-		given(priceCalculator.calculateTotalPrice(any(), any())).willReturn(10000);
-
 		try (MockedConstruction<RedissonMultiLock> mockedLock = mockConstruction(RedissonMultiLock.class,
-			(mock, cntx) -> given(mock.tryLock(anyLong(), anyLong(), any())).willReturn(true))) {
+			(mock, context) -> given(mock.tryLock(anyLong(), anyLong(), any())).willReturn(true))) {
 
 			// when
 			reservationService.reserveSeat(UUID.randomUUID(), request);
@@ -173,80 +143,37 @@ class ReservationServiceTest {
 			// then
 			InOrder inOrder = inOrder(redissonClient);
 
-			// seat1이 먼저 요청되고 seat2가 나중에 요청되어야 함
+			// 정렬된 순서(seat1 -> seat2)로 락 요청 확인
 			inOrder.verify(redissonClient).getLock(contains(seat1.toString()));
 			inOrder.verify(redissonClient).getLock(contains(seat2.toString()));
 		}
 	}
 
 	@Test
-	@DisplayName("요청 금액과 서버 계산 금액이 다르면 예외가 발생하고 락은 해제된다")
-	void reserveSeat_fail_price_mismatch() {
+	@DisplayName("Executor 실행 중 예외가 발생하더라도 락은 반드시 해제된다")
+	void reserveSeat_fail_business_exception_from_executor() {
 		// given
-		int clientAmount = 10000;
-		int serverAmount = 15000; // 금액 불일치
-		ReservationRequest request = new ReservationRequest(
-			UUID.randomUUID(), UUID.randomUUID(), List.of(UUID.randomUUID()), 0L, clientAmount
-		);
-
-		ReservationContext context = mock(ReservationContext.class);
-		Performance performance = mock(Performance.class);
-
-		given(context.performance()).willReturn(performance);
-		given(context.user()).willReturn(mock(User.class));
-		given(dataProvider.provide(any(), any())).willReturn(context);
-
-		given(redissonClient.getLock(anyString())).willReturn(rLock);
-		given(priceCalculator.calculateTotalPrice(any(), any())).willReturn(serverAmount); // 서버 금액 리턴
-
-		try (MockedConstruction<RedissonMultiLock> mockedLock = mockConstruction(RedissonMultiLock.class,
-			(mock, ctx) -> given(mock.tryLock(anyLong(), anyLong(), any())).willReturn(true))) {
-
-			// when and then
-			assertThatThrownBy(() -> reservationService.reserveSeat(UUID.randomUUID(), request))
-				.isInstanceOf(DomainException.class)
-				.extracting("errorCode")
-				.isEqualTo(ErrorCode.TOTAL_PRICE_MISMATCH);
-
-			// 락 해제는 반드시 수행되어야 함
-			verify(mockedLock.constructed().getFirst()).unlock();
-			// 예매 실행 안됨
-			verify(reservationExecutor, never()).reserve(any(), anyInt());
-		}
-	}
-
-	@Test
-	@DisplayName("연령 제한에 걸리면 ACCESS_DENIED 예외가 발생하고 락은 해제된다")
-	void reserveSeat_fail_age_limit() {
-		// given
+		UUID userId = UUID.randomUUID();
 		ReservationRequest request = new ReservationRequest(
 			UUID.randomUUID(), UUID.randomUUID(), List.of(UUID.randomUUID()), 0L, 10000
 		);
 
-		ReservationContext context = mock(ReservationContext.class);
-		Performance performance = mock(Performance.class);
-		User user = mock(User.class); // 간단히 Mock 처리
-
-		given(context.performance()).willReturn(performance);
-		given(context.user()).willReturn(user);
-		given(dataProvider.provide(any(), any())).willReturn(context);
-
 		given(redissonClient.getLock(anyString())).willReturn(rLock);
 
-		// Performance.verifyAgeLimit 호출 시 예외 발생 설정
-		doThrow(new DomainException(ErrorCode.ACCESS_DENIED))
-			.when(performance).verifyAgeLimit(user);
+		// Executor가 예외를 던지도록 설정 (예: 가격 불일치, 이미 예매됨 등 어떤 예외든 상관없음)
+		doThrow(new DomainException(ErrorCode.TOTAL_PRICE_MISMATCH))
+			.when(reservationExecutor).reserve(any(), any(), any(), anyList(), anyInt());
 
 		try (MockedConstruction<RedissonMultiLock> mockedLock = mockConstruction(RedissonMultiLock.class,
 			(mock, ctx) -> given(mock.tryLock(anyLong(), anyLong(), any())).willReturn(true))) {
 
 			// when and then
-			assertThatThrownBy(() -> reservationService.reserveSeat(UUID.randomUUID(), request))
+			assertThatThrownBy(() -> reservationService.reserveSeat(userId, request))
 				.isInstanceOf(DomainException.class)
 				.extracting("errorCode")
-				.isEqualTo(ErrorCode.ACCESS_DENIED);
+				.isEqualTo(ErrorCode.TOTAL_PRICE_MISMATCH);
 
-			// Verify: 락 해제는 반드시 수행되어야 함 (finally 블록)
+			// Verify: 예외가 터져도 unlock은 반드시 수행되어야 함 (finally 블록 검증)
 			verify(mockedLock.constructed().getFirst()).unlock();
 		}
 	}
