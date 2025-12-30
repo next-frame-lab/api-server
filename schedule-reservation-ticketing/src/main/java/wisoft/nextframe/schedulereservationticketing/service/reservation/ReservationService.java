@@ -2,17 +2,11 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.redisson.RedissonMultiLock;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
-import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
+import wisoft.nextframe.schedulereservationticketing.common.lock.DistributedLockManager;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
 
@@ -21,70 +15,35 @@ import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.Re
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private static final String REDISSON_LOCK_PREFIX = "LOCK:"; // Redis 락 Key 구분자
+    private static final String REDISSON_LOCK_PREFIX = "LOCK:";
     private final ReservationExecutor reservationExecutor;
-    private final RedissonClient redissonClient;
+    private final DistributedLockManager distributedLockManager;
 
     /**
      * 좌석 예매 처리 (분산 락 적용)
-     * 동시성 이슈를 방지하기 위해 Redisson 분산 락을 사용하여,
+     * 동시성 이슈를 방지하기 위해 분산 락을 사용하여,
      * 동일한 좌석에 대해 한 번에 하나의 요청만 처리되도록 보장합니다.
      */
     public ReservationResponse reserveSeat(UUID userId, ReservationRequest request) {
-        // 1. 데드락(Deadlock) 방지를 위해 좌석 ID를 정렬하여 락(Lock) 객체 생성
-        // 여러 좌석을 동시에 예약할 때, 여러 요청이 서로 다른 순서로 락을 획득하려고 하면 데드락이 발생할 수 있습니다.
-        // 예를 들어, 요청 A가 [seat1, seat2] 순서로, 요청 B가 [seat2, seat1] 순서로 락을 획득하려 한다고 가정해봅시다.
-        // 요청 A가 seat1 락을 획득하고, 동시에 요청 B가 seat2 락을 획득하면,
-        // 서로 상대방이 점유한 락을 무한정 기다리는 '교착 상태(데드락)'에 빠지게 됩니다.
-        // .sorted()를 통해 좌석 ID를 항상 일관된 순서(오름차순)로 정렬함으로써,
-        // 모든 요청이 같은 순서로 락을 획득하도록 강제하여 데드락을 원천적으로 방지합니다.
-        List<RLock> locks = request.seatIds().stream()
+        // 1. 데드락 방지를 위해 좌석 ID를 정렬하여 락 키 생성
+        List<String> lockKeys = request.seatIds().stream()
             .sorted()
-            .map(seatId -> redissonClient.getLock(generateSeatLockKey(request.scheduleId(), seatId)))
-            .toList();
+            .map(seatId -> generateSeatLockKey(request.scheduleId(), seatId))
+            .collect(Collectors.toList());
 
-        // 2. 여러 개의 락을 하나의 'MultiLock'으로 묶어 원자적(Atomic)으로 관리
-        RLock multiLock = new RedissonMultiLock(locks.toArray(new RLock[0]));
-
-        boolean isLockAcquired = false;
-        try {
-            // 3. 락 획득
-            isLockAcquired = multiLock.tryLock(5, 10, TimeUnit.SECONDS);
-
-            if (!isLockAcquired) {
-                log.warn("좌석 예매 락 획득 실패. userId: {}, request: {}", userId, request);
-                throw new DomainException(ErrorCode.SEAT_ALREADY_LOCKED);
-            }
-            log.info("좌석 락 획득: {}", request.seatIds());
-
-            // 4. 예매 트랜잭션 수행
-            return reservationExecutor.reserve(
-              userId,
-              request.scheduleId(),
-              request.performanceId(),
-              request.seatIds(),
-              request.totalAmount()
-            );
-
-        } catch (InterruptedException e) {
-            // 스레드 인터럽트(시스템 셧다운, 스레드 강제 종료 등)
-            Thread.currentThread().interrupt();
-            throw new DomainException(ErrorCode.INTERNAL_SERVER_ERROR);
-        } finally {
-            // 5. 락 해제
-            if (isLockAcquired) {
-                try {
-                    multiLock.unlock();
-                    log.info("좌석 락 해제: {}", request.seatIds());
-                } catch (Exception e) {
-                    log.error("Redis 락 해제 중 예외 발생. seats: {}", request.seatIds(), e);
-                }
-            }
-        }
+        // 2. 분산 락을 사용하여 예매 트랜잭션 수행
+        return distributedLockManager.executeWithLock(lockKeys, () ->
+            reservationExecutor.reserve(
+                userId,
+                request.scheduleId(),
+                request.performanceId(),
+                request.seatIds(),
+                request.totalAmount()
+            )
+        );
     }
 
     private String generateSeatLockKey(UUID scheduleId, UUID seatId) {
-        // Redis Key 패턴: LOCK:sch:{scheduleId}:seat:{seatId}
         return REDISSON_LOCK_PREFIX + "sch:" + scheduleId + ":seat:" + seatId;
     }
 }
