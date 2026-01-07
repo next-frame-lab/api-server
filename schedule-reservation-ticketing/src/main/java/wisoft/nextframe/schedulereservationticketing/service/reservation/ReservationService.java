@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.lock.DistributedLockManager;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
+import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
 
 @Slf4j
 @Service
@@ -18,6 +19,7 @@ public class ReservationService {
     private static final String REDISSON_LOCK_PREFIX = "LOCK:";
     private final ReservationExecutor reservationExecutor;
     private final DistributedLockManager distributedLockManager;
+    private final SeatStateService seatStateService;
 
     /**
      * 좌석 예매 처리 (분산 락 적용)
@@ -32,7 +34,7 @@ public class ReservationService {
             .collect(Collectors.toList());
 
         // 2. 분산 락을 사용하여 예매 트랜잭션 수행
-        return distributedLockManager.executeWithLock(lockKeys, () ->
+        ReservationResponse response = distributedLockManager.executeWithLock(lockKeys, () ->
             reservationExecutor.reserve(
                 userId,
                 request.scheduleId(),
@@ -41,6 +43,11 @@ public class ReservationService {
                 request.totalAmount()
             )
         );
+
+        // 3. 예매 완료 후 좌석 상태 캐시 무효화
+        seatStateService.evictSeatStatesCache(request.scheduleId());
+
+        return response;
     }
 
     private String generateSeatLockKey(UUID scheduleId, UUID seatId) {

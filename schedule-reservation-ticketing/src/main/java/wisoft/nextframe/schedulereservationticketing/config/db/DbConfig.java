@@ -1,4 +1,4 @@
-package wisoft.nextframe.schedulereservationticketing.config;
+package wisoft.nextframe.schedulereservationticketing.config.db;
 
 import javax.sql.DataSource;
 

@@ -22,6 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.common.lock.DistributedLockManager;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.request.ReservationRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.reservation.response.ReservationResponse;
+import wisoft.nextframe.schedulereservationticketing.service.seat.SeatStateService;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
@@ -34,6 +35,9 @@ class ReservationServiceTest {
 
     @Mock
     private DistributedLockManager distributedLockManager;
+
+    @Mock
+    private SeatStateService seatStateService;
 
     @Test
     @DisplayName("정상적인 예매 요청 시 DistributedLockManager를 통해 Executor를 호출한다")
@@ -70,6 +74,7 @@ class ReservationServiceTest {
         assertThat(response).isEqualTo(expectedResponse);
         verify(distributedLockManager).executeWithLock(any(), any());
         verify(reservationExecutor).reserve(userId, scheduleId, performanceId, List.of(seatId), totalAmount);
+        verify(seatStateService).evictSeatStatesCache(scheduleId);
     }
 
     @Test
@@ -118,6 +123,7 @@ class ReservationServiceTest {
         List<String> capturedKeys = lockKeysCaptor.getValue();
         assertThat(capturedKeys.get(0)).contains(seat1.toString());
         assertThat(capturedKeys.get(1)).contains(seat2.toString());
+        verify(seatStateService).evictSeatStatesCache(scheduleId);
     }
 
     @Test
