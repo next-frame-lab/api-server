@@ -98,6 +98,7 @@ class ReservationServiceTest {
 
         // Executor는 절대 호출되면 안 됨
         verify(reservationExecutor, never()).reserve(any(), any(), any(), any(), anyInt());
+        verify(seatStateService, never()).evictSeatStatesCache(any());
     }
 
     @Test

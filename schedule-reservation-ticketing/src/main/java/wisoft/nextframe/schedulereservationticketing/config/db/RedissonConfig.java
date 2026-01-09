@@ -1,5 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.config.db;
 
+import static wisoft.nextframe.schedulereservationticketing.config.db.RedisConsts.KEY_PREFIX;
+
 import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,15 +21,15 @@ public class RedissonConfig {
                 // 예: "myLock" -> "next-frame:myLock"
                 @Override
                 public String map(String name) {
-                    return "next-frame:" + name;
+                    return KEY_PREFIX + name;
                 }
 
                 // Redis -> 애플리케이션: 키 이름을 반환받을 때 접두사 제거
                 // 예: "next-frame:myLock" -> "myLock"
                 @Override
                 public String unmap(String name) {
-                    if (name.startsWith("next-frame:")) {
-                        return name.substring("next-frame:".length());
+                    if (name.startsWith(KEY_PREFIX)) {
+                        return name.substring(KEY_PREFIX.length());
                     }
                     return name;
                 }
