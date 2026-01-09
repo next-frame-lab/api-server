@@ -1,7 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.config.db;
 
 import static org.springframework.data.redis.serializer.RedisSerializationContext.*;
-import static wisoft.nextframe.schedulereservationticketing.config.db.RedisConsts.KEY_PREFIX;
+import static wisoft.nextframe.schedulereservationticketing.config.db.RedisConsts.*;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -14,13 +14,10 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import wisoft.nextframe.schedulereservationticketing.dto.seat.seatstate.SeatStateListResponse;
 
 @Configuration
 public class RedisCacheConfig {
@@ -35,13 +32,6 @@ public class RedisCacheConfig {
 		objectMapper.registerModule(new JavaTimeModule());
 
 		GenericJackson2JsonRedisSerializer redisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
-
-		// seatStates 전용 타입 고정 Serializer
-		Jackson2JsonRedisSerializer<SeatStateListResponse> seatStatesSerializer =
-			new Jackson2JsonRedisSerializer<>(
-				objectMapper,
-				SeatStateListResponse.class
-			);
 
 		// 1. Redis 캐시 기본 설정
 		RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -58,16 +48,6 @@ public class RedisCacheConfig {
 		cacheConfigurations.put("performanceList", defaultConfig.entryTtl(Duration.ofMinutes(10)));
 		// 인기 공연(Top 10): 집계 데이터이므로 1시간 (오래 유지)
 		cacheConfigurations.put("top10Performances", defaultConfig.entryTtl(Duration.ofHours(1)));
-		// 좌석 상태: 실시간성이 중요하므로 1분 (짧게 유지)
-		cacheConfigurations.put(
-			"seatStates",
-			defaultConfig
-				.entryTtl(Duration.ofMinutes(1))
-				.serializeValuesWith(
-					SerializationPair.fromSerializer(seatStatesSerializer)
-				)
-		);
-
 
 		// 3. RedisCacheManager 생성 및 반환
 		return RedisCacheManager.builder(redisConnectionFactory)
