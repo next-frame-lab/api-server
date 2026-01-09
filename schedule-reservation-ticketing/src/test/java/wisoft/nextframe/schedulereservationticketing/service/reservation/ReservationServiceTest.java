@@ -36,9 +36,6 @@ class ReservationServiceTest {
     @Mock
     private DistributedLockManager distributedLockManager;
 
-    @Mock
-    private SeatStateService seatStateService;
-
     @Test
     @DisplayName("정상적인 예매 요청 시 DistributedLockManager를 통해 Executor를 호출한다")
     void reserveSeat_success() {
@@ -74,7 +71,6 @@ class ReservationServiceTest {
         assertThat(response).isEqualTo(expectedResponse);
         verify(distributedLockManager).executeWithLock(any(), any());
         verify(reservationExecutor).reserve(userId, scheduleId, performanceId, List.of(seatId), totalAmount);
-        verify(seatStateService).evictSeatStatesCache(scheduleId);
     }
 
     @Test
@@ -98,7 +94,6 @@ class ReservationServiceTest {
 
         // Executor는 절대 호출되면 안 됨
         verify(reservationExecutor, never()).reserve(any(), any(), any(), any(), anyInt());
-        verify(seatStateService, never()).evictSeatStatesCache(any());
     }
 
     @Test
@@ -124,7 +119,6 @@ class ReservationServiceTest {
         List<String> capturedKeys = lockKeysCaptor.getValue();
         assertThat(capturedKeys.get(0)).contains(seat1.toString());
         assertThat(capturedKeys.get(1)).contains(seat2.toString());
-        verify(seatStateService).evictSeatStatesCache(scheduleId);
     }
 
     @Test

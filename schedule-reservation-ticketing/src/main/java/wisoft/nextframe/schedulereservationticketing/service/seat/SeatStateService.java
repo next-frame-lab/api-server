@@ -3,8 +3,6 @@ package wisoft.nextframe.schedulereservationticketing.service.seat;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +20,6 @@ public class SeatStateService {
 
     private final SeatStateRepository seatStateRepository;
 
-    @Cacheable(value = "seatStates", key = "#scheduleId")
     public SeatStateListResponse getSeatStates(UUID scheduleId) {
         // 1. 공연 일정(scheduleId)에 해당하는 잠긴(예약된) 좌석 엔티티 목록을 조회합니다.
         final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndIsLockedTrue(scheduleId);
@@ -30,10 +27,5 @@ public class SeatStateService {
 
         // 2. 데이터를 응답 DTO로 변환합니다.
         return SeatStateListResponse.from(seatStates);
-    }
-
-    @CacheEvict(value = "seatStates", key = "#scheduleId")
-    public void evictSeatStatesCache(UUID scheduleId) {
-        log.info("Cache evicted for seatStates with scheduleId: {}", scheduleId);
     }
 }
