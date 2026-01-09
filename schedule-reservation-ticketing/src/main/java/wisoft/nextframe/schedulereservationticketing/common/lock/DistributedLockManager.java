@@ -20,8 +20,8 @@ import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 public class DistributedLockManager {
 
     private final RedissonClient redissonClient;
-    private static final long WAIT_TIME_SECONDS = 2;
-    private static final long LEASE_TIME_SECONDS = 3;
+    private static final long WAIT_TIME_SECONDS = 3;
+    private static final long LEASE_TIME_SECONDS = 10;
 
     /**
      * 여러 개의 Key에 대해 락을 획득한 후 비즈니스 로직 수행

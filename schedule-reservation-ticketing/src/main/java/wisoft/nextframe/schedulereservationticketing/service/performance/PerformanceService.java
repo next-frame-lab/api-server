@@ -70,7 +70,7 @@ public class PerformanceService {
 		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices, performanceStatistic);
 	}
 
-	@Cacheable(value = "performanceList", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+	@Cacheable(value = "performanceList", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
 	public PerformanceListResponse getPerformanceList(Pageable pageable) {
 		// 1. PerformanceSummaryResponse로 구성된 공연 목록 Page 객체 조회
 		final Page<PerformanceSummaryResponse> performancePage = performanceRepository.findReservablePerformances(pageable);
