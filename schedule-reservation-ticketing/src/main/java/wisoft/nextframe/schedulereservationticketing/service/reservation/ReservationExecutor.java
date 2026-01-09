@@ -3,7 +3,6 @@ package wisoft.nextframe.schedulereservationticketing.service.reservation;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,6 @@ public class ReservationExecutor {
     private final PriceCalculator priceCalculator;
 
     @Transactional
-    @CacheEvict(cacheNames = "seatStates", key = "#scheduleId")
     public ReservationResponse reserve(UUID userId,
       UUID scheduleId,
       UUID performanceId,
@@ -68,7 +66,7 @@ public class ReservationExecutor {
             throw new DomainException(ErrorCode.SEAT_NOT_DEFINED);
         }
 
-        // 1. 예매 좌석 상태 확인 및 잠금 처리
+        // 5. 예매 좌석 상태 확인 및 잠금 처리
         final List<SeatState> seatStates = seatStateRepository.findByScheduleIdAndSeatIds(
                 schedule.getId(),
                 seatIds
@@ -85,12 +83,12 @@ public class ReservationExecutor {
         // 7. 연령 제한 검증
         performance.verifyAgeLimit(user);
 
-        // 2. 예매 정보 생성 및 저장
+        // 8. 예매 정보 생성 및 저장
         final Reservation reservation = reservationFactory.create(user, schedule, seats, totalAmount);
         reservationRepository.save(reservation);
         log.info("Reservation successful for user: {}, schedule: {}", user.getId(), schedule.getId());
 
-        // 3. 응답 DTO 생성 및 반환
+        // 9. 응답 DTO 생성 및 반환
         return ReservationResponse.from(reservation, performance, schedule, seats);
     }
 }
