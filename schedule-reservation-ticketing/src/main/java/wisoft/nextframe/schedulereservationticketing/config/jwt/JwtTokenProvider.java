@@ -14,7 +14,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.schedulereservationticketing.service.auth.TokenInfo;
 
 @Slf4j
 @Component
@@ -89,5 +88,8 @@ public class JwtTokenProvider {
 				.build()
 				.parseClaimsJws(token)
 				.getBody();
+	}
+
+	public record TokenInfo(String tokenValue, LocalDateTime expiresAt) {
 	}
 }
