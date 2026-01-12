@@ -9,5 +9,5 @@ import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-	Optional<User> findByEmailAndProvider(String email, String provider);
+	Optional<User> findByEmail(String email);
 }

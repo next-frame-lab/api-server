@@ -1,5 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
+import static org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.*;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -35,8 +37,8 @@ public class KakaoApiClient {
 	 * @return 카카오의 Access Token
 	 */
 	public String getKakaoAccessToken(String authCode) {
-		final OAuth2ClientProperties.Registration kakaoRegistration = oAuth2ClientProperties.getRegistration().get("kakao");
-		final OAuth2ClientProperties.Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
+		final Registration kakaoRegistration = oAuth2ClientProperties.getRegistration().get("kakao");
+		final Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
 
 		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 		body.add("grant_type", "authorization_code");
@@ -77,7 +79,7 @@ public class KakaoApiClient {
 	 * @return 카카오 사용자 정보
 	 */
 	public KakaoUserInfoResponse getKakaoUserInfo(String kakaoAccessToken) {
-		final OAuth2ClientProperties.Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
+		final Provider kakaoProvider = oAuth2ClientProperties.getProvider().get("kakao");
 
 		final KakaoUserInfoResponse response = restClient.get()
 			.uri(kakaoProvider.getUserInfoUri())

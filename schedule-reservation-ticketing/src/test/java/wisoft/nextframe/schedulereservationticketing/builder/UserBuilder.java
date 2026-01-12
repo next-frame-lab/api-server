@@ -15,9 +15,7 @@ public class UserBuilder {
 	private String email = "test@example.com";
 	private LocalDate birthDate = LocalDate.of(1990, 1, 1);
 	private String phoneNumber = "010-1234-5678";
-	private String faceId = "test_face_id";
 	private String imageUrl = "https://example.com/test_image.jpg";
-	private String provider = "kakao";
 
 	public static UserBuilder builder() {
 		return new UserBuilder();
@@ -34,6 +32,6 @@ public class UserBuilder {
 	}
 
 	public User build() {
-		return new User(id, name, email, birthDate, phoneNumber, faceId, imageUrl, provider);
+		return new User(id, name, email, birthDate, phoneNumber, imageUrl);
 	}
 }
