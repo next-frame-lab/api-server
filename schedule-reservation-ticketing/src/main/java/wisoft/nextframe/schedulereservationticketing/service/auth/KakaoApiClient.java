@@ -1,11 +1,11 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
-import static org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.*;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.Provider;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.Registration;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;

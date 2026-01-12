@@ -1,6 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,34 +59,43 @@ public class OAuthSigninService {
 
 	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo, String provider) {
 		String providerUserId = userInfo.getId().toString();
-		return socialAccountRepository.findByProviderAndProviderUserId(provider, providerUserId)
-			.map(socialAccount -> {
-				log.info("기존 소셜 계정으로 로그인. provider: {}, providerUserId: {}", provider, providerUserId);
-				User user = socialAccount.getUser();
-				user.updateProfile(userInfo.getKakaoAccount().getProfile().getNickname(), userInfo.getKakaoAccount().getProfile().getProfileImageUrl());
-				return user;
-			})
-			.orElseGet(() -> {
-				log.info("신규 소셜 계정. provider: {}, providerUserId: {}", provider, providerUserId);
-				String email = userInfo.getKakaoAccount().getEmail();
-				User user = userRepository.findByEmail(email)
-					.orElseGet(() -> {
-						log.info("신규 회원 가입. email: {}", email);
-						return userRepository.save(User.builder()
-							.email(email)
-							.name(userInfo.getKakaoAccount().getProfile().getNickname())
-							.imageUrl(userInfo.getKakaoAccount().getProfile().getProfileImageUrl())
-							.birthDate(LocalDate.of(1998, 4, 7)) // 임시 생년월일
-							.build());
-					});
+		Optional<SocialAccount> socialAccountOptional = socialAccountRepository.findByProviderAndProviderUserId(provider, providerUserId);
 
-				socialAccountRepository.save(SocialAccount.builder()
-					.provider(provider)
-					.providerUserId(providerUserId)
-					.user(user)
+		if (socialAccountOptional.isPresent()) {
+			// 1. 기존 소셜 계정으로 로그인
+			log.info("기존 소셜 계정으로 로그인. provider: {}, providerUserId: {}", provider, providerUserId);
+			User user = socialAccountOptional.get().getUser();
+			user.updateProfile(userInfo.getKakaoAccount().getProfile().getNickname(), userInfo.getKakaoAccount().getProfile().getProfileImageUrl());
+			return user;
+		} else {
+			// 2. 신규 소셜 계정 연동
+			log.info("신규 소셜 계정. provider: {}, providerUserId: {}", provider, providerUserId);
+			String email = userInfo.getKakaoAccount().getEmail();
+			Optional<User> userOptional = userRepository.findByEmail(email);
+
+			User user;
+			if (userOptional.isPresent()) {
+				// 2-1. 다른 소셜 계정으로 가입한 이력이 있는 경우
+				log.info("기존 회원에게 소셜 계정 연동. email: {}", email);
+				user = userOptional.get();
+			} else {
+				// 2-2. 완전 신규 회원인 경우
+				log.info("신규 회원 가입. email: {}", email);
+				user = userRepository.save(User.builder()
+					.email(email)
+					.name(userInfo.getKakaoAccount().getProfile().getNickname())
+					.imageUrl(userInfo.getKakaoAccount().getProfile().getProfileImageUrl())
+					.birthDate(LocalDate.of(1998, 4, 7)) // 임시 생년월일
 					.build());
+			}
 
-				return user;
-			});
+			socialAccountRepository.save(SocialAccount.builder()
+				.provider(provider)
+				.providerUserId(providerUserId)
+				.user(user)
+				.build());
+
+			return user;
+		}
 	}
 }
