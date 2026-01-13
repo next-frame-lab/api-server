@@ -16,8 +16,12 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.SocialAccou
 import wisoft.nextframe.schedulereservationticketing.repository.user.UserRepository;
 
 /**
- * OAuth 인증 후, 실제 비즈니스 로직을 처리하는 서비스 클래스
- * 조회/가입 및 내부 JWT 토큰 발급 처리
+ * OAuth 인증이 완료된 사용자 정보를 기반으로
+ * 실제 로그인/회원 처리와 토큰 발급을 담당하는 서비스입니다.
+ *
+ * - 소셜 계정 및 사용자 조회/생성
+ * - 내부 JWT(Access / Refresh Token) 발급
+ * - Refresh Token 저장 및 교체
  */
 @Slf4j
 @Service
@@ -34,13 +38,13 @@ public class OAuthSigninService {
 		// 사용자 정보로 DB에서 회원을 찾거나, 없으면 새로 가입
 		final User user = findOrCreateUser(userInfo);
 
-		// 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성
+		// 서비스 자체 토큰(Refresh, Access Token) 발급
 		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
 		final JwtTokenProvider.TokenInfo refreshTokenInfo = jwtTokenProvider.generateRefreshToken(user.getId());
 		log.debug("내부 JWT 생성 완료. userId: {}", user.getId());
 
 		// Refresh Token 저장
-		refreshTokenService.saveOrUpdateRefreshToken(
+		refreshTokenService.replaceRefreshToken(
 			user,
 			refreshTokenInfo.tokenValue(),
 			refreshTokenInfo.expiresAt()
@@ -98,5 +102,5 @@ public class OAuthSigninService {
 		);
 
 		return user;
-		}
 	}
+}
