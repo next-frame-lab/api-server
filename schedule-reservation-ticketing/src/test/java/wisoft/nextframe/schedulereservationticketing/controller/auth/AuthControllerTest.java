@@ -28,7 +28,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
-import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
+import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthFacade;
 
 @WebMvcTest(value = AuthController.class,
     excludeFilters = @ComponentScan.Filter(
@@ -46,7 +46,7 @@ class AuthControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockitoBean
-	private OAuthService oAuthService;
+	private OAuthFacade oAuthFacade;
 
 	@MockitoBean
 	private AuthService authService;
@@ -68,7 +68,7 @@ class AuthControllerTest {
 				"test@example.com"
 			);
 
-			given(oAuthService.kakaoSignin(anyString(), anyString()))
+			given(oAuthFacade.signin(anyString(), anyString()))
 				.willReturn(response);
 
 			// when and then
@@ -90,7 +90,7 @@ class AuthControllerTest {
 			// given
 			KaKaoSigninRequest request = new KaKaoSigninRequest("kakao", "invalid_code");
 
-			given(oAuthService.kakaoSignin(anyString(), anyString()))
+			given(oAuthFacade.signin(anyString(), anyString()))
 				.willThrow(new DomainException(ErrorCode.INVALID_KAKAO_AUTH_CODE));
 
 			// when and then
