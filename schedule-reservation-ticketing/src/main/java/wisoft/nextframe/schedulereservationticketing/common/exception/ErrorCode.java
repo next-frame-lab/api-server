@@ -54,7 +54,9 @@ public enum ErrorCode {
 	FAILED_TO_GET_KAKAO_USER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
 		"카카오 사용자 정보를 받아오는데 실패했습니다."),
 	KAKAO_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR",
-		"카카오 인증 서버에 문제가 있습니다.");
+		"카카오 인증 서버에 문제가 있습니다."),
+	UNSUPPORTED_PROVIDER(HttpStatus.BAD_REQUEST, "BAD_REQUEST",
+		"해당 인증서비스는 지원하지 않습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

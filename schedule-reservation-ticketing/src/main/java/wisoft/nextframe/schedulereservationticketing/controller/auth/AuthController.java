@@ -15,7 +15,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
 import wisoft.nextframe.schedulereservationticketing.service.auth.AuthService;
-import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
+import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthFacade;
 
 @Slf4j
 @RestController
@@ -23,12 +23,12 @@ import wisoft.nextframe.schedulereservationticketing.service.auth.OAuthService;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-	private final OAuthService oAuthService;
+	private final OAuthFacade oAuthFacade;
 	private final AuthService authService;
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<?>> signin(@RequestBody KaKaoSigninRequest request) {
-		final SigninResponse signinResponse = oAuthService.kakaoSignin(request.provider() ,request.authCode());
+		final SigninResponse signinResponse = oAuthFacade.signin(request.provider() ,request.authCode());
 
 		final ApiResponse<SigninResponse> response = ApiResponse.success(signinResponse);
 

@@ -1,6 +1,5 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -9,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtTokenProvider;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.KakaoUserInfoResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthUserInfo;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.user.SocialAccount;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
@@ -31,9 +30,9 @@ public class OAuthSigninService {
 	private final RefreshTokenService refreshTokenService;
 
 	@Transactional
-	public SigninResponse processUserSignin(String provider, KakaoUserInfoResponse userInfo) {
+	public SigninResponse processUserSignin(OAuthUserInfo userInfo) {
 		// 사용자 정보로 DB에서 회원을 찾거나, 없으면 새로 가입
-		final User user = saveOrUpdateUser(userInfo, provider);
+		final User user = findOrCreateUser(userInfo);
 
 		// 우리 서비스 자체 JWT(Access Token, Refresh Token)를 생성
 		final String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
@@ -57,45 +56,47 @@ public class OAuthSigninService {
 		);
 	}
 
-	private User saveOrUpdateUser(KakaoUserInfoResponse userInfo, String provider) {
-		String providerUserId = userInfo.getId().toString();
-		Optional<SocialAccount> socialAccountOptional = socialAccountRepository.findByProviderAndProviderUserId(provider, providerUserId);
+	private User findOrCreateUser(OAuthUserInfo userInfo) {
+		String provider = userInfo.provider();
+		String providerUserId = userInfo.providerUserId();
 
+		// 1. 소셜 계정이 이미 존재하는 경우
+		Optional<SocialAccount> socialAccountOptional =
+			socialAccountRepository.findByProviderAndProviderUserId(
+				provider,
+				providerUserId
+			);
 		if (socialAccountOptional.isPresent()) {
-			// 1. 기존 소셜 계정으로 로그인
-			log.info("기존 소셜 계정으로 로그인. provider: {}, providerUserId: {}", provider, providerUserId);
+			log.info("기존 소셜 계정 로그인. provider={}, providerUserId={}", provider, providerUserId);
 			User user = socialAccountOptional.get().getUser();
-			user.updateProfile(userInfo.getKakaoAccount().getProfile().getNickname(), userInfo.getKakaoAccount().getProfile().getProfileImageUrl());
+			user.updateProfile(userInfo.name(), userInfo.imageUrl());
 			return user;
-		} else {
-			// 2. 신규 소셜 계정 연동
-			log.info("신규 소셜 계정. provider: {}, providerUserId: {}", provider, providerUserId);
-			String email = userInfo.getKakaoAccount().getEmail();
-			Optional<User> userOptional = userRepository.findByEmail(email);
+		}
 
-			User user;
-			if (userOptional.isPresent()) {
-				// 2-1. 다른 소셜 계정으로 가입한 이력이 있는 경우
-				log.info("기존 회원에게 소셜 계정 연동. email: {}", email);
-				user = userOptional.get();
-			} else {
-				// 2-2. 완전 신규 회원인 경우
-				log.info("신규 회원 가입. email: {}", email);
-				user = userRepository.save(User.builder()
-					.email(email)
-					.name(userInfo.getKakaoAccount().getProfile().getNickname())
-					.imageUrl(userInfo.getKakaoAccount().getProfile().getProfileImageUrl())
-					.birthDate(LocalDate.of(1998, 4, 7)) // 임시 생년월일
-					.build());
-			}
+		// 2. 소셜 계정은 없지만, 동일 이메일의 User가 존재하는 경우
+		User user = userRepository.findByEmail(userInfo.email())
+			.orElseGet(() -> {
+				log.info("신규 회원 가입. email={}", userInfo.email());
+				return userRepository.save(
+					User.builder()
+						.email(userInfo.email())
+						.name(userInfo.name())
+						.imageUrl(userInfo.imageUrl())
+						.birthDate(null) // 소셜 제공자에 따라 추후 보완
+						.build()
+				);
+			});
 
-			socialAccountRepository.save(SocialAccount.builder()
+		// 3. 새로운 SocialAccount 생성 및 연동
+		log.info("소셜 계정 연동. provider={}, providerUserId={}, userId={}", provider, providerUserId, user.getId());
+		socialAccountRepository.save(
+			SocialAccount.builder()
 				.provider(provider)
 				.providerUserId(providerUserId)
 				.user(user)
-				.build());
+				.build()
+		);
 
-			return user;
+		return user;
 		}
 	}
-}
