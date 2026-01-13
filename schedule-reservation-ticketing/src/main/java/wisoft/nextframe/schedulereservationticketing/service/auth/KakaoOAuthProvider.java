@@ -8,7 +8,7 @@ import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthUserInfo;
 
 @Component("kakao")
 @RequiredArgsConstructor
-public class KakaoOAuthProvider implements OAuthProvider{
+public class KakaoOAuthProvider implements OAuthProvider {
 
 	private final KakaoApiClient kakaoApiClient;
 

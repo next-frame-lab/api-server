@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
@@ -27,7 +27,7 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/signin")
-	public ResponseEntity<ApiResponse<?>> signin(@RequestBody KaKaoSigninRequest request) {
+	public ResponseEntity<ApiResponse<?>> signin(@RequestBody OAuthSigninRequest request) {
 		final SigninResponse signinResponse = oAuthFacade.signin(request.provider(), request.authCode());
 
 		final ApiResponse<SigninResponse> response = ApiResponse.success(signinResponse);

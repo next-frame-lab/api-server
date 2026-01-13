@@ -23,7 +23,7 @@ import wisoft.nextframe.schedulereservationticketing.common.exception.DomainExce
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.config.jwt.JwtAuthenticationFilter;
 import wisoft.nextframe.schedulereservationticketing.config.security.SecurityConfig;
-import wisoft.nextframe.schedulereservationticketing.dto.auth.KaKaoSigninRequest;
+import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthSigninRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshRequest;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.TokenRefreshResponse;
@@ -58,7 +58,7 @@ class AuthControllerTest {
 		@DisplayName("카카오 로그인 성공: 201 Created와 엑세스/리프레시 토큰 및 유저 정보를 반환한다")
 		void signin_success() throws Exception {
 			// given
-			KaKaoSigninRequest request = new KaKaoSigninRequest("kakao", "auth_code_123");
+			OAuthSigninRequest request = new OAuthSigninRequest("kakao", "auth_code_123");
 			SigninResponse response = new SigninResponse(
 				"access-token-example",
 				"refresh-token-example",
@@ -88,7 +88,7 @@ class AuthControllerTest {
 		@DisplayName("카카오 로그인 실패: 인증 코드가 만료되었거나 잘못된 경우 400 Bad Request를 반환한다")
 		void signin_fail_invalid_code() throws Exception {
 			// given
-			KaKaoSigninRequest request = new KaKaoSigninRequest("kakao", "invalid_code");
+			OAuthSigninRequest request = new OAuthSigninRequest("kakao", "invalid_code");
 
 			given(oAuthFacade.signin(anyString(), anyString()))
 				.willThrow(new DomainException(ErrorCode.INVALID_KAKAO_AUTH_CODE));

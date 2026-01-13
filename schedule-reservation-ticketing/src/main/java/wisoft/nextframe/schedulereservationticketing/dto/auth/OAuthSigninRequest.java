@@ -2,7 +2,7 @@ package wisoft.nextframe.schedulereservationticketing.dto.auth;
 
 import jakarta.validation.constraints.NotNull;
 
-public record KaKaoSigninRequest(
+public record OAuthSigninRequest(
 	@NotNull
 	String provider,
 	@NotNull
