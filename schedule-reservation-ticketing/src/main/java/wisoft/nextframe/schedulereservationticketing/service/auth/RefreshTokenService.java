@@ -29,11 +29,8 @@ public class RefreshTokenService {
 	@Transactional
 	public void replaceRefreshToken(User user, String tokenValue, LocalDateTime expiresAt) {
 		// 1. 기존 Refresh Token 삭제
-		refreshTokenRepository.findByUser(user)
-			.ifPresent(refreshToken -> {
-				log.info("기존 Refresh Token 삭제. userId={}", user.getId());
-				refreshTokenRepository.delete(refreshToken);
-			});
+		log.info("기존 Refresh Token 삭제. userId={}", user.getId());
+		refreshTokenRepository.deleteByUserId(user.getId());
 
 		// 2. 새 Refresh Token 저장
 		log.info("새 Refresh Token 발급. userId={}", user.getId());

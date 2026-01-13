@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.service.auth;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -86,7 +87,7 @@ public class OAuthSigninService {
 						.email(userInfo.email())
 						.name(userInfo.name())
 						.imageUrl(userInfo.imageUrl())
-						.birthDate(null) // 소셜 제공자에 따라 추후 보완
+						.birthDate(LocalDate.of(1998, 4, 7)) // 소셜 제공자에 따라 추후 보완
 						.build()
 				);
 			});

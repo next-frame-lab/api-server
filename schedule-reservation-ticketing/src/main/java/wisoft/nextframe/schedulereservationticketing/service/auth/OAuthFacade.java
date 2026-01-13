@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
@@ -25,6 +26,13 @@ public class OAuthFacade {
 
 	private final Map<String, OAuthProvider> providerMap;
 	private final OAuthSigninService signinService;
+
+	@PostConstruct
+	public void validateProviders() {
+		if (providerMap == null || providerMap.isEmpty()) {
+			throw new DomainException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	public SigninResponse signin(String provider, String authCode) {
 		final OAuthProvider oAuthProvider = providerMap.get(provider);

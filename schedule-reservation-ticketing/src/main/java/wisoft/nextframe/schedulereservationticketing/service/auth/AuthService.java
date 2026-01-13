@@ -67,9 +67,16 @@ public class AuthService {
 	@Transactional
 	public void logout() {
 		// SecurityContext에서 인증된 사용자 ID 추출
-		final UUID userId = (UUID)SecurityContextHolder.getContext()
+		final Object principal = SecurityContextHolder.getContext()
 			.getAuthentication()
 			.getPrincipal();
+
+		if (!(principal instanceof UUID userId)) {
+			log.warn("principal이 UUID 타입이 아닙니다. principal: {}", principal);
+			// 인증되지 않은 사용자("anonymousUser")의 로그아웃 시도일 수 있습니다.
+			// 이 경우 ClassCastException이 발생할 수 있으므로, 타입 확인 후 처리합니다.
+			throw new DomainException(ErrorCode.AUTHENTICATION_FAILED);
+		}
 
 		log.info("로그아웃 요청. userId={}", userId);
 
@@ -79,5 +86,3 @@ public class AuthService {
 		log.info("Refresh Token 삭제 완료 (존재하지 않아도 성공 처리). userId={}", userId);
 	}
 }
-
-
