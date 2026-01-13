@@ -11,6 +11,13 @@ import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.OAuthUserInfo;
 import wisoft.nextframe.schedulereservationticketing.dto.auth.SigninResponse;
 
+/**
+ * 소셜 로그인 요청의 진입점 역할을 하는 클래스입니다.
+ *
+ * provider에 따라 적절한 OAuthProvider를 선택하여
+ * 인가 코드를 사용자 정보로 변환하고,
+ * 이후 로그인/회원 처리 로직은 OAuthSigninService에 위임합니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

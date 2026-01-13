@@ -2,6 +2,7 @@ package wisoft.nextframe.schedulereservationticketing.service.auth;
 
 import java.util.UUID;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +62,21 @@ public class AuthService {
 		log.info("Access Token 재발급 성공. userId: {}", userId);
 
 		return new TokenRefreshResponse(newAccessToken);
+	}
+
+	@Transactional
+	public void logout() {
+		// SecurityContext에서 인증된 사용자 ID 추출
+		final UUID userId = (UUID)SecurityContextHolder.getContext()
+			.getAuthentication()
+			.getPrincipal();
+
+		log.info("로그아웃 요청. userId={}", userId);
+
+		// Refresh Token 존재 여부와 상관없이 삭제 시도
+		refreshTokenRepository.deleteByUserId(userId);
+
+		log.info("Refresh Token 삭제 완료 (존재하지 않아도 성공 처리). userId={}", userId);
 	}
 }
 

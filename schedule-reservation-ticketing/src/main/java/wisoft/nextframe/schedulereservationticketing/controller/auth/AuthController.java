@@ -28,7 +28,7 @@ public class AuthController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<?>> signin(@RequestBody KaKaoSigninRequest request) {
-		final SigninResponse signinResponse = oAuthFacade.signin(request.provider() ,request.authCode());
+		final SigninResponse signinResponse = oAuthFacade.signin(request.provider(), request.authCode());
 
 		final ApiResponse<SigninResponse> response = ApiResponse.success(signinResponse);
 
@@ -42,5 +42,12 @@ public class AuthController {
 		final ApiResponse<TokenRefreshResponse> response = ApiResponse.success(tokenRefreshResponse);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout() {
+		authService.logout();
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

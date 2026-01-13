@@ -6,12 +6,16 @@ import static org.mockito.BDDMockito.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -35,6 +39,17 @@ class AuthServiceTest {
 
 	@Mock
 	private JwtTokenProvider jwtTokenProvider;
+
+	@Mock
+	private SecurityContext securityContext;
+
+	@Mock
+	private Authentication authentication;
+
+	@AfterEach
+	void tearDown() {
+		SecurityContextHolder.clearContext();
+	}
 
 	@Test
 	@DisplayName("토큰 재발급 성공: DB 토큰과 일치하면 새로운 Access Token을 반환한다")
@@ -156,5 +171,27 @@ class AuthServiceTest {
 		assertThatThrownBy(() -> authService.reissueToken(invalidToken))
 			.isInstanceOf(DomainException.class)
 			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_TOKEN);
+	}
+
+	@Test
+	@DisplayName("로그아웃 성공: SecurityContext의 사용자 ID로 Refresh Token을 삭제한다")
+	void logout_success() {
+		// given
+		UUID userId = UUID.randomUUID();
+
+		// SecurityContext 모킹
+		given(authentication.getPrincipal()).willReturn(userId);
+		given(securityContext.getAuthentication()).willReturn(authentication);
+		SecurityContextHolder.setContext(securityContext);
+
+		// deleteByUserId는 void를 반환하므로 willDoNothing()을 사용
+		willDoNothing().given(refreshTokenRepository).deleteByUserId(userId);
+
+		// when
+		authService.logout();
+
+		// then
+		// deleteByUserId가 정확히 1번 호출되었는지 검증
+		verify(refreshTokenRepository, times(1)).deleteByUserId(userId);
 	}
 }
