@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.SeatSectionPriceResponse;
@@ -22,7 +22,6 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
-import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceStatisticRepository;
@@ -70,7 +69,7 @@ public class PerformanceService {
 		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices, performanceStatistic);
 	}
 
-	@Cacheable(value = "performanceList", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
+	// TODO: [캐싱] 직렬화 문제 해결 후 안정적인 캐싱 전략 재도입 필요
 	public PerformanceListResponse getPerformanceList(Pageable pageable) {
 		// 1. PerformanceSummaryResponse로 구성된 공연 목록 Page 객체 조회
 		final Page<PerformanceSummaryResponse> performancePage = performanceRepository.findReservablePerformances(pageable);
@@ -80,7 +79,7 @@ public class PerformanceService {
 		return PerformanceListResponse.from(performancePage);
 	}
 
-	@Cacheable("top10Performances")
+	// TODO: [캐싱] 직렬화 문제 해결 후 안정적인 캐싱 전략 재도입 필요
 	public Top10PerformanceListResponse getTop10Performances() {
 		// 1. 상위 10개만 조회하기 위한 Pageable 객체를 생성
 		Pageable topTenPageable = PageRequest.of(0, 10);
