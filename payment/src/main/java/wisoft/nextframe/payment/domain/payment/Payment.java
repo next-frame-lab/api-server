@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.ToString;
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.common.exception.InvalidAmountException;
 import wisoft.nextframe.payment.domain.ReservationId;
@@ -18,8 +19,9 @@ import wisoft.nextframe.payment.domain.payment.exception.TooLargeAmountException
 import wisoft.nextframe.payment.domain.refund.Refund;
 
 @Getter
+@ToString
 public class Payment {
-	private static final Money MAX_AMOUNT = Money.of(100000);
+	private static final Money MAX_AMOUNT = Money.of(10_000_000);
 
 	private final PaymentId id;
 	private final ReservationId reservationId;
@@ -87,7 +89,7 @@ public class Payment {
 		this.status = PaymentStatus.SUCCEEDED;
 		this.approvedAt = LocalDateTime.now();
 
-		domainEvents.add(new PaymentApprovedEvent(this.id.getValue(), this.reservationId.getValue()));
+		domainEvents.add(new PaymentApprovedEvent(this.id.getValue(), this.reservationId.value()));
 	}
 
 	public void fail() {
