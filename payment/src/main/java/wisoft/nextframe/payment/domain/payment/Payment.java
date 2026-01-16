@@ -87,7 +87,7 @@ public class Payment {
 		this.status = PaymentStatus.SUCCEEDED;
 		this.approvedAt = LocalDateTime.now();
 
-		domainEvents.add(new PaymentApprovedEvent(this.id.getValue(), this.reservationId.getValue()));
+		domainEvents.add(new PaymentApprovedEvent(this.id.getValue(), this.reservationId.value()));
 	}
 
 	public void fail() {

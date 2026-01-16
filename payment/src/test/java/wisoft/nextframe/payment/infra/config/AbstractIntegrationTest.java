@@ -1,6 +1,13 @@
 package wisoft.nextframe.payment.infra.config;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -10,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 데이터베이스를 사용하는 모든 통합 테스트를 위한 추상 클래스입니다.
  * 이 클래스를 상속받는 테스트는 Testcontainers를 사용하여 격리된 PostgreSQL 데이터베이스 환경에서 실행됩니다.
  */
-@SpringBootTest
+@SpringBootTest(properties = "ticket.issue.retry.delay-ms=5000")
 @Transactional
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest implements PostgresSQLContainerInitializer {
@@ -30,5 +37,18 @@ public abstract class AbstractIntegrationTest implements PostgresSQLContainerIni
 		registry.add("spring.datasource.username", POSTGRES_CONTAINER::getUsername);
 		registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
 		registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+	}
+
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+
+	@BeforeEach
+	void initSchema() throws IOException {
+		// 매 테스트마다 돌면 느릴 수 있음 → IF NOT EXISTS로 방어
+		String sql = new String(
+			Objects.requireNonNull(getClass().getResourceAsStream("/schema-test.sql")).readAllBytes(),
+			StandardCharsets.UTF_8
+		);
+		jdbcTemplate.execute(sql);
 	}
 }
