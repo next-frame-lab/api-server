@@ -1,5 +1,6 @@
 package wisoft.nextframe.payment.infra.schedule;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import wisoft.nextframe.payment.application.ticketissue.TicketIssueRetryUseCase;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class TicketIssueScheduler {
 
 	private final TicketIssueRetryUseCase retryUseCase;
