@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
+import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
 
@@ -26,6 +27,12 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 	@Override
 	public Optional<Payment> findById(PaymentId id) {
 		return jpaPaymentRepository.findById(id.getValue())
+			.map(paymentMapper::toDomain);
+	}
+
+	@Override
+	public Optional<Payment> findByReservationId(ReservationId reservationId) {
+		return jpaPaymentRepository.findByReservationId(reservationId.value())
 			.map(paymentMapper::toDomain);
 	}
 }
