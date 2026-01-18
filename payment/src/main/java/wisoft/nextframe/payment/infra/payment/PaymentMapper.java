@@ -26,7 +26,7 @@ public class PaymentMapper implements EntityMapper<Payment, PaymentEntity> {
 	public PaymentEntity toEntity(Payment payment) {
 		return PaymentEntity.builder()
 			.id(payment.getId().getValue())
-			.reservationId(payment.getReservationId().value())
+			.reservationId(payment.getReservationId().getValue())
 			.totalAmount(payment.getAmount().getValue().intValue())
 			.status(payment.getStatus())
 			.requestedAt(payment.getRequestedAt())

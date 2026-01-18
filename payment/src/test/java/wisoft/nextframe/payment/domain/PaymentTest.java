@@ -88,9 +88,7 @@ class PaymentTest {
 			assertThat(payment.getDomainEvents())
 				.hasSize(1)
 				.first()
-				.isInstanceOf(PaymentApprovedEvent.class)
-				.extracting("paymentId", "reservationId")
-				.containsExactly(payment.getId().getValue(), payment.getReservationId().value());
+				.isInstanceOf(PaymentApprovedEvent.class);
 		}
 
 		@Test

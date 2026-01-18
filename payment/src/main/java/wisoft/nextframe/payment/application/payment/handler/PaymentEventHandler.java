@@ -1,25 +1,22 @@
 package wisoft.nextframe.payment.application.payment.handler;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.ticketissue.TicketIssueOutboxService;
+import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
+import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PaymentEventHandler {
 
-	private final TicketIssueOutboxService outboxService;
+	private final TicketingClient ticketingClient;
 
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
 	public void onPaymentApproved(PaymentApprovedEvent event) {
-		log.info("HANDLER 호출 paymentId={}, reservationId={}", event.paymentId(), event.reservationId());
-
-		outboxService.issueOrEnqueue(event.paymentId(), event.reservationId());
+		// 결제가 승인되면 티켓 발급 요청
+		ticketingClient.issueTicket(ReservationId.of(event.reservationId()));
 	}
 }
