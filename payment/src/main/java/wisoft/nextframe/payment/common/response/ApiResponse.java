@@ -15,6 +15,6 @@ public class ApiResponse<T> {
 	}
 
 	public static <T> ApiResponse<T> failed(String message) {
-		return ApiResponse.<T>of("FAILED", null, message);
+		return ApiResponse.of("FAILED", null, message);
 	}
 }
