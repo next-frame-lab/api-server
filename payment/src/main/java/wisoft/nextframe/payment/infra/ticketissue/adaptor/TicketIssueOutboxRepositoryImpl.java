@@ -23,8 +23,7 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	@Override
 	@Transactional
 	public void upsertPending(UUID paymentId, UUID reservationId, String lastError, LocalDateTime now) {
-		log.info("UPSERT_PENDING called paymentId={}, reservationId={}, now={}",
-			paymentId, reservationId, now);
+		log.info("UPSERT_PENDING called paymentId={}, reservationId={}, now={}", paymentId, reservationId, now);
 
 		var entity = jpa.findByReservationId(reservationId).orElseGet(() -> {
 			var e = new TicketIssueOutboxEntity();
@@ -58,14 +57,15 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	@Override
 	@Transactional
 	public void markSuccess(UUID reservationId, UUID ticketId, LocalDateTime now) {
-		var entity = jpa.findByReservationId(reservationId).orElse(null);
-		if (entity == null)
-			return;
 
-		entity.setStatus("SUCCESS");
-		entity.setTicketId(ticketId);
-		entity.setUpdatedAt(now);
-		jpa.save(entity);
+		jpa.findByReservationId(reservationId).ifPresent(entity -> {
+				entity.setStatus("SUCCESS");
+				entity.setTicketId(ticketId);
+				entity.setUpdatedAt(now);
+				jpa.save(entity);
+			}
+		);
+
 	}
 
 	@Override
@@ -86,28 +86,28 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	@Override
 	@Transactional
 	public void failAndBackoff(UUID reservationId, String lastError, LocalDateTime now) {
-		var entity = jpa.findByReservationId(reservationId).orElse(null);
-		if (entity == null)
-			return;
+		jpa.findByReservationId(reservationId).ifPresent(entity -> {
+			int nextRetry = entity.getRetryCount() + 1;
+			entity.setRetryCount(nextRetry);
+			entity.setLastError(lastError);
+			entity.setUpdatedAt(now);
 
-		int nextRetry = entity.getRetryCount() + 1;
-		entity.setRetryCount(nextRetry);
-		entity.setLastError(lastError);
-		entity.setUpdatedAt(now);
+			// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
+			if (nextRetry == 1)
+				entity.setNextRetryAt(now.plusSeconds(5));
+			else if (nextRetry == 2)
+				entity.setNextRetryAt(now.plusSeconds(30));
+			else if (nextRetry == 3)
+				entity.setNextRetryAt(now.plusMinutes(2));
+			else if (nextRetry == 4)
+				entity.setNextRetryAt(now.plusMinutes(10));
+			else {
+				entity.setStatus("FAILED");
+				entity.setNextRetryAt(null);
+			}
 
-		// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
-		if (nextRetry == 1)
-			entity.setNextRetryAt(now.plusSeconds(5));
-		else if (nextRetry == 2)
-			entity.setNextRetryAt(now.plusSeconds(30));
-		else if (nextRetry == 3)
-			entity.setNextRetryAt(now.plusMinutes(2));
-		else if (nextRetry == 4)
-			entity.setNextRetryAt(now.plusMinutes(10));
-		else
-			entity.setStatus("FAILED");
-
-		jpa.save(entity);
+			jpa.save(entity);
+		});
 	}
 
 	@Override

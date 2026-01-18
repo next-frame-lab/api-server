@@ -1,6 +1,7 @@
 package wisoft.nextframe.payment.application.payment;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
@@ -11,12 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
 import wisoft.nextframe.payment.application.payment.port.output.ReservationReader;
@@ -33,10 +34,10 @@ class PaymentTransactionServiceTest {
 	PaymentRepository paymentRepository;
 
 	@Mock
-	ApplicationEventPublisher eventPublisher;
+	ReservationReader reservationReader;
 
 	@Mock
-	ReservationReader reservationReader;
+	private ApplicationEventPublisher eventPublisher;
 
 	@InjectMocks
 	PaymentTransactionService paymentTransactionService;
@@ -67,23 +68,23 @@ class PaymentTransactionServiceTest {
 			null
 		);
 
-		given(paymentRepository.findByReservationId(any())).willReturn(Optional.empty());
+		Payment payment = Payment.request(
+			Money.of(10_000),
+			ReservationId.of(reservationId),
+			LocalDateTime.now()
+		);
 
+		given(paymentRepository.findByReservationId(any())).willReturn(Optional.of(payment));
 		// save()는 보통 저장된 엔티티를 반환하니 그대로 반환하도록 세팅
-		given(paymentRepository.save(any(Payment.class)))
-			.willAnswer(inv -> inv.getArgument(0));
+		given(paymentRepository.save(any(Payment.class))).willAnswer(inv -> inv.getArgument(0));
 
 		// when
 		Payment saved = paymentTransactionService.applyConfirmResult(request, result);
 
 		// then
 		assertThat(saved.isSucceeded()).isTrue();
+		assertThat(saved.getReservationId().value()).isEqualTo(reservationId);
 		then(paymentRepository).should(times(1)).save(any(Payment.class));
-
-		// reservationId가 요청값 그대로 들어갔는지까지 확인
-		ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
-		then(paymentRepository).should().save(captor.capture());
-		assertThat(captor.getValue().getReservationId().value()).isEqualTo(reservationId);
 	}
 
 	@Test
@@ -135,14 +136,30 @@ class PaymentTransactionServiceTest {
 		);
 		existing.approve(); // succeeded 상태로 변경
 
-		given(paymentRepository.findByReservationId(any()))
-			.willReturn(Optional.of(existing));
+		given(paymentRepository.findByReservationId(any())).willReturn(Optional.of(existing));
 		// when
 		Payment returned = paymentTransactionService.applyConfirmResult(request, result);
 
 		// then
 		assertThat(returned).isSameAs(existing);
 		then(paymentRepository).should(never()).save(any(Payment.class));
+	}
+
+	@Test
+	@DisplayName("예약 정보가 존재하지 않으면 ReservationNotFoundException이 발생한다")
+	void applyConfirmResult_ThrowsException_WhenReservationNotFound() {
+		// given
+		String orderId = UUID.randomUUID().toString();
+		ReservationId reservationId = ReservationId.of(UUID.fromString(orderId));
+		PaymentConfirmRequest request = new PaymentConfirmRequest("paymentKey", orderId, 10_000);
+
+		// reservationReader.exists가 false를 반환하도록 설정
+		given(reservationReader.exists(reservationId)).willReturn(false);
+
+		// when & then
+		assertThrows(ReservationNotFoundException.class, () -> {
+			paymentTransactionService.applyConfirmResult(request, any());
+		});
 	}
 
 }

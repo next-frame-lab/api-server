@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
 import wisoft.nextframe.payment.domain.refund.exception.RefundException;
 
+@Slf4j
 @RestControllerAdvice
 public class PaymentGlobalExceptionHandler {
 
@@ -35,6 +37,8 @@ public class PaymentGlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+		log.error("Unexpected error occurred: ", ex);
+
 		return ResponseEntity
 			.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(new ErrorResponse("INTERNAL_ERROR", "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."));

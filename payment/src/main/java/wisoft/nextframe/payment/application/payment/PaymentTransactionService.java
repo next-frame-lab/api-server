@@ -15,6 +15,7 @@ import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
 import wisoft.nextframe.payment.application.payment.port.output.ReservationReader;
 import wisoft.nextframe.payment.common.Money;
+import wisoft.nextframe.payment.common.exception.InvalidAmountException;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedFailedException;
@@ -60,6 +61,12 @@ public class PaymentTransactionService {
 		log.debug("결제 엔티티 생성 완료: {}", payment);
 
 		if (result.isSuccess()) {
+			if (!payment.getAmount().equals(Money.of(result.totalAmount()))) {
+				log.error("결제 금액 불일치 - 예상: {}, 실제: {}", payment.getAmount(), result.totalAmount());
+				payment.fail(); // 상태를 실패로 변경
+				paymentRepository.save(payment);
+				throw new InvalidAmountException();
+			}
 			log.info("결제 승인 성공 - paymentId: {}, totalAmount: {}", payment.getId(), result.totalAmount());
 			payment.approve();
 			paymentRepository.save(payment);
