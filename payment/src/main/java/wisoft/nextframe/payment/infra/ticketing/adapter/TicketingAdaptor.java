@@ -1,11 +1,14 @@
 package wisoft.nextframe.payment.infra.ticketing.adapter;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
+import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueResult;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.infra.ticketing.adapter.dto.TicketIssueRequest;
 import wisoft.nextframe.payment.infra.ticketing.adapter.dto.TicketIssueResponse;
@@ -28,12 +31,16 @@ public class TicketingAdaptor implements TicketingClient {
 	}
 
 	@Override
-	public TicketIssueResponse issueTicket(ReservationId reservationId) {
-		return restClient.post()
+	public TicketIssueResult issueTicket(ReservationId reservationId) {
+		TicketIssueResponse response = restClient.post()
 			.uri("/tickets")
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(new TicketIssueRequest(reservationId.value()))
 			.retrieve()
 			.body(TicketIssueResponse.class);
+
+		return Optional.ofNullable(response)
+			.map(res -> new TicketIssueResult(res.ticketId()))
+			.orElseThrow(() -> new RuntimeException("티켓 발급 응답이 비어있습니다."));
 	}
 }

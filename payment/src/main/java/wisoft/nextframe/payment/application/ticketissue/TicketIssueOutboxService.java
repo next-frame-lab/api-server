@@ -10,10 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
+import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueResult;
 import wisoft.nextframe.payment.application.ticketissue.port.output.TicketIssueOutboxRepository;
 import wisoft.nextframe.payment.domain.ReservationId;
-import wisoft.nextframe.payment.infra.ticketing.adapter.dto.TicketIssueResponse;
-import wisoft.nextframe.payment.infra.ticketissue.adaptor.JpaTicketIssueOutboxRepository;
 
 @Slf4j
 @Service
@@ -22,8 +21,6 @@ public class TicketIssueOutboxService {
 
 	private final TicketingClient ticketingClient;
 	private final TicketIssueOutboxRepository outboxRepository;
-	//todo 임시 지워야함
-	private final JpaTicketIssueOutboxRepository jpaTicketIssueOutboxRepository;
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void issueOrEnqueue(UUID paymentId, UUID reservationId) {
@@ -33,11 +30,9 @@ public class TicketIssueOutboxService {
 
 		// 1) 먼저 outbox에 PENDING upsert (쓰기 선반영)
 		outboxRepository.upsertPending(paymentId, reservationId, null, now);
-		log.info("AFTER UPSERT present={}",
-			jpaTicketIssueOutboxRepository.findByReservationId(reservationId).isPresent());
 		try {
 			// 2) 외부 호출
-			TicketIssueResponse response = ticketingClient.issueTicket(ReservationId.of(reservationId));
+			TicketIssueResult response = ticketingClient.issueTicket(ReservationId.of(reservationId));
 
 			// 3) 성공 처리
 			outboxRepository.markSuccess(reservationId, response.ticketId(), now);

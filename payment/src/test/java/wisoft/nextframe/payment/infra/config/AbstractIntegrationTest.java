@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(properties = "ticket.issue.retry.delay-ms=5000")
 @Transactional
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractIntegrationTest implements PostgresSQLContainerInitializer {
 
 	/**
@@ -42,7 +44,7 @@ public abstract class AbstractIntegrationTest implements PostgresSQLContainerIni
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 
-	@BeforeEach
+	@BeforeAll
 	void initSchema() throws IOException {
 		// 매 테스트마다 돌면 느릴 수 있음 → IF NOT EXISTS로 방어
 		String sql = new String(
