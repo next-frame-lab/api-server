@@ -28,7 +28,7 @@ public class TicketIssueRetryUseCase {
 				outboxRepository.markSuccess(t.reservationId(), response.ticketId(), now);
 			} catch (Exception e) {
 				log.warn("티켓 재시도 실패. reservationId={}, error={}", t.reservationId(), e.toString());
-				outboxRepository.failAndBackoff(t.reservationId(), e.getMessage(), now);
+				outboxRepository.failAndBackoff(t.reservationId(), e.toString(), now);
 			}
 		}
 	}
