@@ -34,7 +34,12 @@ public class PaymentTransactionService {
 	@Transactional
 	public Payment applyConfirmResult(PaymentConfirmRequest request, PaymentGateway.PaymentConfirmResult result) {
 
-		ReservationId reservationId = ReservationId.of(UUID.fromString(request.orderId()));
+		ReservationId reservationId;
+		try {
+			reservationId = ReservationId.of(UUID.fromString(request.orderId()));
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("올바르지 않은 orderId 형식입니다: " + request.orderId());
+		}
 
 		if (!reservationReader.exists(reservationId)) {
 			throw new ReservationNotFoundException(reservationId.value());
