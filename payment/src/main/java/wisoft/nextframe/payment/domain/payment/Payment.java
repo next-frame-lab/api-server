@@ -21,7 +21,7 @@ import wisoft.nextframe.payment.domain.refund.Refund;
 @Getter
 @ToString
 public class Payment {
-	private static final Money MAX_AMOUNT = Money.of(100000);
+	private static final Money MAX_AMOUNT = Money.of(10_000_000);
 
 	private final PaymentId id;
 	private final ReservationId reservationId;
