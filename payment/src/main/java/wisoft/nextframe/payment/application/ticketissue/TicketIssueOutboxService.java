@@ -24,7 +24,7 @@ public class TicketIssueOutboxService {
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void issueOrEnqueue(UUID paymentId, UUID reservationId) {
-		log.info("outboxRepository class={}", outboxRepository.getClass());
+		log.debug("outboxRepository class={}", outboxRepository.getClass());
 
 		LocalDateTime now = LocalDateTime.now();
 
@@ -38,7 +38,7 @@ public class TicketIssueOutboxService {
 			outboxRepository.markSuccess(reservationId, response.ticketId(), now);
 		} catch (Exception e) {
 			// 4) 실패면 lastError만 업데이트 (이미 PENDING row는 있음)
-			outboxRepository.upsertPending(paymentId, reservationId, e.getMessage(), now);
+			outboxRepository.upsertPending(paymentId, reservationId, e.toString(), now);
 		}
 	}
 }
