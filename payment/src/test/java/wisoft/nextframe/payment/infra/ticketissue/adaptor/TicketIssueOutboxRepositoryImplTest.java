@@ -15,6 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import wisoft.nextframe.payment.infra.ticketissue.adapter.JpaTicketIssueOutboxRepository;
+import wisoft.nextframe.payment.infra.ticketissue.adapter.TicketIssueOutboxEntity;
+import wisoft.nextframe.payment.infra.ticketissue.adapter.TicketIssueOutboxRepositoryImpl;
+
 @ExtendWith(MockitoExtension.class)
 class TicketIssueOutboxRepositoryImplTest {
 

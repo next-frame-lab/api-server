@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.ticketing.adapter.dto;
+package wisoft.nextframe.payment.infra.ticketissue.adapter.dto;
 
 import java.util.UUID;
 
