@@ -16,7 +16,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
@@ -28,8 +32,18 @@ public class RedisCacheConfig {
 	 */
 	@Bean
 	public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+		PolymorphicTypeValidator typeValidator = BasicPolymorphicTypeValidator.builder()
+			.allowIfSubType("wisoft.nextframe.schedulereservationticketing.dto")
+			.allowIfSubType("wisoft.nextframe.schedulereservationticketing.entity")
+			.allowIfSubType("java.util")
+			.allowIfSubType("java.time")
+			.build();
+
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// DefaultTyping 설정 활성화
+		objectMapper.activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.PROPERTY);
 
 		GenericJackson2JsonRedisSerializer redisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
