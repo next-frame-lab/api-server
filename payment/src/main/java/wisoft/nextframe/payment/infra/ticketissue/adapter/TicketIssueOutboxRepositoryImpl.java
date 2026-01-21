@@ -1,11 +1,11 @@
 package wisoft.nextframe.payment.infra.ticketissue.adapter;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	private final Environment env;
 
 	private boolean isCircuitBreakerTestProfile() {
-		return Arrays.asList(env.getActiveProfiles()).contains("dev-cb-test");
+		return env.acceptsProfiles(Profiles.of("dev-cb-test"));
 	}
 
 	@Override
