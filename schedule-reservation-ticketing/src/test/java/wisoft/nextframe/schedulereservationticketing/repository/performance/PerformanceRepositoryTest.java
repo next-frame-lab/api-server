@@ -85,9 +85,9 @@ class PerformanceRepositoryTest {
 			assertThat(resultPage.getTotalElements()).isEqualTo(1);
 
 			final PerformanceSummaryResponse performanceSummaryResponse = resultPage.getContent().getFirst();
-			assertThat(performanceSummaryResponse.getId()).isEqualTo(performance.getId());
-			assertThat(performanceSummaryResponse.getStartDate()).isEqualTo(now.plusDays(30).toLocalDate());
-			assertThat(performanceSummaryResponse.getEndDate()).isEqualTo(now.plusDays(50).toLocalDate());
+			assertThat(performanceSummaryResponse.id()).isEqualTo(performance.getId());
+			assertThat(performanceSummaryResponse.startDate()).isEqualTo(now.plusDays(30).toLocalDate());
+			assertThat(performanceSummaryResponse.endDate()).isEqualTo(now.plusDays(50).toLocalDate());
 		}
 
 		@Test
@@ -109,7 +109,7 @@ class PerformanceRepositoryTest {
 
 			// then
 			final boolean found = resultPage.getContent().stream()
-				.anyMatch(dto -> dto.getId().equals(performance.getId()));
+				.anyMatch(dto -> dto.id().equals(performance.getId()));
 
 			assertThat(found).isFalse();
 		}
@@ -133,7 +133,7 @@ class PerformanceRepositoryTest {
 
 			// then
 			final boolean found = resultPage.getContent().stream()
-				.anyMatch(dto -> dto.getId().equals(performance.getId()));
+				.anyMatch(dto -> dto.id().equals(performance.getId()));
 
 			assertThat(found).isFalse();
 		}
@@ -179,12 +179,12 @@ class PerformanceRepositoryTest {
 
 			// 2. 제외되어야 할 공연들이 조회되지 않았는지 확인
 			assertThat(resultPage.getContent())
-				.extracting(PerformanceSummaryResponse::getName)
+				.extracting(PerformanceSummaryResponse::name)
 				.doesNotContain("11위 공연(미포함)", "종료된 인기공연(미포함)");
 
 			// 3. 정렬 순서가 정확한지 확인한다. (조회수 DESC, 시작일 ASC)
 			assertThat(resultPage.getContent())
-				.extracting(PerformanceSummaryResponse::getName)
+				.extracting(PerformanceSummaryResponse::name)
 				.containsExactly(
 					"1위 공연",
 					"2위 공연",
