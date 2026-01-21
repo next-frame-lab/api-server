@@ -38,6 +38,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
             r.user.name,
             r.user.imageUrl,
             r.content,
+            r.star,
             CASE WHEN rl.id IS NOT NULL THEN true ELSE false END,
             r.likeCount,
             r.createdAt,

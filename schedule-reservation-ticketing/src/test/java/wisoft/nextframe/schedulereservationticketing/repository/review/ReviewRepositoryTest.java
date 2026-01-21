@@ -95,6 +95,7 @@ class ReviewRepositoryTest {
 				if (item.id().equals(review1.getId())) {
 					assertThat(item.writerName()).isEqualTo("작성자1");
 					assertThat(item.content()).isEqualTo("작성자1가 작성한 리뷰 내용");
+					assertThat(item.star()).isEqualByComparingTo(new BigDecimal("4.5"));
 					assertThat(item.likeStatus()).isTrue();
 					assertThat(item.likeCount()).isEqualTo(3);
 					assertThat(item.createdAt()).isNotNull();
@@ -105,6 +106,7 @@ class ReviewRepositoryTest {
 				if (item.id().equals(review2.getId())) {
 					assertThat(item.writerName()).isEqualTo("작성자2");
 					assertThat(item.content()).isEqualTo("작성자2가 작성한 리뷰 내용");
+					assertThat(item.star()).isEqualByComparingTo(new BigDecimal("3.0"));
 					assertThat(item.likeStatus()).isFalse();
 					assertThat(item.likeCount()).isEqualTo(1);
 					assertThat(item.createdAt()).isNotNull();
@@ -128,6 +130,7 @@ class ReviewRepositoryTest {
 			// then
 			assertThat(page.getTotalElements()).isEqualTo(1);
 			ReviewItemResponse item = page.getContent().getFirst();
+			assertThat(item.star()).isEqualByComparingTo(new BigDecimal("4.5"));
 			assertThat(item.likeStatus()).isFalse();
 		}
 	}

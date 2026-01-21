@@ -1,16 +1,18 @@
-package wisoft.nextframe.payment.infra.ticketissue.adaptor;
+package wisoft.nextframe.payment.infra.ticketissue.adapter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxRow;
+import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxTarget;
 import wisoft.nextframe.payment.application.ticketissue.port.output.TicketIssueOutboxRepository;
 
 @Slf4j
@@ -19,11 +21,16 @@ import wisoft.nextframe.payment.application.ticketissue.port.output.TicketIssueO
 public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxRepository {
 
 	private final JpaTicketIssueOutboxRepository jpa;
+	private final Environment env;
+
+	private boolean isCircuitBreakerTestProfile() {
+		return env.acceptsProfiles(Profiles.of("dev-cb-test"));
+	}
 
 	@Override
 	@Transactional
 	public void upsertPending(UUID paymentId, UUID reservationId, String lastError, LocalDateTime now) {
-		log.info("UPSERT_PENDING called paymentId={}, reservationId={}, now={}", paymentId, reservationId, now);
+		log.debug("UPSERT_PENDING called paymentId={}, reservationId={}, now={}", paymentId, reservationId, now);
 
 		var entity = jpa.findByReservationId(reservationId).orElseGet(() -> {
 			var e = new TicketIssueOutboxEntity();
@@ -69,16 +76,12 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	}
 
 	@Override
-	public List<TicketIssueOutboxRow> findReady(LocalDateTime now, int limit) {
+	public List<TicketIssueOutboxTarget> findIssueTargets(LocalDateTime now, int limit) {
 		return jpa.findReadyToRetry(now, PageRequest.of(0, limit))
 			.stream()
-			.map(e -> new TicketIssueOutboxRow(
+			.map(e -> new TicketIssueOutboxTarget(
 				e.getReservationId(),
-				e.getPaymentId(),
-				e.getTicketId(),
-				e.getStatus(),
-				e.getRetryCount(),
-				e.getNextRetryAt()
+				e.getPaymentId()
 			))
 			.toList();
 	}
@@ -92,20 +95,24 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 			entity.setLastError(lastError);
 			entity.setUpdatedAt(now);
 
-			// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
-			if (nextRetry == 1)
-				entity.setNextRetryAt(now.plusSeconds(5));
-			else if (nextRetry == 2)
-				entity.setNextRetryAt(now.plusSeconds(30));
-			else if (nextRetry == 3)
-				entity.setNextRetryAt(now.plusMinutes(2));
-			else if (nextRetry == 4)
-				entity.setNextRetryAt(now.plusMinutes(10));
-			else {
-				entity.setStatus("FAILED");
-				entity.setNextRetryAt(null);
+			// 재시도 테스트 용도 : dev-cb-test에서는 OPEN 테스트를 위해 즉시 재시도 가능하게 만든다
+			if (isCircuitBreakerTestProfile()) {
+				entity.setNextRetryAt(now);
+			} else {
+				// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
+				if (nextRetry == 1)
+					entity.setNextRetryAt(now.plusSeconds(5));
+				else if (nextRetry == 2)
+					entity.setNextRetryAt(now.plusSeconds(30));
+				else if (nextRetry == 3)
+					entity.setNextRetryAt(now.plusMinutes(2));
+				else if (nextRetry == 4)
+					entity.setNextRetryAt(now.plusMinutes(10));
+				else {
+					entity.setStatus("FAILED");
+					entity.setNextRetryAt(null);
+				}
 			}
-
 			jpa.save(entity);
 		});
 	}
