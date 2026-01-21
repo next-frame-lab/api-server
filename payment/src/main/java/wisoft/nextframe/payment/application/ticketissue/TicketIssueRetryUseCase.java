@@ -22,12 +22,21 @@ public class TicketIssueRetryUseCase {
 		var now = LocalDateTime.now();
 		var targets = outboxRepository.findReady(now, 50);
 
+		log.debug("runOnce targets.size={}, now={}", targets.size(), now);
+
 		for (var t : targets) {
+			log.debug("runOnce processing reservationId={}", t.reservationId());
 			try {
 				var response = ticketingClient.issueTicket(ReservationId.of(t.reservationId()));
 				outboxRepository.markSuccess(t.reservationId(), response.ticketId(), now);
 			} catch (Exception e) {
-				log.warn("티켓 재시도 실패. reservationId={}, error={}", t.reservationId(), e.toString());
+
+				if (e instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
+					log.warn("티켓 발급 차단됨 (CIRCUIT_BREAKER_OPEN). reservationId={}", t.reservationId());
+				} else {
+					log.warn("티켓 발급 외부 호출 실패. reservationId={}, error={}", t.reservationId(), e.toString());
+				}
+
 				outboxRepository.failAndBackoff(t.reservationId(), e.toString(), now);
 			}
 		}

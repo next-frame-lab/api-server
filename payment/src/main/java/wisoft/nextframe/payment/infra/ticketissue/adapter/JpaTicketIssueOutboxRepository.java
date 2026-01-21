@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.ticketissue.adaptor;
+package wisoft.nextframe.payment.infra.ticketissue.adapter;
 
 import java.time.LocalDateTime;
 import java.util.List;
