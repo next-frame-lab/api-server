@@ -23,7 +23,7 @@ public class TicketIssueScheduler {
 			return;
 		}
 
-		log.info("ticket issue retry start");
+		log.debug("ticket issue retry start");
 		retryUseCase.runOnce();
 	}
 }
