@@ -1,0 +1,145 @@
+name: PR Auto Description
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  generate-pr-body:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Load PR template & Info
+        id: info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+  
+          TITLE="$(gh pr view "$PR_NUMBER" --json title -q .title)"
+          BODY="$(gh pr view "$PR_NUMBER" --json body -q .body)"
+        
+          TEMPLATE=""
+          for f in ".github/pull_request_template.md" ".github/PULL_REQUEST_TEMPLATE.md" "PULL_REQUEST_TEMPLATE.md"; do
+            if [ -f "$f" ]; then TEMPLATE="$(cat "$f")"; break; fi
+          done
+
+          DIFF="$(gh pr diff "$PR_NUMBER" | head -n 800)"
+
+          PLACEHOLDER="false"
+          echo "$BODY" | grep -q "어떤 작업을 했는지 설명해주세요" && PLACEHOLDER="true"
+          echo "$BODY" | grep -q "주요 변경 사항 1" && PLACEHOLDER="true"
+
+          # base64 인코딩해서 outputs로 넘김 (멀티라인/특수문자 안전)
+          TITLE_B64="$(printf '%s' "$TITLE" | base64 -w0)"
+          TEMPLATE_B64="$(printf '%s' "$TEMPLATE" | base64 -w0)"
+          DIFF_B64="$(printf '%s' "$DIFF" | base64 -w0)"
+
+          {
+            echo "title_b64=$TITLE_B64"
+            echo "template_b64=$TEMPLATE_B64"
+            echo "diff_b64=$DIFF_B64"
+            echo "placeholder=$PLACEHOLDER"
+            echo "body<<EOF"
+            printf '%s\n' "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+
+      - name: Skip if already generated and not placeholder
+        if: contains(steps.info.outputs.body, '<!-- pr-ai-generated -->') && steps.info.outputs.placeholder != 'true'
+        run: echo "Already generated. Skip."
+
+      - name: Generate via Gemini
+        id: gen
+        if: steps.info.outputs.placeholder == 'true' || !contains(steps.info.outputs.body, '<!-- pr-ai-generated -->')
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TITLE_B64: ${{ steps.info.outputs.title_b64 }}
+          TEMPLATE_B64: ${{ steps.info.outputs.template_b64 }}
+          DIFF_B64: ${{ steps.info.outputs.diff_b64 }}
+        run: |
+          set -euo pipefail
+
+          # 파일로 복원 (여기서부터 특수문자/멀티라인 안전)
+          echo "$TITLE_B64" | base64 -d > title.txt
+          echo "$TEMPLATE_B64" | base64 -d > template.txt
+          echo "$DIFF_B64" | base64 -d > diff.txt
+
+          {
+            echo "너는 숙련된 백엔드 개발자다."
+            echo "아래 PR 정보와 Diff를 읽고 PR 템플릿을 채워서 PR 본문을 완성해라."
+            echo
+            echo "규칙"
+            echo "- PR 템플릿의 섹션/헤더/순서를 그대로 유지"
+            echo "- 모든 섹션을 채우고 정보가 없으면 N/A"
+            echo "- 체크리스트는 절대 [x]로 바꾸지 말고 [ ] 유지"
+            echo "- 변경 사항은 파일/클래스/메서드 단위로 구체적으로 작성"
+            echo "- 절대 코드 블록(트리플 백틱)으로 감싸지 말고, 순수 Markdown만 출력"
+            echo
+            echo "[PR 제목]"
+            cat title.txt
+            echo
+            echo "[PR 템플릿]"
+            cat template.txt
+            echo
+            echo "[Diff (truncated)]"
+            cat diff.txt
+          } > prompt.txt
+
+          # jq로 prompt.txt를 그대로 JSON에 넣기 (환경변수로 들고 있지 말기)
+          REQ=$(jq -n --rawfile p prompt.txt '{contents:[{parts:[{text:$p}]}]}')
+
+          RESP=$(curl -sS "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d "$REQ")
+
+          TEXT=$(echo "$RESP" | jq -r '.candidates[0].content.parts[0].text // empty')
+
+          if [ -z "$TEXT" ] || [ "$TEXT" = "null" ]; then
+            echo "Gemini API Error"
+            echo "$RESP"
+            exit 1
+          fi
+          
+          # 코드블록 방어 제거
+          TEXT=$(echo "$TEXT" | sed '1{/^```/d}; $ {/^```/d}')
+
+          TEXT_B64="$(printf '%s' "$TEXT" | base64 -w0)"
+          
+          {
+            echo "text_b64=$TEXT_B64"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update PR body
+        if: steps.gen.outputs.text_b64 != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEXT_B64: ${{ steps.gen.outputs.text_b64 }}
+        run: |
+          set -euo pipefail
+
+          echo "$TEXT_B64" | base64 -d > generated.md
+
+          {
+            printf '%s\n\n' '<!-- pr-ai-generated -->'
+            cat generated.md
+          } > new_body.md
+
+          gh pr edit "${{ github.event.pull_request.number }}" --body-file new_body.md
