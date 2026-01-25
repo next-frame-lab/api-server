@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxRow;
+import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxTarget;
 
 public interface TicketIssueOutboxRepository {
 
@@ -12,7 +12,7 @@ public interface TicketIssueOutboxRepository {
 
 	void markSuccess(UUID reservationId, UUID ticketId, LocalDateTime now);
 
-	List<TicketIssueOutboxRow> findReady(LocalDateTime now, int limit);
+	List<TicketIssueOutboxTarget> findIssueTargets(LocalDateTime now, int limit);
 
 	void failAndBackoff(UUID reservationId, String lastError, LocalDateTime now);
 

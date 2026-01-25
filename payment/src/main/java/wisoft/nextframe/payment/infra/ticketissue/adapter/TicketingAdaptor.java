@@ -1,16 +1,19 @@
 package wisoft.nextframe.payment.infra.ticketissue.adapter;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueResult;
+import wisoft.nextframe.payment.application.ticketissue.exception.TicketIssueExternalCallFailedException;
+import wisoft.nextframe.payment.application.ticketissue.exception.TicketIssueInvalidResponseException;
+import wisoft.nextframe.payment.application.ticketissue.exception.TicketIssueTemporarilyUnavailableException;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.infra.ticketissue.adapter.dto.TicketIssueRequest;
 import wisoft.nextframe.payment.infra.ticketissue.adapter.dto.TicketIssueResponse;
@@ -21,6 +24,7 @@ import wisoft.nextframe.payment.infra.ticketissue.adapter.dto.TicketIssueRespons
  * - 도메인의 `ReservationId`를 `TicketIssueRequest` DTO로 변환해 REST API로 전송하고, 응답을 `TicketIssueResponse`로 매핑하여 반환한다.
  * - 외부 서비스의 기본 URL은 `srt-service.url` 프로퍼티로 주입받는다.
  **/
+@Slf4j
 @Component
 public class TicketingAdaptor implements TicketingClient {
 
@@ -38,7 +42,7 @@ public class TicketingAdaptor implements TicketingClient {
 	}
 
 	@Override
-	@CircuitBreaker(name = "ticketing")
+	@CircuitBreaker(name = "ticketing", fallbackMethod = "issueTicketFallback")
 	public TicketIssueResult issueTicket(ReservationId reservationId) {
 		TicketIssueResponse response = restClient.post()
 			.uri("/tickets")
@@ -47,8 +51,22 @@ public class TicketingAdaptor implements TicketingClient {
 			.retrieve()
 			.body(TicketIssueResponse.class);
 
-		return Optional.ofNullable(response)
-			.map(res -> new TicketIssueResult(res.ticketId()))
-			.orElseThrow(() -> new RuntimeException("티켓 발급 응답이 비어있습니다."));
+		if (response == null || response.ticketId() == null) {
+			// 이 케이스도 외부 계약 위반이라서 adapter 레벨에서 의미 있는 예외로 변환
+			throw new TicketIssueInvalidResponseException(reservationId);
+		}
+
+		return new TicketIssueResult(response.ticketId());
+	}
+
+	private TicketIssueResult issueTicketFallback(ReservationId reservationId, Throwable e) {
+		if (e instanceof CallNotPermittedException) {
+			log.warn("티켓 발급 차단됨 [CIRCUIT_BREAKER_OPEN]. reservationId={}", reservationId.value());
+			throw new TicketIssueTemporarilyUnavailableException(reservationId, e);
+		}
+
+		log.warn("티켓 발급 외부 호출 실패 [TICKET_ISSUE_EXTERNAL_CALL_FAILED]. reservationId={}, error={}",
+			reservationId.value(), e.toString());
+		throw new TicketIssueExternalCallFailedException(reservationId, e);
 	}
 }

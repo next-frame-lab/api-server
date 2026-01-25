@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxRow;
+import wisoft.nextframe.payment.application.ticketissue.dto.TicketIssueOutboxTarget;
 import wisoft.nextframe.payment.application.ticketissue.port.output.TicketIssueOutboxRepository;
 
 @Slf4j
@@ -76,16 +76,12 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 	}
 
 	@Override
-	public List<TicketIssueOutboxRow> findReady(LocalDateTime now, int limit) {
+	public List<TicketIssueOutboxTarget> findIssueTargets(LocalDateTime now, int limit) {
 		return jpa.findReadyToRetry(now, PageRequest.of(0, limit))
 			.stream()
-			.map(e -> new TicketIssueOutboxRow(
+			.map(e -> new TicketIssueOutboxTarget(
 				e.getReservationId(),
-				e.getPaymentId(),
-				e.getTicketId(),
-				e.getStatus(),
-				e.getRetryCount(),
-				e.getNextRetryAt()
+				e.getPaymentId()
 			))
 			.toList();
 	}
