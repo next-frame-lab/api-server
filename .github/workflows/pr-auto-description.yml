@@ -29,10 +29,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          BODY="${{ github.event.pull_request.body }}"
-          TITLE="${{ github.event.pull_request.title }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
-
+  
+          TITLE="$(gh pr view "$PR_NUMBER" --json title -q .title)"
+          BODY="$(gh pr view "$PR_NUMBER" --json body -q .body)"
+        
           TEMPLATE=""
           for f in ".github/pull_request_template.md" ".github/PULL_REQUEST_TEMPLATE.md" "PULL_REQUEST_TEMPLATE.md"; do
             if [ -f "$f" ]; then TEMPLATE="$(cat "$f")"; break; fi
