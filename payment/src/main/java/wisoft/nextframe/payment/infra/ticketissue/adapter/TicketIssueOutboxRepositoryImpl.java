@@ -102,24 +102,21 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 			// 재시도 테스트 용도 : dev-cb-test에서는 OPEN 테스트를 위해 즉시 재시도 가능하게 만든다
 			if (isCircuitBreakerTestProfile()) {
 				entity.setNextRetryAt(now);
-				jpa.save(entity);
-				return;
+			} else {
+				// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
+				if (nextRetry == 1)
+					entity.setNextRetryAt(now.plusSeconds(5));
+				else if (nextRetry == 2)
+					entity.setNextRetryAt(now.plusSeconds(30));
+				else if (nextRetry == 3)
+					entity.setNextRetryAt(now.plusMinutes(2));
+				else if (nextRetry == 4)
+					entity.setNextRetryAt(now.plusMinutes(10));
+				else {
+					entity.setStatus("FAILED");
+					entity.setNextRetryAt(null);
+				}
 			}
-
-			// 백오프: 5s, 30s, 2m, 10m, 이후 FAILED
-			if (nextRetry == 1)
-				entity.setNextRetryAt(now.plusSeconds(5));
-			else if (nextRetry == 2)
-				entity.setNextRetryAt(now.plusSeconds(30));
-			else if (nextRetry == 3)
-				entity.setNextRetryAt(now.plusMinutes(2));
-			else if (nextRetry == 4)
-				entity.setNextRetryAt(now.plusMinutes(10));
-			else {
-				entity.setStatus("FAILED");
-				entity.setNextRetryAt(null);
-			}
-
 			jpa.save(entity);
 		});
 	}
