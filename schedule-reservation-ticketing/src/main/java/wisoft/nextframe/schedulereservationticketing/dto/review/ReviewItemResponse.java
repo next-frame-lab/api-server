@@ -1,5 +1,6 @@
 package wisoft.nextframe.schedulereservationticketing.dto.review;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
  * @param writerName          	작성자 이름
  * @param writerProfileImageUrl 작성자 프로필 이미지 URL
  * @param content             	리뷰 내용
+ * @param star                	사용자가 매긴 공연 별점
  * @param likeStatus          	현재 사용자의 좋아요 여부
  * @param likeCount           	좋아요 개수
  * @param createdAt           	생성 일시
@@ -20,6 +22,7 @@ public record ReviewItemResponse(
 	String writerName,
 	String writerProfileImageUrl,
 	String content,
+	BigDecimal star,
 	boolean likeStatus,
 	int likeCount,
 	LocalDateTime createdAt,
