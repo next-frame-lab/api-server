@@ -12,6 +12,7 @@ import wisoft.nextframe.payment.common.exception.InvalidAmountException;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.event.DomainEvent;
 import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
+import wisoft.nextframe.payment.domain.payment.event.PaymentFailedEvent;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
@@ -101,6 +102,8 @@ public class Payment {
 		}
 		this.status = PaymentStatus.FAILED;
 		this.failedAt = LocalDateTime.now();
+
+		domainEvents.add(new PaymentFailedEvent(this.id.getValue(), this.reservationId.value()));
 	}
 
 	public boolean isSucceeded() {

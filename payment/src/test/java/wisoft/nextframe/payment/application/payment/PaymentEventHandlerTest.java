@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import wisoft.nextframe.payment.application.payment.handler.PaymentEventHandler;
-import wisoft.nextframe.payment.application.ticketissue.TicketIssueOutboxService;
+import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueOutboxService;
 import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 
 @ExtendWith(MockitoExtension.class)

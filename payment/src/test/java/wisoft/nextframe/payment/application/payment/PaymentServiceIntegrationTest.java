@@ -20,7 +20,7 @@ import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.infra.config.AbstractIntegrationTest;
-import wisoft.nextframe.payment.infra.ticketissue.adapter.JpaTicketIssueOutboxRepository;
+import wisoft.nextframe.payment.infra.payment.outbox.ticketissue.JpaTicketIssueOutboxRepository;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
 
 public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {

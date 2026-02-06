@@ -45,3 +45,15 @@ create table reservations
 (
     id uuid primary key
 );
+CREATE TABLE reservation_cancel_outbox
+(
+    id              uuid      DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    reservation_id  uuid                                NOT NULL UNIQUE, -- 취소 대상 식별
+    payment_id      uuid                                NOT NULL,        -- 이력 추적용
+    status          varchar   DEFAULT 'PENDING'         NOT NULL,        -- PENDING, PROCESSED, FAILED
+    retry_count     integer   DEFAULT 0                 NOT NULL,
+    next_retry_at   timestamp DEFAULT NOW()             NOT NULL,
+    last_error      text,                                                -- 에러 메시지 (길이 고려 text)
+    created_at      timestamp DEFAULT NOW()             NOT NULL,
+    updated_at      timestamp DEFAULT NOW()             NOT NULL
+);
