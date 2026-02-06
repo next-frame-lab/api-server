@@ -70,6 +70,10 @@ public class PaymentTransactionService {
 				log.error("결제 금액 불일치 - 예상: {}, 실제: {}", payment.getAmount(), result.totalAmount());
 				payment.fail(); // 상태를 실패로 변경
 				paymentRepository.save(payment);
+
+				payment.getDomainEvents().forEach(eventPublisher::publishEvent);
+				payment.clearDomainEvents();
+
 				throw new InvalidAmountException();
 			}
 			log.info("결제 승인 성공 - paymentId: {}, totalAmount: {}", payment.getId(), result.totalAmount());
@@ -89,6 +93,10 @@ public class PaymentTransactionService {
 			);
 			payment.fail();
 			paymentRepository.save(payment);
+
+			payment.getDomainEvents().forEach(eventPublisher::publishEvent);
+			payment.clearDomainEvents();
+
 			throw new PaymentConfirmedFailedException(result.errorCode());
 		}
 	}

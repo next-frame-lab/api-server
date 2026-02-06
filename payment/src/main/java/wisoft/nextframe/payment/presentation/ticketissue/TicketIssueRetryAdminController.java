@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.ticketissue.TicketIssueRetryUseCase;
+import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueRetryUseCase;
 
 @Slf4j
 @RestController
