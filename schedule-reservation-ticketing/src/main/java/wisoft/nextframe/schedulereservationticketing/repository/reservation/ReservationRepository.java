@@ -1,5 +1,7 @@
 package wisoft.nextframe.schedulereservationticketing.repository.reservation;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
+import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationStatus;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
@@ -23,4 +26,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
 		"FROM Reservation r " +
 		"WHERE r.user = :user AND r.schedule.performance = :performance")
 	boolean existsByUserAndPerformance(@Param("user") User user, @Param("performance") Performance performance);
+
+	@Query("SELECT r FROM Reservation r " +
+		"JOIN FETCH r.reservationSeats " +
+		"WHERE r.status = :status AND r.expiresAt < :now")
+	List<Reservation> findExpiredReservations(
+		@Param("status") ReservationStatus status,
+		@Param("now") LocalDateTime now
+	);
 }
