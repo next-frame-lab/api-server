@@ -22,6 +22,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -71,6 +72,9 @@ public class Reservation {
 
 	@Column(name = "expires_at")
 	private LocalDateTime expiresAt;
+
+	@Version
+	private Long version;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)

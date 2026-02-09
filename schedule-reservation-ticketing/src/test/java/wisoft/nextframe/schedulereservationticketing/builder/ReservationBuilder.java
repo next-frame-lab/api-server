@@ -23,6 +23,7 @@ public class ReservationBuilder {
 	private ReservationStatus status = ReservationStatus.CONFIRMED;
 	private LocalDateTime reservedAt = LocalDateTime.now();
 	private LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(10);
+	private Long version = 0L;
 	private List<ReservationSeat> reservationSeats = new ArrayList<>();
 
 	public static ReservationBuilder builder() {
@@ -40,6 +41,6 @@ public class ReservationBuilder {
 	}
 
 	public Reservation build() {
-		return new Reservation(id, user, schedule, totalPrice, status, reservedAt, expiresAt, reservationSeats);
+		return new Reservation(id, user, schedule, totalPrice, status, reservedAt, expiresAt, version, reservationSeats);
 	}
 }

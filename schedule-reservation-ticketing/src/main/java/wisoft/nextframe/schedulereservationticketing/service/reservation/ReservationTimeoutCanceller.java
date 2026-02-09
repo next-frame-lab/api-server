@@ -4,8 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,24 +24,33 @@ public class ReservationTimeoutCanceller {
 
 	private final ReservationRepository reservationRepository;
 	private final SeatStateRepository seatStateRepository;
+	private final TransactionTemplate transactionTemplate;
 
-	@Transactional
 	public int cancelExpiredReservations(LocalDateTime now) {
-		final List<Reservation> expiredReservations = reservationRepository
-			.findExpiredReservations(ReservationStatus.CREATED, now);
+		final List<Reservation> expiredReservations = transactionTemplate.execute(status ->
+			reservationRepository.findExpiredReservations(ReservationStatus.CREATED, now)
+		);
 
-		if (expiredReservations.isEmpty()) {
+		if (expiredReservations == null || expiredReservations.isEmpty()) {
 			return 0;
 		}
 
 		log.info("만료된 예약 {}건 처리 시작", expiredReservations.size());
 
+		int cancelledCount = 0;
 		for (final Reservation reservation : expiredReservations) {
-			cancelReservationAndUnlockSeats(reservation);
+			try {
+				transactionTemplate.executeWithoutResult(status ->
+					cancelReservationAndUnlockSeats(reservation)
+				);
+				cancelledCount++;
+			} catch (ObjectOptimisticLockingFailureException e) {
+				log.info("예약 {}이 동시에 처리됨 (결제 확정), 건너뜀", reservation.getId());
+			}
 		}
 
-		log.info("만료된 예약 {}건 처리 완료", expiredReservations.size());
-		return expiredReservations.size();
+		log.info("만료된 예약 {}건 처리 완료", cancelledCount);
+		return cancelledCount;
 	}
 
 	private void cancelReservationAndUnlockSeats(Reservation reservation) {

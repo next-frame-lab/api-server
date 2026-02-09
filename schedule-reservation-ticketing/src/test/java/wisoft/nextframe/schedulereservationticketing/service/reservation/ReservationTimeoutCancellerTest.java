@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,14 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeat;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationSeatId;
-import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationStatus;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.seat.SeatState;
-import wisoft.nextframe.schedulereservationticketing.repository.reservation.ReservationRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.seat.SeatStateRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,16 +33,16 @@ class ReservationTimeoutCancellerTest {
 	private ReservationTimeoutCanceller reservationTimeoutCanceller;
 
 	@Mock
-	private ReservationRepository reservationRepository;
-	@Mock
 	private SeatStateRepository seatStateRepository;
+	@Mock
+	private TransactionTemplate transactionTemplate;
 
 	@Test
 	@DisplayName("만료된 예약이 없으면 0을 반환하고 아무 작업도 하지 않는다")
 	void cancelExpiredReservations_noExpired_returnsZero() {
 		// given
 		LocalDateTime now = LocalDateTime.now();
-		given(reservationRepository.findExpiredReservations(ReservationStatus.CREATED, now))
+		given(transactionTemplate.execute(any(TransactionCallback.class)))
 			.willReturn(Collections.emptyList());
 
 		// when
@@ -72,8 +74,12 @@ class ReservationTimeoutCancellerTest {
 		given(mockReservation.getReservationSeats()).willReturn(List.of(mockSeat1, mockSeat2));
 		given(mockReservation.getSchedule()).willReturn(mockSchedule);
 
-		given(reservationRepository.findExpiredReservations(ReservationStatus.CREATED, now))
+		given(transactionTemplate.execute(any(TransactionCallback.class)))
 			.willReturn(List.of(mockReservation));
+		willAnswer(invocation -> {
+			invocation.getArgument(0, Consumer.class).accept(null);
+			return null;
+		}).given(transactionTemplate).executeWithoutResult(any());
 
 		SeatState mockSeatState1 = mock(SeatState.class);
 		SeatState mockSeatState2 = mock(SeatState.class);
@@ -123,8 +129,12 @@ class ReservationTimeoutCancellerTest {
 		given(mockReservation2.getReservationSeats()).willReturn(List.of(mockRsSeat2));
 		given(mockReservation2.getSchedule()).willReturn(mockSchedule2);
 
-		given(reservationRepository.findExpiredReservations(ReservationStatus.CREATED, now))
+		given(transactionTemplate.execute(any(TransactionCallback.class)))
 			.willReturn(List.of(mockReservation1, mockReservation2));
+		willAnswer(invocation -> {
+			invocation.getArgument(0, Consumer.class).accept(null);
+			return null;
+		}).given(transactionTemplate).executeWithoutResult(any());
 
 		SeatState mockSeatState1 = mock(SeatState.class);
 		SeatState mockSeatState2 = mock(SeatState.class);
@@ -142,5 +152,51 @@ class ReservationTimeoutCancellerTest {
 		verify(mockReservation2).cancel();
 		verify(mockSeatState1).unlock();
 		verify(mockSeatState2).unlock();
+	}
+
+	@Test
+	@DisplayName("동시 결제로 OptimisticLockException 발생 시 해당 예약을 건너뛰고 나머지를 처리한다")
+	void cancelExpiredReservations_optimisticLockConflict_skipsAndContinues() {
+		// given
+		LocalDateTime now = LocalDateTime.now();
+
+		Reservation conflictReservation = mock(Reservation.class);
+		given(conflictReservation.getId()).willReturn(UUID.randomUUID());
+
+		Reservation normalReservation = mock(Reservation.class);
+		UUID scheduleId = UUID.randomUUID();
+		UUID seatId = UUID.randomUUID();
+
+		Schedule mockSchedule = mock(Schedule.class);
+		given(mockSchedule.getId()).willReturn(scheduleId);
+
+		ReservationSeat mockRsSeat = mock(ReservationSeat.class);
+		given(mockRsSeat.getId()).willReturn(new ReservationSeatId(UUID.randomUUID(), seatId));
+
+		given(normalReservation.getReservationSeats()).willReturn(List.of(mockRsSeat));
+		given(normalReservation.getSchedule()).willReturn(mockSchedule);
+
+		given(transactionTemplate.execute(any(TransactionCallback.class)))
+			.willReturn(List.of(conflictReservation, normalReservation));
+
+		// 첫 번째 호출: OptimisticLockException, 두 번째 호출: 정상 실행
+		willThrow(new ObjectOptimisticLockingFailureException(Reservation.class.getName(), null))
+			.willAnswer(invocation -> {
+				invocation.getArgument(0, Consumer.class).accept(null);
+				return null;
+			}).given(transactionTemplate).executeWithoutResult(any());
+
+		SeatState mockSeatState = mock(SeatState.class);
+		given(seatStateRepository.findByScheduleIdAndSeatIds(scheduleId, List.of(seatId)))
+			.willReturn(List.of(mockSeatState));
+
+		// when
+		int result = reservationTimeoutCanceller.cancelExpiredReservations(now);
+
+		// then
+		assertThat(result).isEqualTo(1);
+		verify(conflictReservation, never()).cancel();
+		verify(normalReservation).cancel();
+		verify(mockSeatState).unlock();
 	}
 }
