@@ -30,11 +30,13 @@ public enum ErrorCode {
 
 	// Reservation
 	SEAT_ALREADY_LOCKED(HttpStatus.CONFLICT, "CONFLICT", "이미 예약되었거나 선택할 수 없는 좌석입니다."),
+	SEAT_NOT_LOCKED(HttpStatus.CONFLICT, "CONFLICT", "잠금 상태가 아닌 좌석입니다."),
 	INVALID_SEAT_SELECTION_COUNT(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "좌석은 1개 이상, 4개 이하로 선택해야 합니다."),
 	TOTAL_PRICE_MISMATCH(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청한 금액과 계산된 금액이 일치하지 않습니다."),
 	SEAT_NOT_DEFINED(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청한 좌석 중 일부를 찾을 수 없습니다."),
 	PERFORMANCE_SCHEDULE_MISMATCH(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "공연과 공연 일정 정보가 일치하지 않습니다."),
 	RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 예약 정보를 찾을 수 없습니다."),
+	RESERVATION_ALREADY_PROCESSED(HttpStatus.CONFLICT, "CONFLICT", "이미 처리된 예약입니다."),
 
 	// Review
 	REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "해당 리뷰을 찾을 수 없습니다."),

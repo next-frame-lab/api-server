@@ -27,6 +27,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
+import wisoft.nextframe.schedulereservationticketing.common.exception.ErrorCode;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.SeatDefinition;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
@@ -38,6 +40,8 @@ import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 @Entity
 @Table(name = "reservations")
 public class Reservation {
+
+	private static final int EXPIRATION_MINUTES = 10;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -65,6 +69,9 @@ public class Reservation {
 	@Column(name = "reserved_at", nullable = false, updatable = false)
 	private LocalDateTime reservedAt;
 
+	@Column(name = "expires_at")
+	private LocalDateTime expiresAt;
+
 	@Builder.Default
 	@OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ReservationSeat> reservationSeats = new ArrayList<>();
@@ -74,7 +81,22 @@ public class Reservation {
 			.user(user)
 			.schedule(schedule)
 			.totalPrice(totalPrice)
+			.expiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES))
 			.build();
+	}
+
+	public void confirm() {
+		if (this.status != ReservationStatus.CREATED) {
+			throw new DomainException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
+		}
+		this.status = ReservationStatus.CONFIRMED;
+	}
+
+	public void cancel() {
+		if (this.status != ReservationStatus.CREATED) {
+			throw new DomainException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
+		}
+		this.status = ReservationStatus.CANCELLED;
 	}
 
 	// 연관 관계 편의 메서드

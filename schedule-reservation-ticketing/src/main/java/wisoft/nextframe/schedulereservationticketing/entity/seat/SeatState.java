@@ -48,4 +48,11 @@ public class SeatState {
         }
         this.isLocked = true;
     }
+
+    public void unlock() {
+        if (!this.isLocked) {
+            throw new DomainException(ErrorCode.SEAT_NOT_LOCKED);
+        }
+        this.isLocked = false;
+    }
 }
