@@ -40,7 +40,10 @@ public class TicketService {
 				throw new DomainException(ErrorCode.TICKET_ALREADY_ISSUED);
 			});
 
-		// 3. 티켓 발급
+		// 3. 예약 확정
+		reservation.confirm();
+
+		// 4. 티켓 발급
 		Ticket ticket = Ticket.issue(reservation);
 		ticketRepository.saveAndFlush(ticket);
 
