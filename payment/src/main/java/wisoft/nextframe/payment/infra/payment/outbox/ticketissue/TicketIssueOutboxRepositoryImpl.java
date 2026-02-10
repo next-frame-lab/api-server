@@ -107,7 +107,7 @@ public class TicketIssueOutboxRepositoryImpl implements TicketIssueOutboxReposit
 					entity.setNextRetryAt(now.plusMinutes(10));
 				else {
 					entity.setStatus("FAILED");
-					entity.setNextRetryAt(null);
+					entity.setNextRetryAt(now);
 				}
 			}
 			jpa.save(entity);
