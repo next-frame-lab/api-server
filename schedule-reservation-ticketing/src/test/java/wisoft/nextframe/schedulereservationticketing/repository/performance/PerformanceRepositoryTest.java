@@ -23,6 +23,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.PerformanceStatisti
 import wisoft.nextframe.schedulereservationticketing.builder.ScheduleBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.StadiumBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
+import wisoft.nextframe.schedulereservationticketing.config.db.QueryDslConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.stadium.Stadium;
@@ -31,7 +32,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.stadium.StadiumR
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(TestContainersConfig.class)
+@Import({TestContainersConfig.class, QueryDslConfig.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class PerformanceRepositoryTest {
 

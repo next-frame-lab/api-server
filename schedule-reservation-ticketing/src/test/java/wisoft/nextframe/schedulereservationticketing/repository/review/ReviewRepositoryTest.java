@@ -22,6 +22,7 @@ import wisoft.nextframe.schedulereservationticketing.builder.PerformanceBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.ReviewBuilder;
 import wisoft.nextframe.schedulereservationticketing.builder.UserBuilder;
 import wisoft.nextframe.schedulereservationticketing.config.TestContainersConfig;
+import wisoft.nextframe.schedulereservationticketing.config.db.QueryDslConfig;
 import wisoft.nextframe.schedulereservationticketing.dto.review.ReviewItemResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.review.Review;
@@ -32,7 +33,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.user.UserReposit
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(TestContainersConfig.class)
+@Import({TestContainersConfig.class, QueryDslConfig.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ReviewRepositoryTest {
 
