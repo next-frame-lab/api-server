@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -150,8 +149,8 @@ class PerformanceControllerTest {
 				PerformanceType.CLASSIC,
 				PerformanceGenre.PLAY,
 				"대전예술의전당",
-				Date.valueOf(LocalDate.of(2025, 9, 1)),
-				Date.valueOf(LocalDate.of(2025, 9, 30)),
+				LocalDate.of(2025, 9, 1),
+				LocalDate.of(2025, 9, 30),
 				false
 			);
 
