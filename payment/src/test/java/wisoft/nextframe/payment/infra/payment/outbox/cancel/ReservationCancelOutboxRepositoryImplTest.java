@@ -131,7 +131,7 @@ class ReservationCancelOutboxRepositoryImplTest {
 		// then
 		assertThat(existing.getRetryCount()).isEqualTo(5);
 		assertThat(existing.getStatus()).isEqualTo("FAILED");
-		assertThat(existing.getNextRetryAt()).isNull();
+		assertThat(existing.getNextRetryAt()).isEqualTo(now);
 		verify(jpa).save(existing);
 	}
 }

@@ -68,21 +68,13 @@ public class PaymentTransactionService {
 		if (result.isSuccess()) {
 			if (!payment.getAmount().equals(Money.of(result.totalAmount()))) {
 				log.error("결제 금액 불일치 - 예상: {}, 실제: {}", payment.getAmount(), result.totalAmount());
-				payment.fail(); // 상태를 실패로 변경
-				paymentRepository.save(payment);
-
-				payment.getDomainEvents().forEach(eventPublisher::publishEvent);
-				payment.clearDomainEvents();
-
+				handlePaymentFailure(payment);
 				throw new InvalidAmountException();
 			}
 			log.info("결제 승인 성공 - paymentId: {}, totalAmount: {}", payment.getId(), result.totalAmount());
 			payment.approve();
-			paymentRepository.save(payment);
+			saveAndPublishEvents(payment);
 			log.info("결제 저장 완료 - paymentId: {}", payment.getId());
-
-			payment.getDomainEvents().forEach(eventPublisher::publishEvent);
-			payment.clearDomainEvents();
 
 			return payment;
 		} else {
@@ -91,13 +83,19 @@ public class PaymentTransactionService {
 				result.errorCode(),
 				result.errorMessage()
 			);
-			payment.fail();
-			paymentRepository.save(payment);
-
-			payment.getDomainEvents().forEach(eventPublisher::publishEvent);
-			payment.clearDomainEvents();
-
+			handlePaymentFailure(payment);
 			throw new PaymentConfirmedFailedException(result.errorCode());
 		}
+	}
+
+	private void handlePaymentFailure(Payment payment) {
+		payment.fail();
+		saveAndPublishEvents(payment);
+	}
+
+	private void saveAndPublishEvents(Payment payment) {
+		paymentRepository.save(payment);
+		payment.getDomainEvents().forEach(eventPublisher::publishEvent);
+		payment.clearDomainEvents();
 	}
 }
