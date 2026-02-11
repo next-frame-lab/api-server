@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -51,41 +53,16 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 	 */
 	@Override
 	public Page<PerformanceSummaryResponse> findReservablePerformances(final Pageable pageable) {
-		// 메인 쿼리의 schedule과 구분하기 위해 서브쿼리용 별칭을 별도로 생성
 		final QSchedule subSchedule = new QSchedule("subSchedule");
 		final LocalDateTime now = LocalDateTime.now();
 
-		// LocalDateTime → Date 변환: MIN/MAX 집계 시 시간 부분을 제거하고 날짜만 비교
-		final DateTemplate<java.sql.Date> performanceDate =
-			Expressions.dateTemplate(java.sql.Date.class, "CAST({0} AS date)", schedule.performanceDatetime);
-
 		// 컨텐츠 쿼리: 예매 가능한 공연을 DTO로 프로젝션
 		final List<PerformanceSummaryResponse> content = queryFactory
-			.select(Projections.constructor(PerformanceSummaryResponse.class,
-				performance.id,
-				performance.name,
-				performance.imageUrl,
-				performance.type,
-				performance.genre,
-				stadium.name,
-				performanceDate.min(),
-				performanceDate.max(),
-				performance.adultOnly
-			))
+			.select(performanceSummaryProjection())
 			.from(schedule)
 			.join(schedule.performance, performance)
 			.join(schedule.stadium, stadium)
-			.where(
-				// 티켓 판매 기간에 해당하는 일정이 하나라도 존재하는 공연만 필터링
-				JPAExpressions.selectOne()
-					.from(subSchedule)
-					.where(
-						subSchedule.performance.id.eq(performance.id),
-						subSchedule.ticketOpenTime.loe(now),
-						subSchedule.ticketCloseTime.goe(now)
-					)
-					.exists()
-			)
+			.where(ticketOnSale(subSchedule, now))
 			.groupBy(
 				performance.id,
 				performance.name,
@@ -104,16 +81,7 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 			.select(performance.id.countDistinct())
 			.from(schedule)
 			.join(schedule.performance, performance)
-			.where(
-				JPAExpressions.selectOne()
-					.from(subSchedule)
-					.where(
-						subSchedule.performance.id.eq(performance.id),
-						subSchedule.ticketOpenTime.loe(now),
-						subSchedule.ticketCloseTime.goe(now)
-					)
-					.exists()
-			);
+			.where(ticketOnSale(subSchedule, now));
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 	}
@@ -125,7 +93,7 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 	 * <ul>
 	 *     <li>{@code PerformanceStatistic} 테이블과 JOIN하여 조회수(hit) 정보를 가져옵니다.</li>
 	 *     <li>{@code GROUP BY}를 사용하여 각 공연의 시작일과 종료일을 계산합니다.</li>
-	 *     <li>{@code HAVING} 절을 사용하여 공연의 마지막 날짜가 현재보다 이전인(종료된) 공연은 제외합니다.</li>
+	 *     <li>{@code EXISTS} 서브쿼리를 사용하여 현재 시간이 티켓 판매 기간에 포함되는 공연만 필터링합니다.</li>
 	 *     <li>{@code ORDER BY} 절을 통해 조회수로 내림차순 정렬하고,
 	 *         동점일 경우 공연 시작일(가장 빠른 일정) 오름차순으로 2차 정렬합니다.</li>
 	 * </ul>
@@ -135,27 +103,18 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 	 */
 	@Override
 	public Page<PerformanceSummaryResponse> findTop10Performances(final Pageable pageable) {
-		final DateTemplate<java.sql.Date> performanceDate =
-			Expressions.dateTemplate(java.sql.Date.class, "CAST({0} AS date)", schedule.performanceDatetime);
+		final QSchedule subSchedule = new QSchedule("subSchedule");
+		final LocalDateTime now = LocalDateTime.now();
 
 		// 컨텐츠 쿼리: 조회수 기준 인기 공연을 DTO로 프로젝션
 		final List<PerformanceSummaryResponse> content = queryFactory
-			.select(Projections.constructor(PerformanceSummaryResponse.class,
-				performance.id,
-				performance.name,
-				performance.imageUrl,
-				performance.type,
-				performance.genre,
-				stadium.name,
-				performanceDate.min(),
-				performanceDate.max(),
-				performance.adultOnly
-			))
+			.select(performanceSummaryProjection())
 			.from(schedule)
 			.join(schedule.performance, performance)
 			.join(schedule.stadium, stadium)
 			// PerformanceStatistic과 연관관계가 없으므로 ON 절로 직접 조인
 			.join(performanceStatistic).on(performanceStatistic.performance.eq(performance))
+			.where(ticketOnSale(subSchedule, now))
 			.groupBy(
 				performance.id,
 				performance.name,
@@ -166,8 +125,6 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 				performance.adultOnly,
 				performanceStatistic.hit
 			)
-			// 이미 종료된 공연 제외: 마지막 일정이 현재 시간 이후인 공연만 포함
-			.having(schedule.performanceDatetime.max().goe(LocalDateTime.now()))
 			// 1차: 조회수 내림차순, 2차: 공연 시작일 오름차순
 			.orderBy(
 				performanceStatistic.hit.desc(),
@@ -177,14 +134,54 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 			.limit(pageable.getPageSize())
 			.fetch();
 
-		// count 쿼리: HAVING 대신 WHERE로 단순화하여 미종료 공연 수만 집계
+		// count 쿼리: content와 동일한 EXISTS 서브쿼리로 예매 가능 공연 수만 집계
 		final JPAQuery<Long> countQuery = queryFactory
 			.select(performance.id.countDistinct())
 			.from(schedule)
 			.join(schedule.performance, performance)
 			.join(performanceStatistic).on(performanceStatistic.performance.eq(performance))
-			.where(schedule.performanceDatetime.goe(LocalDateTime.now()));
+			.where(ticketOnSale(subSchedule, now));
 
 		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+	}
+
+	/**
+	 * 티켓 판매 기간에 해당하는 일정이 하나라도 존재하는 공연만 필터링하는 EXISTS 조건을 생성합니다.
+	 *
+	 * @param subSchedule 서브쿼리용 QSchedule 별칭
+	 * @param now         기준 시간
+	 */
+	private BooleanExpression ticketOnSale(final QSchedule subSchedule, final LocalDateTime now) {
+		return JPAExpressions.selectOne()
+			.from(subSchedule)
+			.where(
+				subSchedule.performance.id.eq(performance.id),
+				subSchedule.ticketOpenTime.loe(now),
+				subSchedule.ticketCloseTime.goe(now)
+			)
+			.exists();
+	}
+
+	/**
+	 * 공연 목록 조회에 공통으로 사용되는 {@link PerformanceSummaryResponse} 프로젝션을 생성합니다.
+	 *
+	 * <p>{@code CAST(performanceDatetime AS date)}를 사용하여 시간 부분을 제거한 뒤
+	 * {@code MIN/MAX}로 공연 시작일·종료일을 집계합니다.</p>
+	 */
+	private ConstructorExpression<PerformanceSummaryResponse> performanceSummaryProjection() {
+		final DateTemplate<java.sql.Date> performanceDate =
+			Expressions.dateTemplate(java.sql.Date.class, "CAST({0} AS date)", schedule.performanceDatetime);
+
+		return Projections.constructor(PerformanceSummaryResponse.class,
+			performance.id,
+			performance.name,
+			performance.imageUrl,
+			performance.type,
+			performance.genre,
+			stadium.name,
+			performanceDate.min(),
+			performanceDate.max(),
+			performance.adultOnly
+		);
 	}
 }

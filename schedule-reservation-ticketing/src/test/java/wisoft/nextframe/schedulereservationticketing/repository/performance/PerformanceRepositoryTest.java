@@ -214,13 +214,20 @@ class PerformanceRepositoryTest {
 					.build()
 			);
 
-			scheduleRepository.save(
-				ScheduleBuilder.builder()
-					.withPerformance(performance)
-					.withStadium(stadium)
-					.withPerformanceDatetime(startDate)
-					.build()
-			);
+			// 공연 시작일이 과거이면 티켓 판매 기간도 과거로 설정
+			final boolean isPast = startDate.isBefore(now);
+			final ScheduleBuilder scheduleBuilder = ScheduleBuilder.builder()
+				.withPerformance(performance)
+				.withStadium(stadium)
+				.withPerformanceDatetime(startDate);
+
+			if (isPast) {
+				scheduleBuilder
+					.withTicketOpenTime(startDate.minusDays(30))
+					.withTicketCloseTime(startDate.minusDays(1));
+			}
+
+			scheduleRepository.save(scheduleBuilder.build());
 		}
 	}
 
