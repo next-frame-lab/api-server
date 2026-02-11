@@ -19,7 +19,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -76,14 +75,19 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 			.limit(pageable.getPageSize())
 			.fetch();
 
-		// count 쿼리: PageableExecutionUtils가 마지막 페이지일 경우 실행을 생략하여 최적화
-		final JPAQuery<Long> countQuery = queryFactory
-			.select(performance.id.countDistinct())
-			.from(schedule)
-			.join(schedule.performance, performance)
-			.where(ticketOnSale(subSchedule, now));
-
-		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+		// count 쿼리: content의 GROUP BY(공연+공연장) 기준과 일치하도록 그룹 수를 집계
+		// QueryDSL JPA는 FROM 절 서브쿼리를 지원하지 않으므로 그룹 결과를 조회 후 size()로 총 수를 계산
+		return PageableExecutionUtils.getPage(content, pageable,
+			() -> queryFactory
+				.select(performance.id)
+				.from(schedule)
+				.join(schedule.performance, performance)
+				.join(schedule.stadium, stadium)
+				.where(ticketOnSale(subSchedule, now))
+				.groupBy(performance.id, stadium.name)
+				.fetch()
+				.size()
+		);
 	}
 
 	/**
@@ -134,15 +138,20 @@ public class PerformanceRepositoryImpl implements PerformanceRepositoryCustom {
 			.limit(pageable.getPageSize())
 			.fetch();
 
-		// count 쿼리: content와 동일한 EXISTS 서브쿼리로 예매 가능 공연 수만 집계
-		final JPAQuery<Long> countQuery = queryFactory
-			.select(performance.id.countDistinct())
-			.from(schedule)
-			.join(schedule.performance, performance)
-			.join(performanceStatistic).on(performanceStatistic.performance.eq(performance))
-			.where(ticketOnSale(subSchedule, now));
-
-		return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+		// count 쿼리: content의 GROUP BY(공연+공연장) 기준과 일치하도록 그룹 수를 집계
+		// QueryDSL JPA는 FROM 절 서브쿼리를 지원하지 않으므로 그룹 결과를 조회 후 size()로 총 수를 계산
+		return PageableExecutionUtils.getPage(content, pageable,
+			() -> queryFactory
+				.select(performance.id)
+				.from(schedule)
+				.join(schedule.performance, performance)
+				.join(schedule.stadium, stadium)
+				.join(performanceStatistic).on(performanceStatistic.performance.eq(performance))
+				.where(ticketOnSale(subSchedule, now))
+				.groupBy(performance.id, stadium.name)
+				.fetch()
+				.size()
+		);
 	}
 
 	/**
