@@ -2,10 +2,13 @@ package wisoft.nextframe.payment.domain.payment;
 
 import java.time.LocalDateTime;
 
+import org.springframework.stereotype.Component;
+
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.RefundAlreadyExistsException;
 import wisoft.nextframe.payment.domain.refund.Refund;
 
+@Component
 public class PaymentIssuer {
 
 	public Refund issueRefund(Payment payment, LocalDateTime requestAt, LocalDateTime performanceStartsAt) {

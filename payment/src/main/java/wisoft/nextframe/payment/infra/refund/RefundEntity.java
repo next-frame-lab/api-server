@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.domain.refund;
+package wisoft.nextframe.payment.infra.refund;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

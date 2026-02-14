@@ -18,4 +18,9 @@ public class StubPaymentProvider implements PaymentProvider {
 	public ConfirmResponse confirm(ConfirmRequest request) {
 		return new ConfirmResponse(true, request.amount(), null, null);
 	}
+
+	@Override
+	public CancelResponse cancel(CancelRequest request) {
+		return new CancelResponse(true, request.cancelAmount(), "stub-tx-key", null, null);
+	}
 }

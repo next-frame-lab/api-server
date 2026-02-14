@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.domain;
+package wisoft.nextframe.payment.domain.payment;
 
 import static org.assertj.core.api.Assertions.*;
 import static wisoft.nextframe.payment.domain.fixture.TestPaymentFactory.*;
@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.common.Money;
-import wisoft.nextframe.payment.domain.payment.Payment;
-import wisoft.nextframe.payment.domain.payment.PaymentStatus;
 import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;

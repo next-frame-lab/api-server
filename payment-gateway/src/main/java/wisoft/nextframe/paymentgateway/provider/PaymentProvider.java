@@ -6,4 +6,6 @@ public interface PaymentProvider {
 	boolean supports(String providerName);
 
 	ConfirmResponse confirm(ConfirmRequest request);
+
+	CancelResponse cancel(CancelRequest request);
 }
