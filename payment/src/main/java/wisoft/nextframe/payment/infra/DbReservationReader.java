@@ -1,5 +1,7 @@
 package wisoft.nextframe.payment.infra;
 
+import java.time.LocalDateTime;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -21,5 +23,16 @@ public class DbReservationReader implements ReservationReader {
           reservationId.value()
         );
         return Boolean.TRUE.equals(exists);
+    }
+
+    @Override
+    public LocalDateTime getPerformanceDateTime(ReservationId reservationId) {
+        return jdbcTemplate.queryForObject(
+            "SELECT s.performance_datetime FROM reservations r "
+                + "JOIN schedules s ON r.schedule_id = s.id "
+                + "WHERE r.id = ?",
+            LocalDateTime.class,
+            reservationId.value()
+        );
     }
 }

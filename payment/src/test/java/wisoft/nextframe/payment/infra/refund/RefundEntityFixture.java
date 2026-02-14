@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.payment.domain.refund.RefundEntity;
+import wisoft.nextframe.payment.infra.refund.RefundEntity;
 import wisoft.nextframe.payment.domain.refund.RefundId;
 import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
 import wisoft.nextframe.payment.domain.refund.RefundStatus;

@@ -41,9 +41,28 @@ CREATE TABLE IF NOT EXISTS ticket_issue_outbox
 )
     );
 
+CREATE TABLE IF NOT EXISTS refunds
+(
+    id uuid PRIMARY KEY,
+    payment_id uuid NOT NULL,
+    refund_amount integer NOT NULL,
+    status varchar NOT NULL,
+    reason varchar,
+    refund_policy varchar,
+    requested_at timestamp,
+    completed_at timestamp
+);
+
+CREATE TABLE IF NOT EXISTS schedules
+(
+    id uuid PRIMARY KEY,
+    performance_datetime timestamp NOT NULL
+);
+
 create table reservations
 (
-    id uuid primary key
+    id uuid primary key,
+    schedule_id uuid
 );
 CREATE TABLE reservation_cancel_outbox
 (

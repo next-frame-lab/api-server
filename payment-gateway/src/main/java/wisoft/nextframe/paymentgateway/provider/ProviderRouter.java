@@ -16,10 +16,17 @@ public class ProviderRouter {
 	}
 
 	public ConfirmResponse confirm(String providerName, ConfirmRequest request) {
+		return findProvider(providerName).confirm(request);
+	}
+
+	public CancelResponse cancel(String providerName, CancelRequest request) {
+		return findProvider(providerName).cancel(request);
+	}
+
+	private PaymentProvider findProvider(String providerName) {
 		return providers.stream()
 			.filter(provider -> provider.supports(providerName))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("지원하지 않는 결제수단입니다."))
-			.confirm(request);
+			.orElseThrow(() -> new IllegalArgumentException("지원하지 않는 결제수단입니다."));
 	}
 }
