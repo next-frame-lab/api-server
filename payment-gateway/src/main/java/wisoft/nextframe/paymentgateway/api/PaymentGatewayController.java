@@ -30,9 +30,27 @@ public class PaymentGatewayController {
 		return response;
 	}
 
+	@PostMapping("/payments/cancel")
+	public ResponseEntity<CancelResponse> cancel(
+		@RequestParam(defaultValue = "toss") String provider,
+		@RequestBody CancelRequest request
+	) {
+		log.info("[Gateway] cancel 요청 수신 - provider={}, request={}", provider, request);
+		ResponseEntity<CancelResponse> response = ResponseEntity.ok(router.cancel(provider, request));
+		log.info("[Gateway] cancel 처리 완료 - response={}", response);
+		return response;
+	}
+
 	public record ConfirmRequest(String paymentKey, String orderId, int amount) {
 	}
 
 	public record ConfirmResponse(boolean isSuccess, int totalAmount, String errorCode, String errorMessage) {
+	}
+
+	public record CancelRequest(String orderId, int cancelAmount, String cancelReason) {
+	}
+
+	public record CancelResponse(boolean isSuccess, int cancelAmount, String transactionKey, String errorCode,
+								 String errorMessage) {
 	}
 }

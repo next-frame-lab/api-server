@@ -1,6 +1,10 @@
 package wisoft.nextframe.payment.infra.payment.persistence;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,11 +13,14 @@ import wisoft.nextframe.payment.domain.fixture.PaymentEntityFixture;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.payment.infra.payment.PaymentMapper;
+import wisoft.nextframe.payment.infra.refund.JpaRefundRepository;
+import wisoft.nextframe.payment.infra.refund.RefundMapper;
 
 public class PaymentMapperTest {
 
-	private final PaymentMapper mapper = new PaymentMapper();
-
+	private final JpaRefundRepository jpaRefundRepository = mock(JpaRefundRepository.class);
+	private final RefundMapper refundMapper = new RefundMapper();
+	private final PaymentMapper mapper = new PaymentMapper(jpaRefundRepository, refundMapper);
 
 	@Test
 	@DisplayName("도메인 Payment를 PaymentEntity로 변환한다")
@@ -36,6 +43,7 @@ public class PaymentMapperTest {
 	public void toDomain_shouldMapAllFields() {
 		// given
 		PaymentEntity entity = PaymentEntityFixture.sampleEntity();
+		when(jpaRefundRepository.findByPaymentId(any())).thenReturn(Optional.empty());
 
 		// when
 		Payment payment = mapper.toDomain(entity);

@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.domain;
+package wisoft.nextframe.payment.domain.refund;
 
 import static org.assertj.core.api.Assertions.*;
 import static wisoft.nextframe.payment.domain.fixture.TestRefundFactory.*;
@@ -9,8 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.common.Money;
-import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
 
 public class RefundPolicyStatusTest {
 
@@ -63,14 +61,11 @@ public class RefundPolicyStatusTest {
 	@Test
 	@DisplayName("공연 시작 1시간 이내에는 환불 시도 시 예외가 발생한다")
 	void issueDeny_within1Hour() {
-
 		Refund refund = refundDeny();
 		assertThatThrownBy(() -> {
 			refund.reject();
 			refund.validateRefundable();
 		}).isInstanceOf(RuntimeException.class)
 			.hasMessageContaining("공연 시작 1시간 전에는 환불할 수 없습니다.");
-
 	}
-
 }

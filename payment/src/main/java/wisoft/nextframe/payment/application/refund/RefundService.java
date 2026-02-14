@@ -1,32 +1,46 @@
 package wisoft.nextframe.payment.application.refund;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
-import wisoft.nextframe.payment.domain.payment.Payment;
-import wisoft.nextframe.payment.domain.payment.PaymentIssuer;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
+import wisoft.nextframe.payment.application.refund.RefundTransactionService.RefundPrepareResult;
 import wisoft.nextframe.payment.domain.refund.Refund;
 
-//	환불 절차를 통제하는 역할
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class RefundService {
 
-	private final PaymentIssuer paymentIssuer;
+	private final PaymentGateway paymentGateway;
+	private final RefundTransactionService refundTransactionService;
 
-	public RefundService(PaymentIssuer paymentIssuer) {
-		this.paymentIssuer = paymentIssuer;
-	}
+	public Refund refund(UUID paymentId, String reason) {
+		// 1. 환불 준비 (검증 + Refund 생성, 트랜잭션)
+		RefundPrepareResult prepareResult = refundTransactionService.prepareRefund(paymentId);
 
-	public Refund refund(Payment payment, LocalDateTime requestAt, LocalDateTime contentStartsAt) {
-		// 1. 정책에 따라 환불 가능 여부 판단 및 Refund 생성
-		if (payment == null) {
-			throw new IllegalArgumentException("Payment cannot be null");
+		if (prepareResult.alreadyRefunded()) {
+			return prepareResult.refund();
 		}
-		Refund refund = paymentIssuer.issueRefund(payment, requestAt, contentStartsAt);
 
-		// 2. 승인 처리
-		refund.approve();
+		Refund refund = prepareResult.refund();
+		String orderId = prepareResult.payment().getReservationId().value().toString();
+		int cancelAmount = refund.getRefundedAmount().getValue().intValue();
 
-		// 3. 결과 반환
-		return refund;
+		// 2. PG 환불 요청 (트랜잭션 없이 외부 호출)
+		PaymentGateway.PaymentCancelResult cancelResult =
+			paymentGateway.cancelPayment(orderId, cancelAmount, reason);
+
+		if (!cancelResult.isSuccess()) {
+			log.error("PG 환불 실패 - paymentId: {}, errorCode: {}, errorMessage: {}",
+				paymentId, cancelResult.errorCode(), cancelResult.errorMessage());
+			throw new RefundCancelFailedException(cancelResult.errorCode());
+		}
+
+		// 3. 환불 완료 저장 (트랜잭션)
+		return refundTransactionService.completeRefund(paymentId, refund, reason);
 	}
-
 }

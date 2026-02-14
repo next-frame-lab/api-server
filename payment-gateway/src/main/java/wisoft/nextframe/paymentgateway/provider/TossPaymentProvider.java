@@ -5,19 +5,25 @@ import static wisoft.nextframe.paymentgateway.api.PaymentGatewayController.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 @Profile("prod")
 public class TossPaymentProvider implements PaymentProvider {
 
 	private final RestClient restClient;
+	private final ConcurrentHashMap<String, String> paymentKeyStore = new ConcurrentHashMap<>();
 
 	public TossPaymentProvider(RestClient.Builder builder, @Value("${toss.secret-key}") String secretKey) {
 		if (secretKey == null || secretKey.isEmpty()) {
@@ -30,6 +36,10 @@ public class TossPaymentProvider implements PaymentProvider {
 			.baseUrl("https://api.tosspayments.com")
 			.defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + encoded)
 			.build();
+	}
+
+	TossPaymentProvider(RestClient restClient) {
+		this.restClient = restClient;
 	}
 
 	@Override
@@ -52,11 +62,46 @@ public class TossPaymentProvider implements PaymentProvider {
 
 		String status = (String)response.getOrDefault("status", "");
 		if ("DONE".equals(status)) {
+			paymentKeyStore.put(request.orderId(), request.paymentKey());
 			int totalAmount = (int)response.getOrDefault("totalAmount", request.amount());
 			return new ConfirmResponse(true, totalAmount, null, null);
 		}
 		String code = (String)response.getOrDefault("code", "TOSS_ERROR");
 		String msg = (String)response.getOrDefault("message", "토스 승인 실패");
 		return new ConfirmResponse(false, 0, code, msg);
+	}
+
+	@Override
+	public CancelResponse cancel(CancelRequest request) {
+		String paymentKey = paymentKeyStore.get(request.orderId());
+		if (paymentKey == null) {
+			return new CancelResponse(false, 0, null, "PAYMENT_KEY_NOT_FOUND",
+				"결제 키를 찾을 수 없습니다. orderId=" + request.orderId());
+		}
+
+		try {
+			Map response = restClient.post()
+				.uri("/v1/payments/{paymentKey}/cancel", paymentKey)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(Map.of(
+					"cancelReason", request.cancelReason(),
+					"cancelAmount", request.cancelAmount())
+				)
+				.retrieve()
+				.body(Map.class);
+
+			String status = (String)response.getOrDefault("status", "");
+			if ("CANCELED".equals(status) || "PARTIAL_CANCELED".equals(status)) {
+				String transactionKey = (String)response.getOrDefault("transactionKey", "");
+				return new CancelResponse(true, request.cancelAmount(), transactionKey, null, null);
+			}
+
+			String code = (String)response.getOrDefault("code", "TOSS_ERROR");
+			String msg = (String)response.getOrDefault("message", "토스 취소 실패");
+			return new CancelResponse(false, 0, null, code, msg);
+		} catch (HttpClientErrorException e) {
+			log.error("토스 취소 API 호출 실패 - orderId: {}, error: {}", request.orderId(), e.getResponseBodyAsString());
+			return new CancelResponse(false, 0, null, "TOSS_CANCEL_ERROR", e.getResponseBodyAsString());
+		}
 	}
 }

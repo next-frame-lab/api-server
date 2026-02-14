@@ -32,7 +32,7 @@ public class HttpPaymentGatewayAdaptor implements PaymentGateway {
 			.accept(MediaType.APPLICATION_JSON)
 			.body(new ConfirmRequest(paymentKey, orderId, amount))
 			.retrieve()
-			.body(String.class); // 👈 응답을 무조건 String으로 받기
+			.body(String.class);
 
 		log.info("gateway raw response = {}", raw);
 
@@ -53,9 +53,49 @@ public class HttpPaymentGatewayAdaptor implements PaymentGateway {
 		}
 	}
 
+	@Override
+	public PaymentCancelResult cancelPayment(String orderId, int cancelAmount, String cancelReason) {
+		String raw = restClient.post()
+			.uri("/payments/cancel?provider=toss")
+			.contentType(MediaType.APPLICATION_JSON)
+			.accept(MediaType.APPLICATION_JSON)
+			.body(new CancelRequest(orderId, cancelAmount, cancelReason))
+			.retrieve()
+			.body(String.class);
+
+		log.info("gateway cancel raw response = {}", raw);
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			CancelResponse response = mapper.readValue(raw, CancelResponse.class);
+
+			return new PaymentCancelResult(
+				response.isSuccess(),
+				response.cancelAmount(),
+				response.transactionKey(),
+				response.errorCode(),
+				response.errorMessage()
+			);
+		} catch (Exception e) {
+			log.error("Failed to parse cancel response: {}", raw, e);
+			return new PaymentCancelResult(false, 0, null, "PARSE_ERROR", raw);
+		}
+	}
+
 	public record ConfirmRequest(String paymentKey, String orderId, int amount) {
 	}
 
 	public record ConfirmResponse(boolean isSuccess, int totalAmount, String errorCode, String errorMessage) {
+	}
+
+	public record CancelRequest(String orderId, int cancelAmount, String cancelReason) {
+	}
+
+	public record CancelResponse(
+		boolean isSuccess,
+		int cancelAmount,
+		String transactionKey,
+		String errorCode,
+		String errorMessage) {
 	}
 }

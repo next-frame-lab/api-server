@@ -1,10 +1,16 @@
-package wisoft.nextframe.payment.domain.refund;
+package wisoft.nextframe.payment.infra.refund;
 
 import java.util.UUID;
 
-import wisoft.nextframe.payment.common.Money;
+import org.springframework.stereotype.Component;
 
-// 도메인에는 없고 엔티티에는 있는 필드가 있습니다. 추후 검토 필요
+import wisoft.nextframe.payment.common.Money;
+import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.domain.refund.RefundId;
+import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
+import wisoft.nextframe.payment.domain.refund.RefundStatus;
+
+@Component
 public class RefundMapper {
 
 	public Refund toDomain(RefundEntity entity) {
