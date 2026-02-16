@@ -11,35 +11,45 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@Profile("prod")
+@Profile({"prod","test"})
 public class TossPaymentProvider implements PaymentProvider {
 
 	private final RestClient restClient;
 	private final ConcurrentHashMap<String, String> paymentKeyStore = new ConcurrentHashMap<>();
 
-	public TossPaymentProvider(RestClient.Builder builder, @Value("${toss.secret-key}") String secretKey) {
+	public TossPaymentProvider(
+		RestClient.Builder builder,
+		@Value("${toss.secret-key}") String secretKey,
+		@Value("${toss.base-url:https://api.tosspayments.com}") String baseUrl
+	) {
 		if (secretKey == null || secretKey.isEmpty()) {
 			throw new IllegalStateException("toss.secret-key가 설정되어 있지 않습니다.");
 		}
 		String encoded = Base64.getEncoder()
 			.encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
 
-		this.restClient = builder
-			.baseUrl("https://api.tosspayments.com")
-			.defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + encoded)
-			.build();
-	}
+		var factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(2_000);
+		factory.setReadTimeout(3_000);
 
-	TossPaymentProvider(RestClient restClient) {
-		this.restClient = restClient;
+		this.restClient = builder
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + encoded)
+			.requestFactory(factory)
+			.build();
 	}
 
 	@Override
@@ -48,6 +58,8 @@ public class TossPaymentProvider implements PaymentProvider {
 	}
 
 	@Override
+	@CircuitBreaker(name = "tossConfirm", fallbackMethod = "confirmFallback")
+	@Bulkhead(name = "tossConfirm")
 	public ConfirmResponse confirm(ConfirmRequest request) {
 		Map response = restClient.post()
 			.uri("/v1/payments/confirm")
@@ -69,6 +81,21 @@ public class TossPaymentProvider implements PaymentProvider {
 		String code = (String)response.getOrDefault("code", "TOSS_ERROR");
 		String msg = (String)response.getOrDefault("message", "토스 승인 실패");
 		return new ConfirmResponse(false, 0, code, msg);
+	}
+
+	private ConfirmResponse confirmFallback(ConfirmRequest request, CallNotPermittedException e) {
+		log.warn("Toss 결제 승인 차단됨 [CIRCUIT_BREAKER_OPEN]");
+		return new ConfirmResponse(false, 0, "PG_TEMPORARY_UNAVAILABLE", "결제 서비스가 일시적으로 불안정합니다.");
+	}
+
+	private ConfirmResponse confirmFallback(ConfirmRequest request, BulkheadFullException e) {
+		log.warn("Toss 결제 승인 차단됨 [BULKHEAD_FULL]");
+		return new ConfirmResponse(false, 0, "PG_TEMPORARY_UNAVAILABLE", "결제 요청이 집중되고 있습니다.");
+	}
+
+	private ConfirmResponse confirmFallback(ConfirmRequest request, Throwable e) {
+		log.warn("Toss 결제 승인 실패: {}", e.toString());
+		return new ConfirmResponse(false, 0, "PG_NETWORK_ERROR", "PG 통신 중 오류가 발생했습니다.");
 	}
 
 	@Override
