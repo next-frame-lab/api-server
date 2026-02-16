@@ -32,6 +32,11 @@ public class PerformanceStatisticBuilder {
 		return this;
 	}
 
+	public PerformanceStatisticBuilder withAverageStar(BigDecimal averageStar) {
+		this.averageStar = averageStar;
+		return this;
+	}
+
 	public PerformanceStatistic build() {
 		return new PerformanceStatistic(performanceId, hit, averageStar, updatedAt, performance);
 	}
