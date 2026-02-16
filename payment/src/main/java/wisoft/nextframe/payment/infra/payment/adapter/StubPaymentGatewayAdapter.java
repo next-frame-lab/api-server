@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.payment.adaptor;
+package wisoft.nextframe.payment.infra.payment.adapter;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -6,7 +6,7 @@ import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 
 @Component
 @Profile({"loadtest","dev"})
-public class StubPaymentGatewayAdaptor implements PaymentGateway {
+public class StubPaymentGatewayAdapter implements PaymentGateway {
 
     @Override
     public PaymentConfirmResult confirmPayment(String paymentKey, String orderId, int amount) {
