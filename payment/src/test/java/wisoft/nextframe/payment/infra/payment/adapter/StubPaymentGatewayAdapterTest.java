@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.payment.adaptor;
+package wisoft.nextframe.payment.infra.payment.adapter;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -9,9 +9,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 
-@SpringBootTest(classes = StubPaymentGatewayAdaptor.class)
-@ActiveProfiles("loadtest") // StubPaymentGatewayAdaptor만 활성화
-class StubPaymentGatewayAdaptorTest {
+@SpringBootTest(classes = StubPaymentGatewayAdapter.class)
+@ActiveProfiles("loadtest") // StubPaymentGatewayAdapter만 활성화
+class StubPaymentGatewayAdapterTest {
 
     @Autowired
     private PaymentGateway paymentGateway; // Stub이 주입됨
