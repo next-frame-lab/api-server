@@ -25,10 +25,11 @@ class TossPaymentProviderTest {
 		mockWebServer = new MockWebServer();
 		mockWebServer.start();
 
-		RestClient restClient = RestClient.builder()
-			.baseUrl(mockWebServer.url("/").toString())
-			.build();
-		provider = new TossPaymentProvider(restClient);
+		provider = new TossPaymentProvider(
+			RestClient.builder(),
+			"test_secret_key",
+			mockWebServer.url("/").toString()
+		);
 	}
 
 	@AfterEach
