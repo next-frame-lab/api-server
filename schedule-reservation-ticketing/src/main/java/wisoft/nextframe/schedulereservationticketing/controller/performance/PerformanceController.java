@@ -11,6 +11,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import wisoft.nextframe.schedulereservationticketing.common.response.ApiResponse
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancedetail.response.PerformanceDetailResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.search.request.PerformanceSearchSort;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.search.response.PerformanceSearchResponse;
 import wisoft.nextframe.schedulereservationticketing.service.performance.PerformanceService;
 
 @Slf4j
@@ -46,6 +49,17 @@ public class PerformanceController {
 		final ApiResponse<PerformanceListResponse> response = ApiResponse.success(data);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<?>> searchPerformances(
+		@RequestParam(required = false) String keyword,
+		@RequestParam(required = false) PerformanceSearchSort sort,
+		@PageableDefault(size = 32) Pageable pageable
+	) {
+		final PerformanceSearchResponse data = performanceService.searchPerformances(keyword, sort, pageable);
+		final ApiResponse<PerformanceSearchResponse> response = ApiResponse.success(data);
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/top10")

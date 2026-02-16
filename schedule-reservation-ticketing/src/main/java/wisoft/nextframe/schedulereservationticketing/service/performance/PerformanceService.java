@@ -19,12 +19,16 @@ import wisoft.nextframe.schedulereservationticketing.dto.performance.performance
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceListResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.PerformanceSummaryResponse;
 import wisoft.nextframe.schedulereservationticketing.dto.performance.performancelist.response.Top10PerformanceListResponse;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.search.request.PerformanceSearchCondition;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.search.request.PerformanceSearchSort;
+import wisoft.nextframe.schedulereservationticketing.dto.performance.search.response.PerformanceSearchResponse;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.performance.PerformanceStatistic;
 import wisoft.nextframe.schedulereservationticketing.entity.schedule.Schedule;
 import wisoft.nextframe.schedulereservationticketing.common.exception.DomainException;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformancePricingRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceRepository;
+import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceSearchPort;
 import wisoft.nextframe.schedulereservationticketing.repository.performance.PerformanceStatisticRepository;
 import wisoft.nextframe.schedulereservationticketing.repository.schedule.ScheduleRepository;
 
@@ -35,6 +39,7 @@ import wisoft.nextframe.schedulereservationticketing.repository.schedule.Schedul
 public class PerformanceService {
 
 	private final PerformanceRepository performanceRepository;
+	private final PerformanceSearchPort performanceSearchPort;
 	private final ScheduleRepository scheduleRepository;
 	private final PerformancePricingRepository performancePricingRepository;
 	private final PerformanceStatisticRepository performanceStatisticRepository;
@@ -68,6 +73,18 @@ public class PerformanceService {
 		log.debug("공연 통계 정보 조회 완료. averageStar: {}", performanceStatistic.getAverageStar());
 
 		return PerformanceDetailResponse.from(performance, schedules, seatSectionPrices, performanceStatistic);
+	}
+
+	public PerformanceSearchResponse searchPerformances(
+		final String keyword,
+		final PerformanceSearchSort sort,
+		final Pageable pageable
+	) {
+		final PerformanceSearchCondition condition = PerformanceSearchCondition.of(keyword, sort, pageable);
+		final Page<PerformanceSummaryResponse> performancePage = performanceSearchPort.search(condition);
+		log.debug("공연 검색 완료. keyword: {}, sort: {}, 결과 수: {}", condition.keyword(), condition.sort(), performancePage.getTotalElements());
+
+		return PerformanceSearchResponse.from(condition.keyword(), performancePage);
 	}
 
 	@Cacheable(value = "performanceList", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort")
