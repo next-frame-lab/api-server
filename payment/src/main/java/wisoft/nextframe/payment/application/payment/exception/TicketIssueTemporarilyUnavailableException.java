@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.application.payment.outbox.ticketissue;
+package wisoft.nextframe.payment.application.payment.exception;
 
 import wisoft.nextframe.payment.domain.ReservationId;
 

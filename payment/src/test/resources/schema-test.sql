@@ -16,31 +16,6 @@ CREATE TABLE IF NOT EXISTS payments
     status varchar DEFAULT 'REQUESTED'
     );
 
-CREATE TABLE IF NOT EXISTS ticket_issue_outbox
-(
-    id
-    uuid
-    DEFAULT
-    gen_random_uuid
-(
-) NOT NULL PRIMARY KEY,
-    payment_id uuid NOT NULL,
-    reservation_id uuid NOT NULL UNIQUE,
-    ticket_id uuid,
-    status varchar NOT NULL DEFAULT 'PENDING',
-    retry_count int NOT NULL DEFAULT 0,
-    next_retry_at timestamp NOT NULL DEFAULT now
-(
-),
-    last_error varchar,
-    created_at timestamp NOT NULL DEFAULT now
-(
-),
-    updated_at timestamp NOT NULL DEFAULT now
-(
-)
-    );
-
 CREATE TABLE IF NOT EXISTS refunds
 (
     id uuid PRIMARY KEY,
