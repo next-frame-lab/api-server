@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.application.payment.outbox.ticketissue;
+package wisoft.nextframe.payment.application.payment.port.output;
 
 import java.util.UUID;
 

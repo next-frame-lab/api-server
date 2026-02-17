@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.common.Money;
-import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
@@ -78,17 +77,12 @@ class PaymentTest {
 		}
 
 		@Test
-		@DisplayName("승인 시 PaymentApprovedEvent가 발행된다")
-		void approvePayment_eventPublished() {
+		@DisplayName("승인 시 도메인 이벤트가 발행되지 않는다")
+		void approvePayment_noEventPublished() {
 			Payment payment = requested();
 			payment.approve();
 
-			assertThat(payment.getDomainEvents())
-				.hasSize(1)
-				.first()
-				.isInstanceOf(PaymentApprovedEvent.class)
-				.extracting("paymentId", "reservationId")
-				.containsExactly(payment.getId().getValue(), payment.getReservationId().value());
+			assertThat(payment.getDomainEvents()).isEmpty();
 		}
 
 		@Test
@@ -126,7 +120,7 @@ class PaymentTest {
 	@DisplayName("clearDomainEvents() 호출 시 이벤트 리스트가 비워진다")
 	void clearEvents() {
 		Payment payment = requested();
-		payment.approve();
+		payment.fail();
 		assertThat(payment.getDomainEvents()).isNotEmpty();
 
 		payment.clearDomainEvents();

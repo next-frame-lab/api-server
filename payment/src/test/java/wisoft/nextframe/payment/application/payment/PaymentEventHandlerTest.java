@@ -12,31 +12,30 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import wisoft.nextframe.payment.application.payment.handler.PaymentEventHandler;
-import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueOutboxService;
-import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
+import wisoft.nextframe.payment.application.payment.outbox.cancel.ReservationCancelOutboxService;
+import wisoft.nextframe.payment.domain.payment.event.PaymentFailedEvent;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentEventHandlerTest {
 
     @Mock
-    TicketIssueOutboxService outboxService;
+    ReservationCancelOutboxService reservationCancelOutboxService;
 
     @InjectMocks
     PaymentEventHandler handler;
 
     @Test
-    @DisplayName("이벤트를 받으면 outboxService 호출")
-    void paymentApprovedEventTriggersTicketIssue() {
+    @DisplayName("결제 실패 이벤트를 받으면 예약 취소 outbox 서비스를 호출한다")
+    void paymentFailedEventTriggersReservationCancel() {
         // given
         UUID paymentId = UUID.randomUUID();
         UUID reservationId = UUID.randomUUID();
-        PaymentApprovedEvent event =
-            new PaymentApprovedEvent(paymentId, reservationId);
+        PaymentFailedEvent event = new PaymentFailedEvent(paymentId, reservationId);
 
         // when
-        handler.onPaymentApproved(event);
+        handler.onPaymentFailed(event);
 
         // then
-        verify(outboxService).issueOrEnqueue(paymentId, reservationId);
+        verify(reservationCancelOutboxService).cancelOrEnqueue(paymentId, reservationId);
     }
 }

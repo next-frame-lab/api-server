@@ -1,4 +1,4 @@
-package wisoft.nextframe.payment.infra.payment.outbox.ticketissue;
+package wisoft.nextframe.payment.infra.payment.adapter;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -9,14 +9,14 @@ import org.springframework.web.client.RestClient;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
-import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueExternalCallFailedException;
-import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueInvalidResponseException;
-import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueResult;
-import wisoft.nextframe.payment.application.payment.outbox.ticketissue.TicketIssueTemporarilyUnavailableException;
+import wisoft.nextframe.payment.application.payment.exception.TicketIssueExternalCallFailedException;
+import wisoft.nextframe.payment.application.payment.exception.TicketIssueInvalidResponseException;
+import wisoft.nextframe.payment.application.payment.exception.TicketIssueTemporarilyUnavailableException;
+import wisoft.nextframe.payment.application.payment.port.output.TicketIssueResult;
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.domain.ReservationId;
-import wisoft.nextframe.payment.infra.payment.outbox.ticketissue.dto.TicketIssueRequest;
-import wisoft.nextframe.payment.infra.payment.outbox.ticketissue.dto.TicketIssueResponse;
+import wisoft.nextframe.payment.infra.payment.adapter.dto.TicketIssueRequest;
+import wisoft.nextframe.payment.infra.payment.adapter.dto.TicketIssueResponse;
 
 /**
  * Ticketing 외부 서비스(SRT 서버)와 통신하는 어댑터 구현체.
