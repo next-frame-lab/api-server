@@ -80,6 +80,18 @@ jobs:
             python3 -c "import yaml, sys; yaml.safe_load(open('$file'))" || exit 1
           done
 
+      - name: Docker 진단
+        run: |
+          set -eux
+          echo "=== docker version ==="
+          docker --version
+          echo "=== docker info ==="
+          docker info
+          echo "=== docker.sock ==="
+          ls -al /var/run/docker.sock || true
+          echo "=== env grep docker ==="
+          env | sort | grep -E 'DOCKER|TESTCONTAINERS' || true
+
       - name: 빌드 및 테스트 (${{ inputs.module-name }})
         run: ./gradlew :${{ inputs.module-path }}:build --stacktrace
         env:
