@@ -82,6 +82,9 @@ jobs:
 
       - name: 빌드 및 테스트 (${{ inputs.module-name }})
         run: ./gradlew :${{ inputs.module-path }}:build --stacktrace
+        env:
+          # CI 환경에서 Testcontainers의 리소스 정리 컨테이너(Ryuk) 권한 문제를 방지합니다.
+          TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: 테스트 리포트 업로드
         if: failure()
