@@ -24,7 +24,7 @@ import okhttp3.mockwebserver.SocketPolicy;
 
 @DisplayName("TossPaymentProvider 복원력 패턴 통합 테스트")
 @SpringBootTest
-@ActiveProfiles("prod")
+@ActiveProfiles("test")
 class TossPaymentProviderResilienceTest {
 
 	static MockWebServer mockWebServer;
