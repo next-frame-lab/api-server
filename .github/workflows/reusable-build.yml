@@ -92,6 +92,18 @@ jobs:
           echo "=== env grep docker ==="
           env | sort | grep -E 'DOCKER|TESTCONTAINERS' || true
 
+      - name: Identity 진단
+        run: |
+          set -eux
+          id
+          groups
+
+      - name: Relax docker.sock permission (CI)
+        run: |
+          set -eux
+          sudo chmod 666 /var/run/docker.sock
+          ls -al /var/run/docker.sock
+
       - name: 빌드 및 테스트 (${{ inputs.module-name }})
         run: ./gradlew :${{ inputs.module-path }}:build --stacktrace
         env:
@@ -99,7 +111,7 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: 테스트 리포트 업로드
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report-${{ inputs.module-name }}
