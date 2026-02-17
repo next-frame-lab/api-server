@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class AbstractIntegrationTest implements PostgresSQLContainerInitializer {
+public abstract class AbstractIntegrationTest extends PostgresSQLContainerInitializer {
 
 	/**
 	 * Testcontainers에 의해 동적으로 시작된 PostgreSQL 컨테이너 접속 정보를
@@ -35,7 +35,7 @@ public abstract class AbstractIntegrationTest implements PostgresSQLContainerIni
 	static void configureProperties(DynamicPropertyRegistry registry) {
 
 		// 인터페이스에 정의된 컨테이너 인스턴스(POSTGRES_CONTAINER)를 참조합니다.
-		registry.add("spring.datasource.url", POSTGRES_CONTAINER::getJdbcUrl);
+		registry.add("spring.datasource.url", () -> getContainer().getJdbcUrl());
 		registry.add("spring.datasource.username", POSTGRES_CONTAINER::getUsername);
 		registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
 		registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
