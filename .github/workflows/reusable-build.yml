@@ -104,6 +104,14 @@ jobs:
           sudo chmod 666 /var/run/docker.sock
           ls -al /var/run/docker.sock
 
+      - name: docker-java API version 강제 변경 (Docker 29 workaround)
+        run: |
+          set -eux
+          echo "HOME=$HOME"
+          mkdir -p "$HOME/.docker-java"
+          echo "api.version=1.44" > "$HOME/.docker-java.properties"
+          cat "$HOME/.docker-java.properties"
+
       - name: 빌드 및 테스트 (${{ inputs.module-name }})
         run: ./gradlew :${{ inputs.module-path }}:build --stacktrace
         env:
