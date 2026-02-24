@@ -14,12 +14,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentRepository;
 import wisoft.nextframe.payment.application.payment.port.output.ReservationReader;
+import wisoft.nextframe.payment.application.payment.exception.ReservationExpiredException;
 import wisoft.nextframe.payment.application.payment.port.output.TicketIssueResult;
 import wisoft.nextframe.payment.application.payment.port.output.TicketingClient;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentStatus;
-import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedFailedException;
 import wisoft.nextframe.payment.infra.config.AbstractIntegrationTest;
 import wisoft.nextframe.payment.presentation.payment.dto.PaymentConfirmRequest;
 
@@ -43,6 +43,7 @@ public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {
 	@BeforeEach
 	void setUp() {
 		given(reservationReader.exists(any(ReservationId.class))).willReturn(true);
+		given(reservationReader.isPayable(any(ReservationId.class))).willReturn(true);
 	}
 
 	@Test
@@ -75,8 +76,28 @@ public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("티켓 발급 실패 시 PG 취소 후 FAILED 상태로 저장된다")
-	void failPaymentWhenTicketIssueFails() {
+	@DisplayName("만료된 예약으로 결제 시도 시 PG 호출 없이 ReservationExpiredException이 발생한다")
+	void confirmPayment_expiredReservation_throwsBeforePg() {
+		// given: 만료된 예약
+		given(reservationReader.isPayable(any(ReservationId.class))).willReturn(false);
+
+		PaymentConfirmRequest request = new PaymentConfirmRequest(
+			"test_payment_key",
+			UUID.randomUUID().toString(),
+			10000
+		);
+
+		// when & then
+		assertThatThrownBy(() -> paymentService.confirmPayment(request))
+			.isInstanceOf(ReservationExpiredException.class);
+
+		// then: PG는 호출되지 않아야 함
+		then(paymentGateway).should(never()).confirmPayment(anyString(), anyString(), anyInt());
+	}
+
+	@Test
+	@DisplayName("PG 승인 성공 시 Payment가 SUCCEEDED 상태로 저장되고 PG 취소는 발생하지 않는다")
+	void confirmPayment_pgSuccess_savedAsSucceeded() {
 		// given: PG 승인 성공
 		given(paymentGateway.confirmPayment(anyString(), anyString(), anyInt()))
 			.willReturn(new PaymentGateway.PaymentConfirmResult(
@@ -86,16 +107,6 @@ public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {
 				null
 			));
 
-		// given: 티켓 발급 호출 실패
-		given(ticketingClient.issueTicket(any(ReservationId.class)))
-			.willThrow(new RuntimeException("ticket server down"));
-
-		// given: PG 취소 성공
-		given(paymentGateway.cancelPayment(anyString(), anyInt(), anyString()))
-			.willReturn(new PaymentGateway.PaymentCancelResult(
-				true, 10000, "txn-key", null, null
-			));
-
 		UUID reservationId = UUID.randomUUID();
 		PaymentConfirmRequest request = new PaymentConfirmRequest(
 			"test_payment_key",
@@ -103,19 +114,16 @@ public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {
 			10000
 		);
 
-		// when & then: 티켓 발급 실패로 인해 PaymentConfirmedFailedException 발생
-		assertThatThrownBy(() -> paymentService.confirmPayment(request))
-			.isInstanceOf(PaymentConfirmedFailedException.class);
+		// when
+		Payment payment = paymentService.confirmPayment(request);
 
-		// then: 티켓 발급이 호출되었는지 확인
-		then(ticketingClient).should().issueTicket(eq(ReservationId.of(reservationId)));
-
-		// then: PG 취소가 호출되었는지 확인
-		then(paymentGateway).should().cancelPayment(eq(reservationId.toString()), eq(10000), eq("티켓 발급 실패"));
-
-		// then: Payment가 FAILED 상태로 DB에 저장됨
+		// then: Payment가 SUCCEEDED 상태로 저장됨
+		assertThat(payment.isSucceeded()).isTrue();
 		var saved = paymentRepository.findByReservationId(ReservationId.of(reservationId));
 		assertThat(saved).isPresent();
-		assertThat(saved.get().getStatus()).isEqualTo(PaymentStatus.FAILED);
+		assertThat(saved.get().getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
+
+		// then: 아웃박스 패턴으로 전환되었으므로 PG 취소는 호출되지 않음
+		then(paymentGateway).should(never()).cancelPayment(anyString(), anyInt(), anyString());
 	}
 }

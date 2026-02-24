@@ -63,6 +63,8 @@ public class SecurityConfig {
 				.requestMatchers(PERMIT_URLS).permitAll()
 				// CORS preflight 요청 허용
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				// payment 서버 → SRT 서버 내부 호출 (JWT 없음)
+				.requestMatchers(HttpMethod.DELETE, "/api/v1/reservations/**").permitAll()
 				// 그 외의 모든 요청은 인증된 사용자만 접근할 수 있도록 설정
 				.anyRequest().authenticated())
 

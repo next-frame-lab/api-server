@@ -103,6 +103,13 @@ public class Reservation {
 		this.status = ReservationStatus.CANCELLED;
 	}
 
+	public void cancelForRefund() {
+		if (this.status != ReservationStatus.CONFIRMED) {
+			throw new DomainException(ErrorCode.RESERVATION_ALREADY_PROCESSED);
+		}
+		this.status = ReservationStatus.CANCELLED;
+	}
+
 	// 연관 관계 편의 메서드
 	public void addReservationSeats(List<SeatDefinition> seatDefinitions) {
 		for (SeatDefinition seatDefinition : seatDefinitions) {

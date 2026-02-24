@@ -8,12 +8,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 import wisoft.nextframe.schedulereservationticketing.entity.performance.Performance;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.Reservation;
 import wisoft.nextframe.schedulereservationticketing.entity.reservation.ReservationStatus;
 import wisoft.nextframe.schedulereservationticketing.entity.user.User;
 
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
+
+	@Query("SELECT r FROM Reservation r JOIN FETCH r.reservationSeats WHERE r.id = :id")
+	Optional<Reservation> findByIdWithSeats(@Param("id") UUID id);
 
 	/**
 	 * 사용자가 특정 공연을 예매했는지 확인합니다.
