@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.common.Money;
+import wisoft.nextframe.payment.domain.payment.event.PaymentApprovedEvent;
 import wisoft.nextframe.payment.domain.payment.exception.InvalidPaymentStatusException;
 import wisoft.nextframe.payment.domain.payment.exception.MissingReservationException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentAlreadySucceededException;
@@ -77,12 +78,15 @@ class PaymentTest {
 		}
 
 		@Test
-		@DisplayName("승인 시 도메인 이벤트가 발행되지 않는다")
-		void approvePayment_noEventPublished() {
+		@DisplayName("승인 시 PaymentApprovedEvent가 발행된다")
+		void approvePayment_publishesApprovedEvent() {
 			Payment payment = requested();
 			payment.approve();
 
-			assertThat(payment.getDomainEvents()).isEmpty();
+			assertThat(payment.getDomainEvents())
+				.hasSize(1)
+				.first()
+				.isInstanceOf(PaymentApprovedEvent.class);
 		}
 
 		@Test

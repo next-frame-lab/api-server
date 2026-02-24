@@ -26,6 +26,19 @@ public class DbReservationReader implements ReservationReader {
     }
 
     @Override
+    public boolean isPayable(ReservationId reservationId) {
+        Boolean payable = jdbcTemplate.queryForObject(
+            "select exists("
+                + "select 1 from reservations "
+                + "where id = ? and status = 'CREATED' and expires_at > now()"
+                + ")",
+            Boolean.class,
+            reservationId.value()
+        );
+        return Boolean.TRUE.equals(payable);
+    }
+
+    @Override
     public LocalDateTime getPerformanceDateTime(ReservationId reservationId) {
         return jdbcTemplate.queryForObject(
             "SELECT s.performance_datetime FROM reservations r "

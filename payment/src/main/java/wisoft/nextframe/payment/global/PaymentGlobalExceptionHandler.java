@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.payment.application.payment.exception.ReservationExpiredException;
 import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
 import wisoft.nextframe.payment.domain.refund.exception.RefundException;
@@ -35,6 +36,13 @@ public class PaymentGlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
 			.body(new ErrorResponse("RESERVATION_NOT_FOUND", ex.getMessage()));
+	}
+
+	@ExceptionHandler(ReservationExpiredException.class)
+	public ResponseEntity<ErrorResponse> handleReservationExpiredException(ReservationExpiredException ex) {
+		return ResponseEntity
+			.status(HttpStatus.CONFLICT)
+			.body(new ErrorResponse("RESERVATION_EXPIRED", ex.getMessage()));
 	}
 
 	@ExceptionHandler(PaymentGatewayTemporarilyUnavailableException.class)

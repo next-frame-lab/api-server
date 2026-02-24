@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.payment.application.payment.outbox.cancel.ReservationCancelOutboxService;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.application.refund.RefundTransactionService.RefundPrepareResult;
 import wisoft.nextframe.payment.domain.refund.Refund;
@@ -17,6 +18,7 @@ public class RefundService {
 
 	private final PaymentGateway paymentGateway;
 	private final RefundTransactionService refundTransactionService;
+	private final ReservationCancelOutboxService reservationCancelOutboxService;
 
 	public Refund refund(UUID paymentId, String reason) {
 		// 1. 환불 준비 (검증 + Refund 생성, 트랜잭션)
@@ -41,6 +43,14 @@ public class RefundService {
 		}
 
 		// 3. 환불 완료 저장 (트랜잭션)
-		return refundTransactionService.completeRefund(paymentId, refund, reason);
+		Refund completed = refundTransactionService.completeRefund(paymentId, refund, reason);
+
+		// 4. 예약 취소 + 좌석 해제 (outbox 패턴으로 신뢰성 보장)
+		reservationCancelOutboxService.cancelOrEnqueue(
+			paymentId,
+			prepareResult.payment().getReservationId().value()
+		);
+
+		return completed;
 	}
 }

@@ -15,7 +15,7 @@ public class ReservationTimeoutScheduler {
 
 	private final ReservationTimeoutCanceller reservationTimeoutCanceller;
 
-	@Scheduled(fixedRate = 60_000)
+	@Scheduled(fixedRate = 10_000)
 	public void cancelExpiredReservations() {
 		int cancelledCount = reservationTimeoutCanceller
 			.cancelExpiredReservations(LocalDateTime.now());
