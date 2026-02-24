@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.exception.ReservationExpiredException;
 import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
 import wisoft.nextframe.payment.application.refund.RefundCancelFailedException;
+import wisoft.nextframe.payment.domain.payment.exception.PaymentConfirmedFailedException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
 import wisoft.nextframe.payment.domain.refund.exception.RefundException;
 import wisoft.nextframe.payment.application.payment.exception.PaymentGatewayExternalCallFailedException;
@@ -23,6 +24,13 @@ public class PaymentGlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
 			.body(new ErrorResponse("REFUND_ERROR", ex.getMessage()));
+	}
+
+	@ExceptionHandler(PaymentConfirmedFailedException.class)
+	public ResponseEntity<ErrorResponse> handlePaymentConfirmedFailedException(PaymentConfirmedFailedException ex) {
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorResponse("PAYMENT_CONFIRM_FAILED", mapTossErrorToMessage(ex.getErrorCode())));
 	}
 
 	@ExceptionHandler(PaymentException.class)
@@ -79,5 +87,15 @@ public class PaymentGlobalExceptionHandler {
 			.body(new ErrorResponse("INTERNAL_ERROR", "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."));
 	}
 
+	private String mapTossErrorToMessage(String tossCode) {
+		return switch (tossCode) {
+			case "ALREADY_PROCESSED_PAYMENT" -> "이미 결제가 처리되었습니다.";
+			case "INVALID_API_KEY", "UNAUTHORIZED_KEY" -> "시스템 오류가 발생했습니다. 서비스 관리자에게 문의하세요.";
+			case "PROVIDER_ERROR" -> "결제사에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
+			case "REJECT_CARD_PAYMENT" -> "카드 결제가 거절되었습니다. 카드 정보를 확인하세요.";
+			case "FDS_ERROR" -> "거래가 제한되었습니다. 고객센터에 문의하세요.";
+			default -> "결제에 실패했습니다. 잠시 후 다시 시도하거나 고객센터에 문의하세요.";
+		};
+	}
 
 }
