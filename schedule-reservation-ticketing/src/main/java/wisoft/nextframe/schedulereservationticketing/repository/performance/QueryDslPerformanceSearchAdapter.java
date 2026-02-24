@@ -82,18 +82,19 @@ public class QueryDslPerformanceSearchAdapter implements PerformanceSearchPort {
 
 		// count 쿼리
 		return PageableExecutionUtils.getPage(content, condition.pageable(),
-			() -> queryFactory
-				.select(performance.id)
-				.from(schedule)
-				.join(schedule.performance, performance)
-				.join(schedule.stadium, stadium)
-				.where(
-					ticketOnSale(subSchedule, now),
-					nameContains(condition.keyword())
-				)
-				.groupBy(performance.id, stadium.name)
-				.fetch()
-				.size()
+			() -> {
+				final Long count = queryFactory
+					.select(performance.id.countDistinct())
+					.from(schedule)
+					.join(schedule.performance, performance)
+					.join(schedule.stadium, stadium)
+					.where(
+						ticketOnSale(subSchedule, now),
+						nameContains(condition.keyword())
+					)
+					.fetchOne();
+				return count != null ? count : 0L;
+			}
 		);
 	}
 
