@@ -2,11 +2,10 @@ package wisoft.nextframe.payment.infra.refund;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 
 import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.payment.infra.refund.RefundEntity;
 import wisoft.nextframe.payment.infra.refund.RefundMapper;
 
@@ -35,11 +34,11 @@ public class RefundMapperTest {
 	void toEntity_정상_매핑() {
 		// given
 		Refund domain = RefundEntityFixture.sampleDomain();
-		UUID paymentId = RefundEntityFixture.DEFAULT_PAYMENT_ID;
+		PaymentEntity paymentEntity = RefundEntityFixture.samplePaymentEntity();
 		String reason = RefundEntityFixture.DEFAULT_REASON;
 
 		// when
-		RefundEntity entity = mapper.toEntity(domain, paymentId, reason);
+		RefundEntity entity = mapper.toEntity(domain, paymentEntity, reason);
 
 		// then
 		assertThat(entity.getId()).isEqualTo(domain.getRefundId().getValue());
@@ -48,7 +47,7 @@ public class RefundMapperTest {
 		assertThat(entity.getRefundPolicy()).isEqualTo(domain.getPolicyStatus().name());
 		assertThat(entity.getRequestedAt()).isEqualTo(domain.getRequestedAt());
 		assertThat(entity.getCompletedAt()).isEqualTo(domain.getCompletedAt());
-		assertThat(entity.getPaymentId()).isEqualTo(paymentId);
+		assertThat(entity.getPayment().getId()).isEqualTo(RefundEntityFixture.DEFAULT_PAYMENT_ID);
 		assertThat(entity.getReason()).isEqualTo(reason);
 	}
 }

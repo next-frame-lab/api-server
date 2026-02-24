@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import wisoft.nextframe.payment.common.Money;
 import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 import wisoft.nextframe.payment.infra.refund.RefundEntity;
 import wisoft.nextframe.payment.domain.refund.RefundId;
 import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
@@ -21,10 +22,16 @@ public class RefundEntityFixture {
 	public static final LocalDateTime DEFAULT_REQUESTED_AT = LocalDateTime.of(2025, 7, 31, 12, 0);
 	public static final LocalDateTime DEFAULT_COMPLETED_AT = LocalDateTime.of(2025, 8, 1, 9, 30);
 
+	public static PaymentEntity samplePaymentEntity() {
+		return PaymentEntity.builder()
+			.id(DEFAULT_PAYMENT_ID)
+			.build();
+	}
+
 	public static RefundEntity sampleEntity() {
 		return RefundEntity.builder()
 			.id(DEFAULT_REFUND_ID)
-			.paymentId(DEFAULT_PAYMENT_ID)
+			.payment(samplePaymentEntity())
 			.refundAmount(DEFAULT_REFUND_AMOUNT)
 			.status(DEFAULT_STATUS)
 			.refundPolicy(DEFAULT_POLICY)

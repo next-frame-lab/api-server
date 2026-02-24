@@ -7,7 +7,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wisoft.nextframe.payment.domain.payment.PaymentStatus;
+import wisoft.nextframe.payment.infra.refund.RefundEntity;
 
 @Entity
 @Table(name = "payments")
@@ -43,5 +46,8 @@ public class PaymentEntity {
 
 	@Column(name = "payment_method")
 	private String paymentMethod;
+
+	@OneToOne(mappedBy = "payment", fetch = FetchType.LAZY)
+	private RefundEntity refund;
 
 }

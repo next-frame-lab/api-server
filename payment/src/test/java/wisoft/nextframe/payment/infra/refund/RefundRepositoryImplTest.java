@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import wisoft.nextframe.payment.domain.refund.Refund;
+import wisoft.nextframe.payment.infra.payment.JpaPaymentRepository;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RefundRepositoryImpl 단위 테스트")
@@ -21,6 +23,9 @@ class RefundRepositoryImplTest {
 
 	@Mock
 	JpaRefundRepository jpaRefundRepository;
+
+	@Mock
+	JpaPaymentRepository jpaPaymentRepository;
 
 	@Mock
 	RefundMapper refundMapper;
@@ -35,9 +40,11 @@ class RefundRepositoryImplTest {
 		Refund domain = RefundEntityFixture.sampleDomain();
 		UUID paymentId = RefundEntityFixture.DEFAULT_PAYMENT_ID;
 		String reason = RefundEntityFixture.DEFAULT_REASON;
+		PaymentEntity paymentEntity = RefundEntityFixture.samplePaymentEntity();
 		RefundEntity entity = RefundEntityFixture.sampleEntity();
 
-		given(refundMapper.toEntity(domain, paymentId, reason)).willReturn(entity);
+		given(jpaPaymentRepository.getReferenceById(paymentId)).willReturn(paymentEntity);
+		given(refundMapper.toEntity(domain, paymentEntity, reason)).willReturn(entity);
 		given(jpaRefundRepository.save(entity)).willReturn(entity);
 		given(refundMapper.toDomain(entity)).willReturn(domain);
 
@@ -57,7 +64,7 @@ class RefundRepositoryImplTest {
 		RefundEntity entity = RefundEntityFixture.sampleEntity();
 		Refund domain = RefundEntityFixture.sampleDomain();
 
-		given(jpaRefundRepository.findByPaymentId(paymentId)).willReturn(Optional.of(entity));
+		given(jpaRefundRepository.findByPayment_Id(paymentId)).willReturn(Optional.of(entity));
 		given(refundMapper.toDomain(entity)).willReturn(domain);
 
 		// when
@@ -73,7 +80,7 @@ class RefundRepositoryImplTest {
 	void findByPaymentId_shouldReturnEmpty_whenNotFound() {
 		// given
 		UUID paymentId = UUID.randomUUID();
-		given(jpaRefundRepository.findByPaymentId(paymentId)).willReturn(Optional.empty());
+		given(jpaRefundRepository.findByPayment_Id(paymentId)).willReturn(Optional.empty());
 
 		// when
 		Optional<Refund> result = refundRepository.findByPaymentId(paymentId);

@@ -9,21 +9,19 @@ import wisoft.nextframe.payment.domain.payment.Payment;
 import wisoft.nextframe.payment.domain.payment.PaymentId;
 import wisoft.nextframe.payment.domain.ReservationId;
 import wisoft.nextframe.payment.domain.refund.Refund;
-import wisoft.nextframe.payment.infra.refund.JpaRefundRepository;
+import wisoft.nextframe.payment.infra.refund.RefundEntity;
 import wisoft.nextframe.payment.infra.refund.RefundMapper;
 
 @Component
 @RequiredArgsConstructor
 public class PaymentMapper implements EntityMapper<Payment, PaymentEntity> {
 
-	private final JpaRefundRepository jpaRefundRepository;
 	private final RefundMapper refundMapper;
 
 	@Override
 	public Payment toDomain(PaymentEntity entity) {
-		Refund refund = jpaRefundRepository.findByPaymentId(entity.getId())
-			.map(refundMapper::toDomain)
-			.orElse(null);
+		RefundEntity refundEntity = entity.getRefund();
+		Refund refund = refundEntity != null ? refundMapper.toDomain(refundEntity) : null;
 
 		return Payment.reconstruct(
 			PaymentId.of(entity.getId()),

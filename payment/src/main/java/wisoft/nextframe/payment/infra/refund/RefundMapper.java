@@ -1,7 +1,5 @@
 package wisoft.nextframe.payment.infra.refund;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Component;
 
 import wisoft.nextframe.payment.common.Money;
@@ -9,6 +7,7 @@ import wisoft.nextframe.payment.domain.refund.Refund;
 import wisoft.nextframe.payment.domain.refund.RefundId;
 import wisoft.nextframe.payment.domain.refund.RefundPolicyStatus;
 import wisoft.nextframe.payment.domain.refund.RefundStatus;
+import wisoft.nextframe.payment.infra.payment.PaymentEntity;
 
 @Component
 public class RefundMapper {
@@ -24,10 +23,10 @@ public class RefundMapper {
 		);
 	}
 
-	public RefundEntity toEntity(Refund domain, UUID paymentId, String reason) {
+	public RefundEntity toEntity(Refund domain, PaymentEntity payment, String reason) {
 		return RefundEntity.builder()
 			.id(domain.getRefundId().getValue())
-			.paymentId(paymentId)
+			.payment(payment)
 			.refundAmount(domain.getRefundedAmount().getValue().intValue())
 			.status(domain.getStatus().name())
 			.refundPolicy(domain.getPolicyStatus().name())

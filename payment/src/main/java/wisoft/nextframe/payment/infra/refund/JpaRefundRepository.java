@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JpaRefundRepository extends JpaRepository<RefundEntity, UUID> {
-	Optional<RefundEntity> findByPaymentId(UUID paymentId);
+	Optional<RefundEntity> findByPayment_Id(UUID paymentId);
 }
