@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
 import wisoft.nextframe.payment.application.payment.exception.ReservationExpiredException;
 import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
+import wisoft.nextframe.payment.application.refund.RefundCancelFailedException;
 import wisoft.nextframe.payment.domain.payment.exception.PaymentException;
 import wisoft.nextframe.payment.domain.refund.exception.RefundException;
 import wisoft.nextframe.payment.application.payment.exception.PaymentGatewayExternalCallFailedException;
@@ -51,6 +52,14 @@ public class PaymentGlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.SERVICE_UNAVAILABLE)
 			.body(new ErrorResponse("PAYMENT_GATEWAY_UNAVAILABLE", "결제 서비스가 일시적으로 불가능합니다. 잠시 후 다시 시도해 주세요."));
+	}
+
+	@ExceptionHandler(RefundCancelFailedException.class)
+	public ResponseEntity<ErrorResponse> handleRefundCancelFailedException(RefundCancelFailedException ex) {
+		log.error("결제사 환불 처리 실패: {}", ex.getMessage());
+		return ResponseEntity
+			.status(HttpStatus.BAD_GATEWAY)
+			.body(new ErrorResponse("REFUND_CANCEL_FAILED", "결제사 환불 처리에 실패했습니다. 잠시 후 다시 시도해주세요."));
 	}
 
 	@ExceptionHandler(PaymentGatewayExternalCallFailedException.class)
