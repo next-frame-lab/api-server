@@ -31,7 +31,7 @@ public class TestPaymentFactory {
 
 	public static Payment succeeded() {
 		Payment payment = requested();
-		payment.approve();
+		payment.approve("pk_test_factory_key");
 		return payment;
 	}
 

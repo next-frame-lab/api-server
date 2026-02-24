@@ -18,11 +18,13 @@ public class PaymentEntityFixture {
 	public static final UUID DEFAULT_RESERVATION_ID = randomUUID();
 	public static final int DEFAULT_AMOUNT = 50000;
 	public static final String DEFAULT_STATUS = "REQUESTED";
+	public static final String DEFAULT_PAYMENT_KEY = "pk_test_fixture_key";
 
 	public static PaymentEntity sampleEntity() {
 		return PaymentEntity.builder()
 			.id(DEFAULT_PAYMENT_ID)
 			.reservationId(DEFAULT_RESERVATION_ID)
+			.paymentKey(DEFAULT_PAYMENT_KEY)
 			.totalAmount(DEFAULT_AMOUNT)
 			.status(valueOf(DEFAULT_STATUS))
 			.build();
@@ -35,6 +37,7 @@ public class PaymentEntityFixture {
 			Money.of(DEFAULT_AMOUNT),
 			LocalDateTime.now(),
 			valueOf(DEFAULT_STATUS),
+			DEFAULT_PAYMENT_KEY,
 			null
 		);
 	}

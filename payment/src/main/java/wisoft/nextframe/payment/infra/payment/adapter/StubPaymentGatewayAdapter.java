@@ -15,7 +15,7 @@ public class StubPaymentGatewayAdapter implements PaymentGateway {
     }
 
     @Override
-    public PaymentCancelResult cancelPayment(String orderId, int cancelAmount, String cancelReason) {
+    public PaymentCancelResult cancelPayment(String paymentKey, String orderId, int cancelAmount, String cancelReason) {
         // 테스트용 : 항상 성공하는 응답 반환
         return new PaymentCancelResult(true, cancelAmount, "stub-tx-key", null, null);
     }

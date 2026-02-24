@@ -34,6 +34,9 @@ public class PaymentEntity {
 	@Column(name = "reservation_id", nullable = false, unique = true)
 	private UUID reservationId;
 
+	@Column(name = "payment_key")
+	private String paymentKey;
+
 	@Column(name = "total_amount")
 	private Integer totalAmount;
 

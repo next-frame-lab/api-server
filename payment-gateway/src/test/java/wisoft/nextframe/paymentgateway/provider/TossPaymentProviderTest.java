@@ -38,7 +38,7 @@ class TossPaymentProviderTest {
 	}
 
 	@Test
-	@DisplayName("confirm 성공 시 paymentKey를 저장하고 성공 응답을 반환한다")
+	@DisplayName("confirm 성공 시 성공 응답을 반환한다")
 	void confirm_success_storesPaymentKey() {
 		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(200)
@@ -72,28 +72,8 @@ class TossPaymentProviderTest {
 	}
 
 	@Test
-	@DisplayName("cancel 시 paymentKey가 없으면 PAYMENT_KEY_NOT_FOUND를 반환한다")
-	void cancel_noPaymentKey_returnsNotFound() {
-		CancelResponse response = provider.cancel(
-			new CancelRequest("unknown-order", 10000, "환불"));
-
-		assertThat(response.isSuccess()).isFalse();
-		assertThat(response.errorCode()).isEqualTo("PAYMENT_KEY_NOT_FOUND");
-	}
-
-	@Test
-	@DisplayName("confirm 후 cancel 시 토스 API를 호출하여 성공 응답을 반환한다")
-	void cancel_afterConfirm_success() {
-		// confirm으로 paymentKey 저장
-		mockWebServer.enqueue(new MockResponse()
-			.setResponseCode(200)
-			.setBody("""
-				{"status": "DONE", "totalAmount": 10000}
-				""")
-			.addHeader("Content-Type", "application/json"));
-		provider.confirm(new ConfirmRequest("pk_test_123", "order-1", 10000));
-
-		// cancel 성공
+	@DisplayName("cancel 시 토스 API를 호출하여 성공 응답을 반환한다")
+	void cancel_success() {
 		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(200)
 			.setBody("""
@@ -102,7 +82,7 @@ class TossPaymentProviderTest {
 			.addHeader("Content-Type", "application/json"));
 
 		CancelResponse response = provider.cancel(
-			new CancelRequest("order-1", 10000, "단순 변심"));
+			new CancelRequest("pk_test_123", "order-1", 10000, "단순 변심"));
 
 		assertThat(response.isSuccess()).isTrue();
 		assertThat(response.cancelAmount()).isEqualTo(10000);
@@ -115,20 +95,12 @@ class TossPaymentProviderTest {
 		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(200)
 			.setBody("""
-				{"status": "DONE", "totalAmount": 10000}
-				""")
-			.addHeader("Content-Type", "application/json"));
-		provider.confirm(new ConfirmRequest("pk_test_123", "order-1", 10000));
-
-		mockWebServer.enqueue(new MockResponse()
-			.setResponseCode(200)
-			.setBody("""
 				{"status": "PARTIAL_CANCELED", "transactionKey": "tx_partial"}
 				""")
 			.addHeader("Content-Type", "application/json"));
 
 		CancelResponse response = provider.cancel(
-			new CancelRequest("order-1", 6000, "부분 환불"));
+			new CancelRequest("pk_test_123", "order-1", 6000, "부분 환불"));
 
 		assertThat(response.isSuccess()).isTrue();
 		assertThat(response.cancelAmount()).isEqualTo(6000);
@@ -140,20 +112,12 @@ class TossPaymentProviderTest {
 		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(200)
 			.setBody("""
-				{"status": "DONE", "totalAmount": 10000}
-				""")
-			.addHeader("Content-Type", "application/json"));
-		provider.confirm(new ConfirmRequest("pk_test_123", "order-1", 10000));
-
-		mockWebServer.enqueue(new MockResponse()
-			.setResponseCode(200)
-			.setBody("""
 				{"status": "FAILED", "code": "ALREADY_CANCELED_PAYMENT", "message": "이미 취소된 결제"}
 				""")
 			.addHeader("Content-Type", "application/json"));
 
 		CancelResponse response = provider.cancel(
-			new CancelRequest("order-1", 10000, "환불"));
+			new CancelRequest("pk_test_123", "order-1", 10000, "환불"));
 
 		assertThat(response.isSuccess()).isFalse();
 		assertThat(response.errorCode()).isEqualTo("ALREADY_CANCELED_PAYMENT");
@@ -163,14 +127,6 @@ class TossPaymentProviderTest {
 	@DisplayName("cancel 시 토스 API가 HTTP 에러를 반환하면 TOSS_CANCEL_ERROR를 반환한다")
 	void cancel_httpError_returnsError() {
 		mockWebServer.enqueue(new MockResponse()
-			.setResponseCode(200)
-			.setBody("""
-				{"status": "DONE", "totalAmount": 10000}
-				""")
-			.addHeader("Content-Type", "application/json"));
-		provider.confirm(new ConfirmRequest("pk_test_123", "order-1", 10000));
-
-		mockWebServer.enqueue(new MockResponse()
 			.setResponseCode(400)
 			.setBody("""
 				{"code": "INVALID_REQUEST", "message": "잘못된 요청"}
@@ -178,7 +134,7 @@ class TossPaymentProviderTest {
 			.addHeader("Content-Type", "application/json"));
 
 		CancelResponse response = provider.cancel(
-			new CancelRequest("order-1", 10000, "환불"));
+			new CancelRequest("pk_test_123", "order-1", 10000, "환불"));
 
 		assertThat(response.isSuccess()).isFalse();
 		assertThat(response.errorCode()).isEqualTo("TOSS_CANCEL_ERROR");

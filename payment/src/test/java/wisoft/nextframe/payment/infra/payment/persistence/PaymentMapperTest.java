@@ -28,6 +28,7 @@ public class PaymentMapperTest {
 		// then
 		assertThat(entity.getId()).isEqualTo(payment.getId().getValue());
 		assertThat(entity.getReservationId()).isEqualTo(payment.getReservationId().value());
+		assertThat(entity.getPaymentKey()).isEqualTo(payment.getPaymentKey());
 		assertThat(entity.getTotalAmount()).isEqualTo(payment.getAmount().getValue().intValue());
 		assertThat(entity.getStatus()).isEqualTo(payment.getStatus());
 	}
@@ -44,6 +45,7 @@ public class PaymentMapperTest {
 		// then
 		assertThat(payment.getId().getValue()).isEqualTo(entity.getId());
 		assertThat(payment.getReservationId().value()).isEqualTo(entity.getReservationId());
+		assertThat(payment.getPaymentKey()).isEqualTo(entity.getPaymentKey());
 		assertThat(payment.getAmount().getValue().intValue()).isEqualTo(entity.getTotalAmount());
 		assertThat(payment.getStatus()).isEqualTo(entity.getStatus());
 	}

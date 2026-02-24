@@ -124,6 +124,6 @@ public class PaymentServiceIntegrationTest extends AbstractIntegrationTest {
 		assertThat(saved.get().getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
 
 		// then: 아웃박스 패턴으로 전환되었으므로 PG 취소는 호출되지 않음
-		then(paymentGateway).should(never()).cancelPayment(anyString(), anyInt(), anyString());
+		then(paymentGateway).should(never()).cancelPayment(anyString(), anyString(), anyInt(), anyString());
 	}
 }

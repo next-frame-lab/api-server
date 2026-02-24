@@ -67,6 +67,7 @@ class RefundTransactionServiceTest {
 			Money.of(10_000),
 			LocalDateTime.now(),
 			PaymentStatus.SUCCEEDED,
+			"pk_test_key",
 			null
 		);
 	}

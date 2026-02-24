@@ -72,7 +72,7 @@ public class PaymentTransactionService {
 				throw new InvalidAmountException();
 			}
 			log.info("결제 승인 성공 - paymentId: {}, totalAmount: {}", payment.getId(), result.totalAmount());
-			payment.approve();
+			payment.approve(request.paymentKey());
 			saveAndPublishEvents(payment);
 			log.info("결제 저장 완료 - paymentId: {}", payment.getId());
 

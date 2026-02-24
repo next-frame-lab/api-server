@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS payments
 (
 ) NOT NULL PRIMARY KEY,
     reservation_id uuid UNIQUE,
+    payment_key varchar,
     total_amount integer,
     requested_at timestamp,
     payment_method varchar,
