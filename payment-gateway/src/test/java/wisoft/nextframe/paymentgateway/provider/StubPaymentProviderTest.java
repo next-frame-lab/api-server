@@ -39,7 +39,7 @@ class StubPaymentProviderTest {
 	@Test
 	@DisplayName("cancel은 항상 성공을 반환한다")
 	void cancel_alwaysSuccess() {
-		CancelRequest request = new CancelRequest("order-1", 10000, "테스트 환불");
+		CancelRequest request = new CancelRequest("pk_stub_key", "order-1", 10000, "테스트 환불");
 
 		CancelResponse response = provider.cancel(request);
 

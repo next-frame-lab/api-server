@@ -70,9 +70,9 @@ class PaymentTest {
 		@DisplayName("이미 성공한 결제건에 대해 다시 성공 처리를 시도하면 예외가 발생한다")
 		void denySucceed_alreadySucceededOrPaid() {
 			Payment payment = requested();
-			payment.approve();
+			payment.approve("pk_test_key");
 
-			assertThatThrownBy(payment::approve)
+			assertThatThrownBy(() -> payment.approve("pk_test_key"))
 				.isInstanceOf(PaymentAlreadySucceededException.class)
 				.hasMessage("이미 결제 성공 처리된 건입니다.");
 		}
@@ -81,7 +81,7 @@ class PaymentTest {
 		@DisplayName("승인 시 PaymentApprovedEvent가 발행된다")
 		void approvePayment_publishesApprovedEvent() {
 			Payment payment = requested();
-			payment.approve();
+			payment.approve("pk_test_key");
 
 			assertThat(payment.getDomainEvents())
 				.hasSize(1)
@@ -93,7 +93,7 @@ class PaymentTest {
 		@DisplayName("이미 성공한 결제건에서 fail() 호출 시 예외가 발생한다")
 		void denyFail_whenSucceeded() {
 			Payment payment = requested();
-			payment.approve();
+			payment.approve("pk_test_key");
 			assertThatThrownBy(payment::fail)
 				.isInstanceOf(InvalidPaymentStatusException.class);
 		}
@@ -107,7 +107,7 @@ class PaymentTest {
 		@DisplayName("결제 성공 시 상태는 SUCCEEDED가 된다")
 		void succeedPayment_succeededStatus() {
 			Payment payment = requested();
-			payment.approve();
+			payment.approve("pk_test_key");
 			assertThat(payment.getStatus()).isEqualTo(PaymentStatus.SUCCEEDED);
 		}
 

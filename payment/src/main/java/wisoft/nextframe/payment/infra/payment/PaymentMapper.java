@@ -29,6 +29,7 @@ public class PaymentMapper implements EntityMapper<Payment, PaymentEntity> {
 			Money.of(entity.getTotalAmount()),
 			entity.getRequestedAt(),
 			entity.getStatus(),
+			entity.getPaymentKey(),
 			refund
 		);
 	}
@@ -38,6 +39,7 @@ public class PaymentMapper implements EntityMapper<Payment, PaymentEntity> {
 		return PaymentEntity.builder()
 			.id(payment.getId().getValue())
 			.reservationId(payment.getReservationId().value())
+			.paymentKey(payment.getPaymentKey())
 			.totalAmount(payment.getAmount().getValue().intValue())
 			.status(payment.getStatus())
 			.requestedAt(payment.getRequestedAt())

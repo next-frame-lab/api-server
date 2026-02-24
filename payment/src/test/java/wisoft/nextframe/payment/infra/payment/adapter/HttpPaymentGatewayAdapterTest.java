@@ -111,7 +111,7 @@ class HttpPaymentGatewayAdapterTest {
 					""")
 				.setHeader("Content-Type", "application/json"));
 
-			PaymentCancelResult result = adapter.cancelPayment("order-1", 5000, "고객 요청");
+			PaymentCancelResult result = adapter.cancelPayment("pk_test_key", "order-1", 5000, "고객 요청");
 
 			assertThat(result.isSuccess()).isTrue();
 			assertThat(result.cancelAmount()).isEqualTo(5000);
@@ -128,7 +128,7 @@ class HttpPaymentGatewayAdapterTest {
 					""")
 				.setHeader("Content-Type", "application/json"));
 
-			PaymentCancelResult result = adapter.cancelPayment("order-1", 5000, "고객 요청");
+			PaymentCancelResult result = adapter.cancelPayment("pk_test_key", "order-1", 5000, "고객 요청");
 
 			assertThat(result.isSuccess()).isFalse();
 			assertThat(result.errorCode()).isEqualTo("ALREADY_CANCELED");
@@ -141,7 +141,7 @@ class HttpPaymentGatewayAdapterTest {
 				.setBody("broken")
 				.setHeader("Content-Type", "application/json"));
 
-			PaymentCancelResult result = adapter.cancelPayment("order-1", 5000, "고객 요청");
+			PaymentCancelResult result = adapter.cancelPayment("pk_test_key", "order-1", 5000, "고객 요청");
 
 			assertThat(result.isSuccess()).isFalse();
 			assertThat(result.errorCode()).isEqualTo("PARSE_ERROR");
@@ -154,7 +154,7 @@ class HttpPaymentGatewayAdapterTest {
 				.setBody("{}")
 				.setHeadersDelay(6, TimeUnit.SECONDS));
 
-			assertThatThrownBy(() -> adapter.cancelPayment("order-1", 5000, "고객 요청"))
+			assertThatThrownBy(() -> adapter.cancelPayment("pk_test_key", "order-1", 5000, "고객 요청"))
 				.isInstanceOf(Exception.class);
 		}
 	}
@@ -177,7 +177,7 @@ class HttpPaymentGatewayAdapterTest {
 		void cancel_serverError() {
 			mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-			assertThatThrownBy(() -> adapter.cancelPayment("order-1", 5000, "고객 요청"))
+			assertThatThrownBy(() -> adapter.cancelPayment("pk_test_key", "order-1", 5000, "고객 요청"))
 				.isInstanceOf(Exception.class);
 		}
 	}

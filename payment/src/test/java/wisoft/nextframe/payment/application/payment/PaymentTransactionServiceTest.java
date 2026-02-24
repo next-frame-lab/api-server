@@ -134,7 +134,7 @@ class PaymentTransactionServiceTest {
 			ReservationId.of(reservationUuid),
 			LocalDateTime.now()
 		);
-		existing.approve(); // succeeded 상태로 변경
+		existing.approve("pk_test_key"); // succeeded 상태로 변경
 
 		given(paymentRepository.findByReservationId(any())).willReturn(Optional.of(existing));
 		// when

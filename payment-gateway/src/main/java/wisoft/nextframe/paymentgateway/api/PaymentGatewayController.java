@@ -47,7 +47,7 @@ public class PaymentGatewayController {
 	public record ConfirmResponse(boolean isSuccess, int totalAmount, String errorCode, String errorMessage) {
 	}
 
-	public record CancelRequest(String orderId, int cancelAmount, String cancelReason) {
+	public record CancelRequest(String paymentKey, String orderId, int cancelAmount, String cancelReason) {
 	}
 
 	public record CancelResponse(boolean isSuccess, int cancelAmount, String transactionKey, String errorCode,

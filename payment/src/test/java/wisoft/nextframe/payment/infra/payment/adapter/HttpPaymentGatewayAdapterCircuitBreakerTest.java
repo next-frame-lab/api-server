@@ -97,7 +97,7 @@ class HttpPaymentGatewayAdapterCircuitBreakerTest {
 	void cancelServerError_triggersFallback() {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 
-		assertThatThrownBy(() -> paymentGateway.cancelPayment("order-1", 5000, "테스트"))
+		assertThatThrownBy(() -> paymentGateway.cancelPayment("pk_test_key", "order-1", 5000, "테스트"))
 			.isInstanceOf(PaymentGatewayExternalCallFailedException.class);
 	}
 
@@ -119,7 +119,7 @@ class HttpPaymentGatewayAdapterCircuitBreakerTest {
 		CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("paymentGateway");
 		cb.transitionToOpenState();
 
-		assertThatThrownBy(() -> paymentGateway.cancelPayment("order-1", 5000, "테스트"))
+		assertThatThrownBy(() -> paymentGateway.cancelPayment("pk_test_key", "order-1", 5000, "테스트"))
 			.isInstanceOf(PaymentGatewayTemporarilyUnavailableException.class);
 	}
 

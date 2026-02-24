@@ -29,12 +29,13 @@ public class RefundService {
 		}
 
 		Refund refund = prepareResult.refund();
+		String paymentKey = prepareResult.payment().getPaymentKey();
 		String orderId = prepareResult.payment().getReservationId().value().toString();
 		int cancelAmount = refund.getRefundedAmount().getValue().intValue();
 
 		// 2. PG 환불 요청 (트랜잭션 없이 외부 호출)
 		PaymentGateway.PaymentCancelResult cancelResult =
-			paymentGateway.cancelPayment(orderId, cancelAmount, reason);
+			paymentGateway.cancelPayment(paymentKey, orderId, cancelAmount, reason);
 
 		if (!cancelResult.isSuccess()) {
 			log.error("PG 환불 실패 - paymentId: {}, errorCode: {}, errorMessage: {}",

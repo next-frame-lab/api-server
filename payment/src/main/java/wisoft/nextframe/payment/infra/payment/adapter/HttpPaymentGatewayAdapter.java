@@ -66,12 +66,12 @@ public class HttpPaymentGatewayAdapter implements PaymentGateway {
 
 	@Override
 	@CircuitBreaker(name = "paymentGateway", fallbackMethod = "cancelPaymentFallback")
-	public PaymentCancelResult cancelPayment(String orderId, int cancelAmount, String cancelReason) {
+	public PaymentCancelResult cancelPayment(String paymentKey, String orderId, int cancelAmount, String cancelReason) {
 		String raw = restClient.post()
 			.uri("/payments/cancel?provider=toss")
 			.contentType(MediaType.APPLICATION_JSON)
 			.accept(MediaType.APPLICATION_JSON)
-			.body(new CancelRequest(orderId, cancelAmount, cancelReason))
+			.body(new CancelRequest(paymentKey, orderId, cancelAmount, cancelReason))
 			.retrieve()
 			.body(String.class);
 
@@ -105,8 +105,8 @@ public class HttpPaymentGatewayAdapter implements PaymentGateway {
 		throw new PaymentGatewayExternalCallFailedException("confirm", e);
 	}
 
-	private PaymentCancelResult cancelPaymentFallback(String orderId, int cancelAmount, String cancelReason,
-		Throwable e) {
+	private PaymentCancelResult cancelPaymentFallback(String paymentKey, String orderId, int cancelAmount,
+		String cancelReason, Throwable e) {
 		if (e instanceof CallNotPermittedException) {
 			log.warn("결제 취소 차단됨 [CIRCUIT_BREAKER_OPEN]. orderId={}", orderId);
 			throw new PaymentGatewayTemporarilyUnavailableException("cancel", e);
@@ -123,7 +123,7 @@ public class HttpPaymentGatewayAdapter implements PaymentGateway {
 	public record ConfirmResponse(boolean isSuccess, int totalAmount, String errorCode, String errorMessage) {
 	}
 
-	public record CancelRequest(String orderId, int cancelAmount, String cancelReason) {
+	public record CancelRequest(String paymentKey, String orderId, int cancelAmount, String cancelReason) {
 	}
 
 	public record CancelResponse(

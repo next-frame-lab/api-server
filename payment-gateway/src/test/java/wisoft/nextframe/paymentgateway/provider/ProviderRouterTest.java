@@ -28,7 +28,7 @@ class ProviderRouterTest {
 	@Test
 	@DisplayName("지원하는 provider로 cancel 요청 시 정상 라우팅된다")
 	void cancel_routesToCorrectProvider() {
-		CancelRequest request = new CancelRequest("order-1", 10000, "환불 사유");
+		CancelRequest request = new CancelRequest("pk_test_key", "order-1", 10000, "환불 사유");
 
 		CancelResponse response = router.cancel("toss", request);
 
@@ -49,7 +49,7 @@ class ProviderRouterTest {
 	@Test
 	@DisplayName("지원하지 않는 provider로 cancel 요청 시 예외가 발생한다")
 	void cancel_unsupportedProvider_throwsException() {
-		CancelRequest request = new CancelRequest("order-1", 10000, "환불 사유");
+		CancelRequest request = new CancelRequest("pk_test_key", "order-1", 10000, "환불 사유");
 
 		assertThatThrownBy(() -> router.cancel("unknown", request))
 			.isInstanceOf(IllegalArgumentException.class)

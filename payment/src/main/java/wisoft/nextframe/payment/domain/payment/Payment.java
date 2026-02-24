@@ -31,6 +31,7 @@ public class Payment {
 	private final LocalDateTime requestedAt;
 	private LocalDateTime approvedAt;
 	private LocalDateTime failedAt;
+	private String paymentKey;
 	private Refund currentRefund;
 	private final List<DomainEvent> domainEvents = new ArrayList<>();
 
@@ -62,11 +63,13 @@ public class Payment {
 		Money amount,
 		LocalDateTime requestedAt,
 		PaymentStatus status,
+		String paymentKey,
 		Refund refund
 	) {
 		Payment payment = new Payment(id, amount, requestedAt, reservationId);
-		payment.status = status;  // 상태는 직접 주입
-		payment.currentRefund = refund; // 환불 이력도 복원
+		payment.status = status;
+		payment.paymentKey = paymentKey;
+		payment.currentRefund = refund;
 
 		return payment;
 	}
@@ -79,7 +82,7 @@ public class Payment {
 		this.currentRefund = refund;
 	}
 
-	public void approve() {
+	public void approve(String paymentKey) {
 		if (this.status == PaymentStatus.SUCCEEDED) {
 			throw new PaymentAlreadySucceededException();
 		}
@@ -87,6 +90,7 @@ public class Payment {
 		if (this.status == PaymentStatus.FAILED) {
 			throw new InvalidPaymentStatusException("결제 승인", status, PaymentStatus.REQUESTED);
 		}
+		this.paymentKey = paymentKey;
 		this.status = PaymentStatus.SUCCEEDED;
 		this.approvedAt = LocalDateTime.now();
 
