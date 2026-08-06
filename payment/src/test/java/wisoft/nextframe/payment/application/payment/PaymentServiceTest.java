@@ -96,8 +96,8 @@ class PaymentServiceTest {
 	}
 
 	@Test
-	@DisplayName("PG 외부 호출 실패 시 선저장된 Payment를 실패 처리하고 예외를 다시 던진다")
-	void confirmPayment_externalCallFailed_marksFailedAndRethrows() {
+	@DisplayName("PG 외부 호출 실패(타임아웃 등) 시 Payment를 REQUESTED로 유지하고 실패 확정하지 않는다")
+	void confirmPayment_externalCallFailed_keepsRequestedAndRethrows() {
 		Payment requested = Payment.request(Money.of(10_000), RESERVATION_ID, LocalDateTime.now());
 		PaymentGatewayExternalCallFailedException callFailedException =
 			new PaymentGatewayExternalCallFailedException("confirm", new RuntimeException("timeout"));
@@ -110,6 +110,6 @@ class PaymentServiceTest {
 		assertThatThrownBy(() -> paymentService.confirmPayment(REQUEST))
 			.isSameAs(callFailedException);
 
-		then(paymentTransactionService).should().handlePaymentFailure(requested);
+		then(paymentTransactionService).should(never()).handlePaymentFailure(any());
 	}
 }
