@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +32,20 @@ public class PaymentTransactionService {
 	private final ReservationReader reservationReader;
 	private final ApplicationEventPublisher eventPublisher;
 
-	@Transactional
+	// reservation_id는 DB unique 제약이 있어, 동시 요청이 findByReservationId()에서 함께
+	// 비어있음을 보고 save()로 진입할 수 있다. 하나만 커밋되므로 save()마다 자체 트랜잭션을
+	// 갖도록 이 메서드에는 @Transactional을 걸지 않고, 충돌 시 승자 row를 재조회해 반환한다.
 	public Payment createRequested(ReservationId reservationId, int amount) {
-		return paymentRepository.findByReservationId(reservationId)
-			.orElseGet(() -> paymentRepository.save(
-				Payment.request(Money.of(amount), reservationId, LocalDateTime.now())));
+		Optional<Payment> existing = paymentRepository.findByReservationId(reservationId);
+		if (existing.isPresent()) {
+			return existing.get();
+		}
+
+		try {
+			return paymentRepository.save(Payment.request(Money.of(amount), reservationId, LocalDateTime.now()));
+		} catch (DataIntegrityViolationException e) {
+			return paymentRepository.findByReservationId(reservationId).orElseThrow(() -> e);
+		}
 	}
 
 	@Transactional

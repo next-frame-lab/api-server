@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import wisoft.nextframe.payment.application.payment.exception.ReservationNotFoundException;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
@@ -74,6 +75,23 @@ class PaymentTransactionServiceTest {
 
 		assertThat(result).isSameAs(existing);
 		then(paymentRepository).should(never()).save(any(Payment.class));
+	}
+
+	@Test
+	@DisplayName("createRequested: 동시 요청으로 unique 제약 위반이 나면 먼저 커밋된 row를 재조회해 반환한다")
+	void createRequested_concurrentInsertRace_returnsWinnerRow() {
+		ReservationId reservationId = ReservationId.of(UUID.randomUUID());
+		Payment winner = Payment.request(Money.of(10_000), reservationId, LocalDateTime.now());
+
+		given(paymentRepository.findByReservationId(reservationId))
+			.willReturn(Optional.empty(), Optional.of(winner));
+		given(paymentRepository.save(any(Payment.class)))
+			.willThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"));
+
+		Payment result = paymentTransactionService.createRequested(reservationId, 10_000);
+
+		assertThat(result).isSameAs(winner);
+		then(paymentRepository).should(times(2)).findByReservationId(reservationId);
 	}
 
 	@Test
