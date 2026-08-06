@@ -42,8 +42,13 @@ public class PaymentService {
 				request.orderId(),
 				request.amount()
 			);
-		} catch (PaymentGatewayTemporarilyUnavailableException | PaymentGatewayExternalCallFailedException e) {
+		} catch (PaymentGatewayTemporarilyUnavailableException e) {
+			// CB OPEN: 호출 자체가 차단되어 PG에 요청이 전달되지 않았으므로 안전하게 실패 확정
 			paymentTransactionService.handlePaymentFailure(payment);
+			throw e;
+		} catch (PaymentGatewayExternalCallFailedException e) {
+			// 호출은 시도됐으나 실패(타임아웃 등): PG가 실제로 처리했을 가능성이 있어
+			// REQUESTED로 유지, 재조회/재시도 대상으로만 남기고 실패 확정하지 않는다.
 			throw e;
 		}
 
