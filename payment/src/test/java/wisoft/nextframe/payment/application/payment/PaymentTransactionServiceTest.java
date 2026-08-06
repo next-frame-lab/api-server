@@ -51,6 +51,32 @@ class PaymentTransactionServiceTest {
 	}
 
 	@Test
+	@DisplayName("createRequested: 기존 Payment가 없으면 REQUESTED로 새로 생성해 저장한다")
+	void createRequested_noExisting_createsAndSaves() {
+		ReservationId reservationId = ReservationId.of(UUID.randomUUID());
+		given(paymentRepository.findByReservationId(reservationId)).willReturn(Optional.empty());
+
+		Payment created = paymentTransactionService.createRequested(reservationId, 10_000);
+
+		assertThat(created.getReservationId()).isEqualTo(reservationId);
+		assertThat(created.isSucceeded()).isFalse();
+		then(paymentRepository).should(times(1)).save(any(Payment.class));
+	}
+
+	@Test
+	@DisplayName("createRequested: 기존 Payment가 있으면 새로 생성하지 않고 기존 것을 반환한다")
+	void createRequested_existing_returnsExistingWithoutSaving() {
+		ReservationId reservationId = ReservationId.of(UUID.randomUUID());
+		Payment existing = Payment.request(Money.of(10_000), reservationId, LocalDateTime.now());
+		given(paymentRepository.findByReservationId(reservationId)).willReturn(Optional.of(existing));
+
+		Payment result = paymentTransactionService.createRequested(reservationId, 10_000);
+
+		assertThat(result).isSameAs(existing);
+		then(paymentRepository).should(never()).save(any(Payment.class));
+	}
+
+	@Test
 	@DisplayName("PG 승인 성공 시 결제를 승인 상태로 저장한다")
 	void applyConfirmResult_success_createsAndSavesApprovedPayment() {
 		// given

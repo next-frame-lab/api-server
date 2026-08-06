@@ -32,6 +32,13 @@ public class PaymentTransactionService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
+	public Payment createRequested(ReservationId reservationId, int amount) {
+		return paymentRepository.findByReservationId(reservationId)
+			.orElseGet(() -> paymentRepository.save(
+				Payment.request(Money.of(amount), reservationId, LocalDateTime.now())));
+	}
+
+	@Transactional
 	public Payment applyConfirmResult(PaymentConfirmRequest request, PaymentGateway.PaymentConfirmResult result) {
 
 		ReservationId reservationId;
@@ -88,7 +95,8 @@ public class PaymentTransactionService {
 		}
 	}
 
-	private void handlePaymentFailure(Payment payment) {
+	@Transactional
+	public void handlePaymentFailure(Payment payment) {
 		payment.fail();
 		saveAndPublishEvents(payment);
 	}

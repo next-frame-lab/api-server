@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import wisoft.nextframe.payment.application.payment.exception.PaymentGatewayExternalCallFailedException;
+import wisoft.nextframe.payment.application.payment.exception.PaymentGatewayTemporarilyUnavailableException;
 import wisoft.nextframe.payment.application.payment.exception.ReservationExpiredException;
 import wisoft.nextframe.payment.application.payment.port.output.PaymentGateway;
 import wisoft.nextframe.payment.application.payment.port.output.ReservationReader;
@@ -29,14 +31,23 @@ public class PaymentService {
 			throw new ReservationExpiredException(reservationId.value());
 		}
 
-		// 2. 트랜잭션 없이 외부 PG 호출
-		PaymentGateway.PaymentConfirmResult result = paymentGateway.confirmPayment(
-			request.paymentKey(),
-			request.orderId(),
-			request.amount()
-		);
+		// 2. PG 호출 전 Payment를 REQUESTED로 선저장 (실패 시 재조회 근거 확보)
+		Payment payment = paymentTransactionService.createRequested(reservationId, request.amount());
 
-		// 3. 결과 영속화 + 도메인 이벤트 발행 (outbox 패턴으로 비동기 처리)
+		// 3. 트랜잭션 없이 외부 PG 호출
+		PaymentGateway.PaymentConfirmResult result;
+		try {
+			result = paymentGateway.confirmPayment(
+				request.paymentKey(),
+				request.orderId(),
+				request.amount()
+			);
+		} catch (PaymentGatewayTemporarilyUnavailableException | PaymentGatewayExternalCallFailedException e) {
+			paymentTransactionService.handlePaymentFailure(payment);
+			throw e;
+		}
+
+		// 4. 결과 영속화 + 도메인 이벤트 발행 (outbox 패턴으로 비동기 처리)
 		return paymentTransactionService.applyConfirmResult(request, result);
 	}
 }
