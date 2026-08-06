@@ -134,6 +134,51 @@ class RefundTransactionServiceTest {
 			assertThat(result.alreadyRefunded()).isTrue();
 			assertThat(result.refund()).isSameAs(existingRefund);
 		}
+
+		@Test
+		@DisplayName("REQUESTED로 남은 환불이 있으면 완료 처리하지 않고 재시도 대상으로 반환한다")
+		void prepareRefund_existingRequestedRefund_returnsExistingForRetry() {
+			// given
+			Refund stuckRefund = Refund.reconstruct(
+				RefundId.generate(),
+				Money.of(10_000),
+				RefundStatus.REQUESTED,
+				RefundPolicyStatus.REFUND_FULL,
+				LocalDateTime.now(),
+				null
+			);
+
+			given(paymentRepository.findById(any(PaymentId.class)))
+				.willReturn(Optional.of(succeededPayment));
+			given(refundRepository.findByPaymentId(PAYMENT_ID))
+				.willReturn(Optional.of(stuckRefund));
+
+			// when
+			RefundPrepareResult result = refundTransactionService.prepareRefund(PAYMENT_ID);
+
+			// then
+			assertThat(result.alreadyRefunded()).isFalse();
+			assertThat(result.refund()).isSameAs(stuckRefund);
+		}
+	}
+
+	@Nested
+	@DisplayName("saveRequested")
+	class SaveRequested {
+
+		@Test
+		@DisplayName("PG 호출 전 Refund를 REQUESTED 상태로 저장한다")
+		void saveRequested_persistsRefund() {
+			// given
+			Refund refund = Refund.issue(LocalDateTime.now(), PERFORMANCE_START, Money.of(10_000));
+			given(refundRepository.save(refund, PAYMENT_ID, REASON)).willReturn(refund);
+
+			// when
+			refundTransactionService.saveRequested(PAYMENT_ID, refund, REASON);
+
+			// then
+			then(refundRepository).should().save(refund, PAYMENT_ID, REASON);
+		}
 	}
 
 	@Nested
